@@ -1,0 +1,14 @@
+# Vim swap files
+**/*.swp
+
+# Do not upload ROMs, original or otherwise
+# rom/**
+**/*.sfc
+**/*.smc
+
+# Do not upload generated patches in repository - upload as releases instead
+**/*.bps
+**/*.ips
+
+# Do not upload compiled Java bytecode
+**/*.class
