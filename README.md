@@ -1,5 +1,5 @@
 # kamaitachi-sfc-english
-In case anyone happens upon this repo, I wanted to put at the top that *I do not have a translation patch yet*. This will just be a place where I'll do project updates.
+In case anyone happens upon this repo, I wanted to put at the top that *I do not have a translation patch yet*. For the time being, this will just be a place where I'll do project updates, but I will also eventually put my source code and patches here.
 
 I had created a [translation patch](https://github.com/ButThouMust/otogirisou-english) for the Chunsoft sound novel Otogirisou. At some point during the creation of that patch, I tried digging around in Chunsoft's next game in the same style, and found enough things in common between their internal workings that I wanted to work on it, too.
 
@@ -10,17 +10,26 @@ Some innovations over Otogirisou:
 - silhouettes of the cast of characters
 - bad endings where the story concludes prematurely
 
-The game has been ported and remade several times in Japan over the years. Two versions have been localized into English:
+The game was originally released for the Super Famicom in 1994, and has been ported and remade several times in Japan over the years. Two versions have been localized into English:
 - an official localization *Banshee's Last Cry* for old 32-bit versions of iOS
 - a [fan localization patch by Project Kamai](https://web.archive.org/web/20230801045909/https://projectkamai.com/) of the Rinne Saisei remake for PC
 
 I'd done a lot of project updates in [this thread](https://discord.com/channels/266412086291070988/1089409844743782440) in the RHDI Discord server, which you can read if you like.
 
+Work is being done using a ROM dump from an original cartridge, that conforms to the specification in the [No-Intro database](https://datomatic.no-intro.org/index.php?page=show_record&s=49&n=1301):
+
+```
+CRC32:		71c631aa
+MD5:		efe8a1e8fbd0c05d1f515e2227e48d11
+SHA-1:		4c8f357bd86f9ed909d6a89afb0dbe74913fb333
+SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
+```
+
 ## Solved items
 ### <ins>Text</ins>
 - Dump the Japanese font.
 - Dump the compressed Japanese script.
-- Reinsert modified versions of the Japanese script into the game.
+- Compress and reinsert modified versions of the Japanese script into the game.
   - I used this to test scripts for viewing unused content.
 - Insert translated menu prompts for managing files, like "start game", "delete file", "change names", etc.
 
@@ -34,13 +43,15 @@ I'd done a lot of project updates in [this thread](https://discord.com/channels/
 | Data type | Decompressor? | Recompressor? |
 | :--- | :---: | :---: |
 | Background graphics tile*sets* | Done | Not started\* |
-| Background graphics tile*maps* | Done | Done |
+| Background graphics tile*maps* | Done | Done\*\* |
 | Name entry character grid font | Done | Done |
-| Silhouette data | Done | Not planned\*\* |
+| Silhouette data | Done | Not planned\*\*\* |
 
-\*: I do want to at least try working on this, but the compression format is quite intricate. Even just the decompressor, with Chunsoft's ASM code to follow as an example, was a pain to get working.
+\*: I do want to at least try working on this, but the compression format is quite intricate. The decompressor was a pain to get working, having to trace through Chunsoft's ASM code and figure out exactly what the code was doing.
 
-\*\*: No silhouettes contain any text.
+\*\*: The tilemap recompressor can use more testing.
+
+\*\*\*: No silhouettes contain any text.
 
 ## Priorities, with relative difficulties:
 ### <ins>English font</ins>
@@ -68,9 +79,8 @@ For example:
 - Dummy out the kanji category, and make the player unable to access or interact with it.
 
 #### Character limit for names
-
 I want to be able to change the name entry screen to support a limit of 10+ characters instead of 6 like in the original (**difficult**).
-- The code is used for naming the protagonist and his girlfriend, but also for certain points in the story where the player must enter the name of who they believe to be the killer in the murder mystery. The six letter limit is too short for English.
+- The code is used for naming the protagonist and his girlfriend, but also for certain points in the story where the player must enter the name of who they believe to be the killer in the murder mystery. Most characters' names are longer than six letters when translated into English.
 - Getting this right is very important, because solving the murder mystery opens up more routes and endings for the player to view.
 
 ## "Nice to have" items, with relative difficulties:
