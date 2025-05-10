@@ -7,7 +7,7 @@ Place your game dump in this folder, open a terminal, and execute the two comman
 - `javac KamaitachiSilhouetteDecomp.java`
 - `java KamaitachiSilhouetteDecomp`
 
-For information about the underlying systems for storing silhouettes, see [my notes](/silhouettes/kamaitachi silhouette decompression.txt) that I had taken about them.
+For information about the underlying systems for storing silhouettes, see [my notes](/silhouettes/kamaitachi%20silhouette%20decompression.txt) that I had taken about them.
 
 ## How to view the silhouettes
 The tool groups together silhouette data based on control code inputs. If you want to see the silhouettes from the dumped data, download the utility [Tilemap Studio](https://github.com/Rangi42/tilemap-studio) and run it.
