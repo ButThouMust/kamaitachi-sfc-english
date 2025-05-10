@@ -1,0 +1,250 @@
+Vocabulary:
+
+Silhouette control code input
+- A value (range 000 to 2F5) that is the input to a silhouette control code.
+  It can have several silhouette sets associated with it for animations.
+
+Silhouette set ID value
+- A value (range 000 to 3AB) that represents a set of silhouette graphics data.
+  Each set has a unique control code input value that can access it.
+
+--------------------------------------------------------------------------------
+
+$4B8000: Given a silhouette ctrl code input, get a 24-bit pointer from here for
+         some kind of data for how to construct silhouette sets.
+     The first 2 byte word in a group will have its MSB set.
+     - Bit pos 0x8000: indicates start of group
+     - Bit pos 0x4000: uses memory flag at 091A - if bit=1, leave flag alone
+                       if bit=0, set the flag ON (see $02813E)
+     - Bit pos 0x2000: indicates size of each sprite: 0 -> 16x16, 1 -> 32x32
+     - The other 13 bits (10 in practice) store the input's base silh set #.
+
+     Main routine for interpretting data here is at $02815B.
+     - Value from 0000-1FFF: read OAM data. (028196)
+       High byte: which frame to show, from base silhouette set #. (0281a4)
+       * (One ctrl code input can have up to 0x20 unique frames of animation)
+       Low byte:  how long to display the silhouette set, in frames? (0281d9)
+
+     - Value from 2000-3FFF: read silhouette tile data. (0281ea)
+       Easy, (value & 0x1FFF) contains which silhouette set's gfx to load.
+
+     - Value from 6000-7FFF: change the color of the silhouette (028242)
+       Simply put the color value you wish to use after the 6000 value.
+
+       On the topic of color values, note that Kamaitachi sets up gfx layers to
+       take the background image color and SUBTRACT the silhouette color to get
+       the colors that the player ultimately sees on screen. The default color
+       value for silhouettes is BGR15 04E7 (RGB24 393908), a dark green color.
+       This mostly lets the blue component through, but reduces red/green comps.
+
+     - Value from 4000-5FFF: unknown, not used in JP game (028214)
+       In the original Japanese game, no two-byte values start with 5 (5xxx),
+       and all the two-byte values that start with 4 (4xxx) are color values.
+
+     See $0280C4, $028107, $028299
+     Pointer list: $4B8000-$4B88E1
+     Data range:   $4B88E2-$4B9CFD
+
+$4B9CFE: Given a silhouette set ID value, get a 24-bit pointer from here for
+         data that details a 16x16 grid of what 16x16 pixel regions should have
+         silhouettes on them. Basically, they generate OAM X/Y coordinates.
+         Note: this format works the same for both 16x16 or 32x32 sprite sets.
+         Pointer list: $4B9CFE-$4BA801
+         Data ranges: $02A871-$02B938, $48D1A3-$48FFF0, $02B939-$02C31E.
+
+$4BA802: Given a silhouette set ID value, get a 24-bit pointer to data related
+         to OAM entry data, specifically tile ID numbers and sprite attributes.
+         (See above: X/Y coordinates are multiples of 0x10 generated on the fly)
+         Pointer range: $4BA802-$4BB305; See ASM at $028719
+         Ranges for pointed data:
+         $498000-$4AFFFF, $4BC92C-$4BFFD9, $5DC40F-$5DFFA8, $04DF87-$04EADE
+
+$4BB306: Given a silhouette set ID value, get value of the silhouette ctrl code
+         input (note: singular, not plural) that references it.
+         Data range:    $4BB306-$4BBA5D
+
+$4BBA5E: Given a silhouette ctrl code input, use it as an index here to get a
+         24-bit pointer to the compressed silhouette tile data.
+         Pointer range: $4BBA5E-$4BC33F
+         Data range:    $4C8000-$5DC40E
+
+$4BC340: Given a silhouette ctrl code input, use it as an index here to get a
+         2-byte value (multiples of 0x20?). Seems to be related to gfx size?
+         Double this value and clamp it to at most 0x400.
+         Data range:    $4BC340-$4BCA97
+
+--------------------------------------------------------------------------------
+
+Summarize the ROM data blocks:
+
+0x012871-0x013938: X/Y grid data block 1 (sets 000-0DB)
+0x013939-0x01431E: X/Y grid data block 3 (sets 32E-3AB)
+(Total: 0x1AAE)
+
+0x025F87-0x026ADE: OAM data block 4 (sets 392-3AB)
+(Total: 0xB58)
+
+0x2451A3-0x247FF0: X/Y grid data block 2 (sets 0DC-32D)
+[0xF bytes of empty space, FF]
+0x248000-0x257FFF: OAM data block 1 (sets 000-26D)
+0x258000-0x2588E1: Pointer table for silhouette construction
+0x2588E2-0x259CFD: Silhouette construction data block
+0x259CFE-0x25A801: Pointer table for X/Y grid data
+0x25A802-0x25B305: Pointer table for OAM data
+0x25B306-0x25BA5D: Lookup table for control code input value from silh set ID
+0x25BA5E-0x25C33F: Pointer table for graphics data
+0x25C340-0x25C92B: Lookup table for "data size"
+0x25C92C-0x25FFD9: OAM data block 2 (sets 26E-2FE)
+[0x26 bytes of empty space, FF]
+0x4C8000-0x2EC40E: Graphics data block
+0x2EC40F-0x2EFFA8: OAM data block 3 (sets 2FF-391)
+Total: 0x2EFFA8 - 0x2451a3 + 1 - 0xF - 0x26 = 0xAADD1
+
+So all in all, this much data in the ROM is for the silhouettes:
+0xAADD1 + 0x1AAE + 0xB58 = 0xAD3D7 = 709,591 bytes (692.96 KB)
+
+--------------------------------------------------------------------------------
+
+The game has quite a few silhouette input values that end up unused in the final
+game, in particular three unused animations. Creating and inserting modified
+Japanese scripts to display these silhouettes made me discover an interesting
+mistake on the part of Chunsoft. The animation for input 0x13A doesn't correctly
+show all its frames, and I confirmed this by carefully cross referencing these
+two particular sets of data:
+
+- Control code input lookup table for silhouette IDs 0x183-0x187:
+  Table entries for all five are control code input 0x13A
+  Applicable data at 0x25B306 + 0x183*2 = 0x25B60C - 0x25B615
+  
+- Construction data for ctrl code input 0x13A at 0x259136 ($4B9136):
+  C183 2183 0002 [terminated by start of next group, C188]
+
+Notice how the construction data only allows for showing one frame!
+In other words, not only is the animation unused, but even if you were to get it
+to display in the game by injecting a text script to do so, it would only show
+one frame of the animation. 
+
+If you want to see all five frames, you would have to insert new construction
+data somewhere and update the pointer accordingly. Steps would be:
+- New constr. data would be: 83 C1 83 21 [LL 00 LL 01 LL 02 LL 03 LL 04 FF FF]
+  The LL bytes are durations. The order for 00-04 bytes is up to you. The FF FF
+  at the end terminates the list.
+- Insert the new 0x10 bytes at any position in the ROM you like. $4BFFDA works.
+- Update the pointer at $4B83AE from [36 91 4B] to the new pointer [DA FF 4B].
+
+I don't know for sure what the intended order for the silhouettes would be (it
+involves one character attacking another), but some guesses are:
+- 187, 183, 186, 184, 185
+- 187, 183, 185, 184, 186
+
+The scale of the silhouettes seems to fit with background image 1F.
+
+--------------------------------------------------------------------------------
+
+Short bit about animations: the game seems to copy in only as many sprites as
+are necessary for each frame, on the fly as the animation plays.
+
+Chunsoft did some palette trickery to use the 0x200 total limit of sprites as
+effectively as possible for the larger and/or more complicated silhouettes.
+
+--------------------------------------------------------------------------------
+
+Relevant subroutines/code:
+
+$028532, $028719
+- Use ctrl code input value to get pointers from $4BA802 and $4B9CFE.
+- For pointer from $4B9CFE, read two bytes from it. This contains 16 bit flags
+  for when and how many 2-byte words to read. For example, 0x2AAA has 7 bit
+  flags at positions 2, 4, 6, 8, A, C, and E (position 0 is the MSB).
+- For each bit position with a 1, read another two-byte word. Same format
+- For each bit position with a 1, run $0287A3 to write an OAM entry to buffer.
+
+So in a way, it generates a grid of 16x16 flags that say "silhouette is here"
+for a particular 16x16 pixel region on screen.
+
+The first word describes what rows (Y positions) have them, while all the words
+after that describe what columns (X positions) in each row have them.
+
+Example: The word at $02AFF7 is 7FFC. All the rows but 0, E and F are "yes."
+So then, there should be 0xD words after that to describe the columns:
+F800 FF00 FF80 FF00 FC00 FC00 7C00 7C00 7E00 7E00 7F00 7F80 7F80 
+
+          0123456789ABCDEF
+         +----------------+
+0 -      |                |
+1 Y F800 |#####           |
+2 Y FF00 |########        |
+3 Y FF80 |#########       |
+4 Y FF00 |########        |
+5 Y FC00 |######          |
+6 Y FC00 |######          |
+7 Y 7C00 | #####          |
+8 Y 7C00 | #####          |
+9 Y 7E00 | ######         |
+A Y 7E00 | ######         |
+B Y 7F00 | #######        |
+C Y 7F80 | ########       |
+D Y 7F80 | ########       |
+E -      |                |
+F -      |                |
+         +----------------+
+
+$028572: Read a pointer for what silhouette(s) to load based on an input to a
+         silhouette control code from the script.
+
+$02863B: Start reading data from the above mentioned pointer.
+
+--------------------------------------------------------------------------------
+
+Silhouette graphics data decompression
+
+Keep reading type bytes until you get a [00] byte, or until you reach a hard
+limit of 0x2000 bytes after you process the data for the type byte.
+
+Given that the type byte is not [00], check bits 6-7 and run a subroutine:
+00xx xxxx: $028684
+01xx xxxx: $028698
+10xx xxxx: $0286D9
+11xx xxxx: $0286F9
+
+$028684 (range 01-3F):
+- Load the current size of the decompressed graphics ($0FB3).
+- Call $0286BE with data byte in $0FB1 being [00].
+- Update size in memory, and RTS.
+
+    $0286BE:
+    - Get data byte value in $0FB1.
+    - Repeat it in decompression buffer a total of (type byte & 0x3F) times, or
+      until the 0x2000 byte buffer is completely filled.
+
+$028698 (range 40-7F):
+- Check the lower 6 bits of the type byte.
+- If 0 (type byte is 40):
+  * Advance pointer to start of next ROM bank.
+- Otherwise (type byte is 41-7F):
+  * Call $0286BE, with data byte in $0FB1 being [FF].
+
+$0286D9 (range 80-BF):
+- Read up to (type byte & 0x3F) bytes from the ROM directly into the buffer, or
+  until it is completely filled.
+
+$0286F9 (range C0-FF):
+- Read one byte from the ROM, and repeat it up to (type byte & 0x3F) + 1 times
+  in the buffer, or until it is completely filled.
+
+--------------------------------------------------------------------------------
+
+Gold bookmark animation
+
+$01F0C0 has a set of graphics data compressed in the same format as silhouettes.
+It is decompressed as sprites when the player goes to the file select menu, and
+is for an animation that you see if your bookmark is gold (it shines).
+
+If you want to be able to view it in the game without necessarily fulfilling the
+frankly ridiculous requirements to get it normally, change two bytes at 0x8167
+in the ROM from [04 08] to [0C 0C]. You will see it on the top bookmark.
+
+$01EABA has a table of 0xA pointers for OAM data for the animation frames.
+Each block of OAM data is terminated by FFFF.
+$01EAD8 $01EAE6 $01EB2C $01EBBE $01ECA8
+$01ED66 $01EE4C $01EF3E $01EFF0 $01F086
