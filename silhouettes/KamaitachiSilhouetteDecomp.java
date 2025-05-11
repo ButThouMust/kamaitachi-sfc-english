@@ -334,7 +334,7 @@ public class KamaitachiSilhouetteDecomp {
             textFile.write(" (default)\n");
         }
 
-        // indicate 
+        // indicate source of graphics data for the silhouette set
         int ctrlCodeInputForGfx = silhCtrlCodeInputFromSilhID.get(silhIdWithCorrectGfxData);
         String gfxDataFormat = "Gfx data sourced from silh ID 0x%03X (code input 0x%03X)\n";
         textFile.write(String.format(gfxDataFormat, silhIdWithCorrectGfxData, ctrlCodeInputForGfx));
@@ -351,7 +351,7 @@ public class KamaitachiSilhouetteDecomp {
             textFile.write(String.format(format, baseSilhSetID + offset, numFrames));
         }
 
-        // special case
+        // special case of unused animation frames for one control code input
         if (ctrlCodeInput == 0x13A) {
             textFile.write("\nIMPORTANT: Chunsoft forgot to also use silhouette IDs 184, 185, 186, 187 with this animation");
         }
@@ -524,7 +524,6 @@ public class KamaitachiSilhouetteDecomp {
             fillInOneRowOfLargeSprite(oamEntry + 0x10, row2, tileCol, tilemap, xFlip);
             fillInOneRowOfLargeSprite(oamEntry + 0x20, row1, tileCol, tilemap, xFlip);
             fillInOneRowOfLargeSprite(oamEntry + 0x30, row0, tileCol, tilemap, xFlip);
-
         }
     }
 
@@ -555,10 +554,9 @@ public class KamaitachiSilhouetteDecomp {
             int tileCol = (((int) xyData[filePos]) & 0xFF) >> 3;
             int tileRow = (((int) xyData[filePos + 1]) & 0xFF) >> 3;
 
-            int oamByte2 = romFile.readUnsignedByte();
-            int oamByte3 = romFile.readUnsignedByte();
-            int oamEntry = oamByte2 | (oamByte3 << 8);
+            // read sprite's tile number and attributes
             // keep only tile # and flip bits; disregard palette; set priority 2
+            int oamEntry = readWord();
             oamEntry = (oamEntry & 0xC1FF) | 0x2000;
 
             if (smallSprites) {
@@ -570,6 +568,10 @@ public class KamaitachiSilhouetteDecomp {
         }
 
         String outputName = String.format(outputFolder + "/silh set ID %03d (0x%03X) converted tilemap.bin", silhSetID, silhSetID);
+        writeConvertedTilemapToFile(outputName, tilemap);
+    }
+
+    private static void writeConvertedTilemapToFile(String outputName, int[][] tilemap) throws IOException {
         FileOutputStream output = new FileOutputStream(outputName);
         for (int r = 0; r < tilemap.length; r++) {
             for (int c = 0; c < tilemap[r].length; c++) {
@@ -579,6 +581,57 @@ public class KamaitachiSilhouetteDecomp {
         }
         output.flush();
         output.close();
+    }
+
+    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // Converting gold bookmark OAM data to tilemap data - see code at $01E66F
+
+    private static final int GOLD_BOOKMARK_SHINE_PTR = 0x1F0C0;
+    private static final int GOLD_BOOKMARK_OAM_TABLE_PTR = 0xEABA; // $01EABA
+    private static final int GOLD_BOOKMARK_OAM_TABLE_SIZE = 0xA;
+
+    private static void convertGoldBookmarkOamToTilemap(int frameNum) throws IOException {
+        // do nothing if frame number is not in correct range
+        if (frameNum < 0 || frameNum >= GOLD_BOOKMARK_OAM_TABLE_SIZE)
+            return;
+
+        // tilemap for animation is 0xE tile rows tall; carry over 0x20 tile width
+        int tilemap[][] = new int[0xE][0x20];
+        for (int r = 0; r < tilemap.length; r++) {
+            for (int c = 0; c < tilemap[r].length; c++) {
+                tilemap[r][c] = 0x03FF;
+            }
+        }
+
+        // read pointer table entry for the bookmark shine animation's frame #
+        int ptrTablePosition = GOLD_BOOKMARK_OAM_TABLE_PTR + 3 * frameNum;
+        romFile.seek(ptrTablePosition);
+        int oamPtr = readPtr();
+
+        // seek to the pointer and start reading the raw OAM data
+        romFile.seek(getRomPtr(oamPtr));
+        do {
+            // byte 0 = X coord (low byte; assume high bit 0 here), byte 1 = Y coord
+            // data is terminated by [FF FF] byte sequence at this point
+            int xyCoord = readWord();
+            if (xyCoord == 0xFFFF) break;
+
+            // extract out the tile column and tile row
+            int tileCol = (xyCoord & 0xFF) >> 3;
+            int tileRow = ((xyCoord >> 8) & 0xFF) >> 3;
+
+            // read sprite's tile number and attributes
+            // keep only tile # and flip bits; disregard palette; set priority 2
+            int oamEntry = readWord();
+            oamEntry = (oamEntry & 0xC1FF) | 0x2000;
+
+            // for the gold bookmark animation, sprites are all small = 16x16
+            convertOneSmallSpriteToTilemap(oamEntry, tileRow, tileCol, tilemap);
+        } while (true);
+
+        String outputName = String.format("gold bookmark data/gold bookmark frame %d converted tilemap.bin", frameNum);
+        writeConvertedTilemapToFile(outputName, tilemap);
     }
 
     // -------------------------------------------------------------------------
@@ -658,8 +711,9 @@ public class KamaitachiSilhouetteDecomp {
         }
     }
 
+    // use primarily for gold bookmark animation's tile data
     private static void writeSilhDataFromPtr(int gfxPtr) throws IOException {
-        String outputName = String.format("silh indep ptr $%06X gfx data.bin", gfxPtr);
+        String outputName = String.format("gold bookmark data/silh indep ptr $%06X gfx data.2bpp", gfxPtr);
         writeSilhGfxDataToFile(outputName);
     }
 
@@ -678,8 +732,13 @@ public class KamaitachiSilhouetteDecomp {
         }
         */
 
-        // the raw decompression output is in the NES's 2bpp standard format,
-        // where it would be better to have it in the SNES's 2bpp standard format
+        // raw decompression output is in the NES's 2bpp standard format, but
+        // in the interest of having Tilemap Studio auto-detect the graphics,
+        // it would be better to convert it to the SNES's 2bpp standard format
+        // NES 2bpp:  [r0p0 r1p0 r2p0 ... r7p0 r0p1 r1p1 r2p1 ... r7p1]
+        // indices:   [0    1    2    ... 7    8    9    A    ... F]
+        // SNES 2bpp: [r0p0 r0p1 r1p0 r1p1 r2p0 r2p1 ... r7p0 r7p1]
+        // new order: [0    8    1    9    2    A    ... 7    F]
 
         int interleaveSequence[] = {0, 8, 1, 9, 2, 0xa, 3, 0xb, 4, 0xc, 5, 0xd, 6, 0xe, 7, 0xf};
         for (int tileNum = 0; tileNum < silhBufferOffset; tileNum += interleaveSequence.length) {
@@ -719,8 +778,7 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    public static void main(String args[]) throws IOException {
-        romFile = new RandomAccessFile("Kamaitachi no Yoru (Japan).sfc", "r");
+    private static void readPointerTables() throws IOException {
         getSilhIDMappings();
         getSilhGFXPtrs();
         getSilhIDSizes();
@@ -728,7 +786,9 @@ public class KamaitachiSilhouetteDecomp {
         getSilhOAMGridPtrs();
         getSilhConstrDataPtrs();
         getSilhSetListsForCtrlCodeInputs();
+    }
 
+    private static void outputDataForSilhCtrlCodeIDs() throws IOException {
         outputAllConstructionData();
         outputTableOfSilhPtrs();
         // getAllDataForCtrlCodeInput(0x13A);
@@ -736,11 +796,22 @@ public class KamaitachiSilhouetteDecomp {
         for (int ctrlCodeInput = 0; ctrlCodeInput < NUM_SILH_CTRL_CODE_IDS; ctrlCodeInput++) {
             getAllDataForCtrlCodeInput(ctrlCodeInput);
         }
+    }
 
-        final int GOLD_BOOKMARK_SHINE_PTR = 0x1F0C0;
+    private static void outputDataForGoldBookmark() throws IOException {
+        Files.createDirectories(Paths.get("gold bookmark data"));
         decompressSilhouetteGfxFromPtr(GOLD_BOOKMARK_SHINE_PTR);
         writeSilhDataFromPtr(GOLD_BOOKMARK_SHINE_PTR);
+        for (int frameNum = 0; frameNum < GOLD_BOOKMARK_OAM_TABLE_SIZE; frameNum++) {
+            convertGoldBookmarkOamToTilemap(frameNum);
+        }
+    }
 
+    public static void main(String args[]) throws IOException {
+        romFile = new RandomAccessFile("Kamaitachi no Yoru (Japan).sfc", "r");
+        readPointerTables();
+        outputDataForSilhCtrlCodeIDs();
+        outputDataForGoldBookmark();
         romFile.close();
     }
 }
