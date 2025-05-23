@@ -638,9 +638,7 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
     // Silhouette graphics data decompression
 
-    private static void fillWithDataByte(int dataByte, int typeByte) throws IOException {
-        // implement $0286BE
-        int size = typeByte & 0x3F;
+    private static void fillWithDataByte(int dataByte, int size) throws IOException {
         while (size != 0 && silhBufferOffset < SILH_BUFFER_SIZE) {
             silhBuffer[silhBufferOffset] = dataByte;
             silhBufferOffset++;
@@ -658,17 +656,6 @@ public class KamaitachiSilhouetteDecomp {
         }
     }
 
-    private static void fillWithNextByteFromROM(int typeByte) throws IOException {
-        // implement $0286F9
-        int size = (typeByte & 0x3F) + 1;
-        int dataByte = romFile.readUnsignedByte();
-        while (size != 0 && silhBufferOffset < SILH_BUFFER_SIZE) {
-            silhBuffer[silhBufferOffset] = dataByte;
-            silhBufferOffset++;
-            size--;
-        }
-    }
-
     private static void decompressSilhouetteGfxForCodeInput(int silhID) throws IOException {
         int gfxPtr = silhGFXPtrs[silhID];
         decompressSilhouetteGfxFromPtr(gfxPtr);
@@ -681,6 +668,8 @@ public class KamaitachiSilhouetteDecomp {
         int typeByte = romFile.readUnsignedByte();
         silhBufferOffset = 0;
         while (typeByte != END_DATA && silhBufferOffset < SILH_BUFFER_SIZE) {
+            int size = typeByte & 0x3F;
+
             if (typeByte == ADV_BANK) {
                 // the ASM sets bank offset to 0x8000, and increments bank num;
                 // when reading data from the contiguous file, this is automatic
@@ -693,18 +682,23 @@ public class KamaitachiSilhouetteDecomp {
                 }
             }
             else switch (typeByte >> 6) {
-                case 0x0:
-                    fillWithDataByte(0x00, typeByte);
+                case 0x0: {
+                    fillWithDataByte(0x00, size);
                     break;
-                case 0x1:
-                    fillWithDataByte(0xFF, typeByte);
+                }
+                case 0x1: {
+                    fillWithDataByte(0xFF, size);
                     break;
+                }
                 case 0x2:
                     readLiteralData(typeByte);
                     break;
-                case 0x3:
-                    fillWithNextByteFromROM(typeByte);
+                case 0x3: {
+                    int dataByte = romFile.readUnsignedByte();
+                    // size = (typeByte & 0x3F) + 1;
+                    fillWithDataByte(dataByte, size + 1);
                     break;
+                }
             }
             // typeByteOffset = (int) romFile.getFilePointer();
             typeByte = romFile.readUnsignedByte();
