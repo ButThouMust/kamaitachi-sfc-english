@@ -1,4 +1,4 @@
-# Silhoeutte decompression tool
+# Silhouette decompression tool
 This is a tool for decompressing the silhouette data for the game. Some prerequisites for running:
 - Installation of Java
 - A ROM dump of Kamaitachi no Yoru that matches the No-Intro specification
@@ -14,7 +14,7 @@ The tool groups together silhouette data based on control code inputs. If you wa
 
 In a folder for a control code input, locate the `.2bpp` file (graphics data) and any of the `converted tilemap.bin` files (each is one frame). Drag and drop the graphics file into the left half, and a tilemap file into the right half.
 
-If you care about why "converted tilemap", it is because the game primarily displays the silhouettes on screen as sprites but sometimes will convert the sprites' OAM data into a tilemap (SNES background layer). It also just happens to work well with using Tilemap Studio.
+If you care about why "converted tilemap", it is because the game primarily displays the silhouettes on screen as sprites but sometimes will convert the sprites' OAM data into a tilemap (SNES background layer). This OAM-to-tilemap conversion happens to work well with using Tilemap Studio, and it wasn't too hard to port over Chunsoft's ASM code that accomplishes it.
 
 Sometimes, the silhouettes will show up exactly as you would expect:\
 ![](/repo%20images/example%20silhouette%20-%20basic.png)
