@@ -12,38 +12,41 @@ Silhouette set ID value
 
 $4B8000: Given a silhouette ctrl code input, get a 24-bit pointer from here for
          some kind of data for how to construct silhouette sets.
-     The first 2 byte word in a group will have its MSB set.
-     - Bit pos 0x8000: indicates start of group
-     - Bit pos 0x4000: uses memory flag at 091A - if bit=1, leave flag alone
-                       if bit=0, set the flag ON (see $02813E)
-     - Bit pos 0x2000: indicates size of each sprite: 0 -> 16x16, 1 -> 32x32
-     - The other 13 bits (10 in practice) store the input's base silh set #.
+    The first 2 byte word in a group will have its MSB set.
+    - Bit pos 0x8000: indicates start of group
+    - Bit pos 0x4000: uses memory flag at 091A - if bit=1, leave flag alone
+                      if bit=0, set the flag ON (see $02813E) - purpose=???
+    - Bit pos 0x2000: indicates size of each sprite: 0 -> 16x16, 1 -> 32x32
+    - The other 13 bits (10 in practice) store the input's base silh set #.
 
-     Main routine for interpretting data here is at $02815B.
-     - Value from 0000-1FFF: read OAM data. (028196)
-       High byte: which frame to show, from base silhouette set #. (0281a4)
-       * (One ctrl code input can have up to 0x20 unique frames of animation)
-       Low byte:  how long to display the silhouette set, in frames? (0281d9)
+    Bit positions 0x4000 and 0x2000 also encode how to process the decompressed
+    graphics data for the silhouettes. More details below in decompression code.
 
-     - Value from 2000-3FFF: read silhouette tile data. (0281ea)
-       Easy, (value & 0x1FFF) contains which silhouette set's gfx to load.
+    Main routine for interpretting data here is at $02815B.
+    - Value from 0000-1FFF: read OAM data. (028196)
+      High byte: which frame to show, from base silhouette set #. (0281a4)
+      * (One ctrl code input can have up to 0x20 unique frames of animation)
+      Low byte:  how long to display the silhouette set, in frames? (0281d9)
 
-     - Value from 6000-7FFF: change the color of the silhouette (028242)
-       Simply put the color value you wish to use after the 6000 value.
+    - Value from 2000-3FFF: read silhouette tile data. (0281ea)
+      Easy, (value & 0x1FFF) contains which silhouette set's gfx to load.
 
-       On the topic of color values, note that Kamaitachi sets up gfx layers to
-       take the background image color and SUBTRACT the silhouette color to get
-       the colors that the player ultimately sees on screen. The default color
-       value for silhouettes is BGR15 04E7 (RGB24 393908), a dark green color.
-       This mostly lets the blue component through, but reduces red/green comps.
+    - Value from 6000-7FFF: change the color of the silhouette (028242)
+      Simply put the color value you wish to use after the 6000 value.
 
-     - Value from 4000-5FFF: unknown, not used in JP game (028214)
-       In the original Japanese game, no two-byte values start with 5 (5xxx),
-       and all the two-byte values that start with 4 (4xxx) are color values.
+      On the topic of color values, note that Kamaitachi sets up gfx layers to
+      take the background image color and SUBTRACT the silhouette color to get
+      the colors that the player ultimately sees on screen. The default color
+      value for silhouettes is BGR15 04E7 (RGB24 393908), a dark green color.
+      This mostly lets the blue component through, but reduces red/green comps.
 
-     See $0280C4, $028107, $028299
-     Pointer list: $4B8000-$4B88E1
-     Data range:   $4B88E2-$4B9CFD
+    - Value from 4000-5FFF: unknown, not used in JP game (028214)
+      In the original Japanese game, no two-byte values start with 5 (5xxx),
+      and all the two-byte values that start with 4 (4xxx) are color values.
+
+    See $0280C4, $028107, $028299
+    Pointer list: $4B8000-$4B88E1
+    Data range:   $4B88E2-$4B9CFD
 
 $4B9CFE: Given a silhouette set ID value, get a 24-bit pointer from here for
          data that details a 16x16 grid of what 16x16 pixel regions should have
@@ -69,8 +72,9 @@ $4BBA5E: Given a silhouette ctrl code input, use it as an index here to get a
          Data range:    $4C8000-$5DC40E
 
 $4BC340: Given a silhouette ctrl code input, use it as an index here to get a
-         2-byte value (multiples of 0x20?). Seems to be related to gfx size?
-         Double this value and clamp it to at most 0x400.
+         2-byte value encoding the size of the silhouette gfx when transferring
+         it around in WRAM after decompression. More details at the bottom of
+         the section on decompression.
          Data range:    $4BC340-$4BCA97
 
 --------------------------------------------------------------------------------
@@ -96,7 +100,7 @@ Summarize the ROM data blocks:
 0x25C340-0x25C92B: Lookup table for "data size"
 0x25C92C-0x25FFD9: OAM data block 2 (sets 26E-2FE)
 [0x26 bytes of empty space, FF]
-0x4C8000-0x2EC40E: Graphics data block
+0x260000-0x2EC40E: Graphics data block
 0x2EC40F-0x2EFFA8: OAM data block 3 (sets 2FF-391)
 Total: 0x2EFFA8 - 0x2451a3 + 1 - 0xF - 0x26 = 0xAADD1
 
@@ -231,6 +235,25 @@ $0286D9 (range 80-BF):
 $0286F9 (range C0-FF):
 - Read one byte from the ROM, and repeat it up to (type byte & 0x3F) + 1 times
   in the buffer, or until it is completely filled.
+
+----------
+
+$0285C0: Once the tiles have all been decompressed, they need to be transferred
+along with any other silhouettes that are currently on screen.
+
+Take the two-byte value used for marking the silhouette's group and bitwise AND
+it with 0x6000 (isolate positions 0x4000 and 0x2000). (ASM code at $0281F7)
+[The game also takes note of what silhouette gfx data block to start writing to]
+
+Take the multiple of 0x2000 (range 0-3). (Use ptr table at $0285CC)
+- If it is 0, then copy the specified silhouette gfx data block (0x800 bytes)
+  from $7F6000 to $7F4000, as well as every block after it. (ASM at $0285D4)
+- Otherwise, calculate the "decoded size value," as I'll call it, from $4BC340.
+  Get the raw two byte value, double it, and restrict it to at most 0x400.
+  (See $02858A) Let N be this restricted value, the "decoded size value."
+  Copy 8N bytes directly from $7F6000 to $7F4000. (See 
+
+(see ASM at $0281F7-$028200 and $0285C3).
 
 --------------------------------------------------------------------------------
 
