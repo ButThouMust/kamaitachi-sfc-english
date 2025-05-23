@@ -200,16 +200,25 @@ $02863B: Start reading data from the above mentioned pointer.
 
 --------------------------------------------------------------------------------
 
-Silhouette graphics data decompression
+Silhouette graphics data decompression format
 
-Keep reading type bytes until you get a [00] byte, or until you reach a hard
-limit of 0x2000 bytes after you process the data for the type byte.
+Given a pointer from the table at $4BBA5E, execute the loop at $02864A.
+Keep reading bytes that encode both the compression case and a data size.
 
-Given that the type byte is not [00], check bits 6-7 and run a subroutine:
-00xx xxxx: $028684
-01xx xxxx: $028698
-10xx xxxx: $0286D9
-11xx xxxx: $0286F9
+- If the byte is 00, end of data.
+  Decompression will also end if 0x2000 bytes have been read.
+- If the byte is 40 (see $0286A2), this indicates to set the decompression
+  pointer to the start of the next bank.
+
+If the byte is not 00 or 40, check bits 6-7 and run a subroutine:
+00xx xxxx: $028684 = run of consecutive 00
+01xx xxxx: $028698 = run of consecutive FF
+10xx xxxx: $0286D9 = read uncompressed data
+11xx xxxx: $0286F9 = run of some consecutive byte not 00 or FF (read from ROM)
+
+----------
+
+Following the logic for the assembly code:
 
 $028684 (range 01-3F):
 - Load the current size of the decompressed graphics ($0FB3).
@@ -221,16 +230,13 @@ $028684 (range 01-3F):
     - Repeat it in decompression buffer a total of (type byte & 0x3F) times, or
       until the 0x2000 byte buffer is completely filled.
 
-$028698 (range 40-7F):
-- Check the lower 6 bits of the type byte.
-- If 0 (type byte is 40):
-  * Advance pointer to start of next ROM bank.
-- Otherwise (type byte is 41-7F):
-  * Call $0286BE, with data byte in $0FB1 being [FF].
+$028698 (range 41-7F):
+- (ASM checks here if byte is 40, but covered above for simplicity)
+- Call $0286BE, with data byte in $0FB1 being [FF].
 
 $0286D9 (range 80-BF):
-- Read up to (type byte & 0x3F) bytes from the ROM directly into the buffer, or
-  until it is completely filled.
+- Read up to (type byte & 0x3F) + 1 bytes from the ROM directly into the buffer,
+  or until it is completely filled.
 
 $0286F9 (range C0-FF):
 - Read one byte from the ROM, and repeat it up to (type byte & 0x3F) + 1 times
@@ -248,12 +254,13 @@ it with 0x6000 (isolate positions 0x4000 and 0x2000). (ASM code at $0281F7)
 Take the multiple of 0x2000 (range 0-3). (Use ptr table at $0285CC)
 - If it is 0, then copy the specified silhouette gfx data block (0x800 bytes)
   from $7F6000 to $7F4000, as well as every block after it. (ASM at $0285D4)
+  For example, if the data block number is 1, it will copy blocks 1-3, which
+  correspond to $7F6800-$7F7FFF.
+
 - Otherwise, calculate the "decoded size value," as I'll call it, from $4BC340.
   Get the raw two byte value, double it, and restrict it to at most 0x400.
   (See $02858A) Let N be this restricted value, the "decoded size value."
-  Copy 8N bytes directly from $7F6000 to $7F4000. (See 
-
-(see ASM at $0281F7-$028200 and $0285C3).
+  Copy 8N bytes directly from $7F6000 to $7F4000. (See $028613)
 
 --------------------------------------------------------------------------------
 
