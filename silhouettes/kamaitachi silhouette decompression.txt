@@ -67,7 +67,7 @@ $4BB306: Given a silhouette set ID value, get value of the silhouette ctrl code
          Data range:    $4BB306-$4BBA5D
 
 $4BBA5E: Given a silhouette ctrl code input, use it as an index here to get a
-         24-bit pointer to the compressed silhouette tile data.
+         24-bit pointer to the compressed silhouette graphics data.
          Pointer range: $4BBA5E-$4BC33F
          Data range:    $4C8000-$5DC40E
 
@@ -107,6 +107,10 @@ Total: 0x2EFFA8 - 0x2451a3 + 1 - 0xF - 0x26 = 0xAADD1
 So all in all, this much data in the ROM is for the silhouettes:
 0xAADD1 + 0x1AAE + 0xB58 = 0xAD3D7 = 709,591 bytes (692.96 KB)
 
+Graphics data:   0x8C40F = 574,479 bytes, about 561.01 KB.
+Everything else: 0x20FC8 = 135,112 bytes, about 131.94 KB.
+Graphics would be a good target if you want to try freeing up ROM space.
+
 --------------------------------------------------------------------------------
 
 The game has quite a few silhouette input values that end up unused in the final
@@ -138,8 +142,8 @@ data somewhere and update the pointer accordingly. Steps would be:
 
 I don't know for sure what the intended order for the silhouettes would be (it
 involves one character attacking another), but some guesses are:
-- 187, 183, 186, 184, 185
-- 187, 183, 185, 184, 186
+- 187, 183, 186, 184, 185 (4, 0, 3, 1, 2)
+- 187, 183, 185, 184, 186 (4, 0, 2, 1, 3)
 
 The scale of the silhouettes seems to fit with background image 1F.
 
@@ -148,8 +152,9 @@ The scale of the silhouettes seems to fit with background image 1F.
 Short bit about animations: the game seems to copy in only as many sprites as
 are necessary for each frame, on the fly as the animation plays.
 
-Chunsoft did some palette trickery to use the 0x200 total limit of sprites as
-effectively as possible for the larger and/or more complicated silhouettes.
+Chunsoft did some palette trickery to use the SNES's limit of 0x200 sprites at
+any given time as effectively as possible for the larger and/or more complicated
+silhouettes.
 
 --------------------------------------------------------------------------------
 
@@ -202,13 +207,14 @@ $02863B: Start reading data from the above mentioned pointer.
 
 Silhouette graphics data decompression format
 
+Short version: silhouette graphics are compressed with run-length encoding.
 Given a pointer from the table at $4BBA5E, execute the loop at $02864A.
 Keep reading bytes that encode both the compression case and a data size.
 
 - If the byte is 00, end of data.
-  Decompression will also end if 0x2000 bytes have been read.
-- If the byte is 40 (see $0286A2), this indicates to set the decompression
-  pointer to the start of the next bank.
+  Decompression will also end if 0x2000 bytes have been written to the buffer.
+- If the byte is 40 (see $0286A2), this indicates to do LoROM bank wrapping for
+  the graphics data pointer.
 
 If the byte is not 00 or 40, check bits 6-7 and run a subroutine:
 00xx xxxx: $028684 = run of consecutive 00
@@ -221,18 +227,17 @@ If the byte is not 00 or 40, check bits 6-7 and run a subroutine:
 Following the logic for the assembly code:
 
 $028684 (range 01-3F):
-- Load the current size of the decompressed graphics ($0FB3).
-- Call $0286BE with data byte in $0FB1 being [00].
+- Call $0286BE with data byte in direct page $00 being [00].
 - Update size in memory, and RTS.
 
     $0286BE:
-    - Get data byte value in $0FB1.
+    - Get data byte value in direct page $00.
     - Repeat it in decompression buffer a total of (type byte & 0x3F) times, or
       until the 0x2000 byte buffer is completely filled.
 
 $028698 (range 41-7F):
 - (ASM checks here if byte is 40, but covered above for simplicity)
-- Call $0286BE, with data byte in $0FB1 being [FF].
+- Call $0286BE, with data byte in direct page $00 being [FF].
 
 $0286D9 (range 80-BF):
 - Read up to (type byte & 0x3F) + 1 bytes from the ROM directly into the buffer,
@@ -243,6 +248,69 @@ $0286F9 (range C0-FF):
   in the buffer, or until it is completely filled.
 
 ----------
+
+So to summarize the format:
+00:    end of data
+01-3F: run of 00 bytes (size 01-3F)
+40:    LoROM bank advance
+41-7F: run of FF bytes (size 01-3F)
+80-BF: literal data    (size 01-40)
+C0-FF: run of NN bytes (size 01-40)
+
+Remarks about the graphics compression format:
+- Runs of 00 or FF can be up to 0x3F bytes long, whereas runs of any other byte
+  can be up to 0x40 bytes long.
+- Unusually, across all the silhouettes in the game's data, there are NO groups
+  of 0x40 bytes of literal data, nor runs of 0x40 bytes that are not 00 or FF.
+  However, there would be plenty of 0x40 byte runs of 00 or FF.
+- Chunsoft's silhouette RLE compressor seemingly didn't account for how if you
+  have a single literal of 00 or FF, it is better to encode that as a run of 1,
+  since the overhead byte implies the value. However, the optimization *does*
+  pop up if this case occurs at the very end of the file??? Over the 500+ KB of
+  graphics, they could have saved 1917 (0x77D) bytes. Whether saving this space
+  and repurposing it is worth all the recompression and repointing is up to you.
+
+Remarks about the format of the graphics data itself:
+- The raw decompressed output is 2bpp graphics, but is not usable as-is for SNES
+  graphics. The rows and bitplanes are grouped together like for the NES:
+  raw output:  [r0p0 r1p0 r2p0 ... r7p0 ; r0p1 r1p1 r2p1 ... r7p1]
+  SNES format: [r0p0 r0p1 ; r1p0 r1p1 ; r2p0 r2p1 ; ... r7p0 r7p1]
+- Each file is either a multiple of 0x200 bytes (0x20 tiles, 0x10 16x16 sprites)
+  or 0x400 bytes (0x40 tiles, 4 32x32 sprites). They are intrinsically padded to
+  these sizes and can have quite a lot of unused space (00 bytes) in the last
+  sprite row, depending on the remainder of sprites from the last multiple.
+  For example, if a 32x32 sprite set only needs 3 sprites, one sprite's worth of
+  tile data will be wasted as padding.
+
+----------
+
+At first, I'd thought that the format being RLE wouldn't allow much room for
+improvement. I did brainstorm another idea for how to improve the compression
+based on the 0x40 byte size limits. It did save space over Chunsoft's compressor
+(~300 bytes), but nowhere near much as the 1 byte run case mentioned above:
+- Change the 00/FF run cases to encode runs of length 02-40 bytes, versus 01-3F?
+  Having runs of 0x40 bytes evenly matches up with tile and sprite boundaries.
+  You can encode empty horiz. blocks of 4 tiles as just [3F] instead of needing
+  two "tags" [3F ; 01]. Of course, the trade-off is that you MUST encode single
+  00 or FF bytes as literals e.g. [80 00] or [80 FF].
+- In terms of ASM edits, it is sufficient to change the opcode at $0286D5 from a
+  BNE (exit loop if counter 0) to a BPL (exit loop if counter negative).
+  So make the CPU do one more loop iteration. 
+
+That simple ASM edit would preclude the 1 byte run case. I was not satisfied
+with that, and decided to modify the compression format itself to be able to use
+BOTH optimizations with 1 byte runs and 0x40 byte runs:
+00:    end of data
+01-3F: literal data    (size 01-3F)
+40:    LoROM bank advance
+41-7F: run of NN bytes (size 01-3F)
+80-BF: run of 00 bytes (size 01-40)
+C0-FF: run of FF bytes (size 01-40)
+
+The decompression ASM edits were not as simple as just changing a single opcode,
+but you can mostly just rearrange and repoint the existing ASM.
+
+--------------------------------------------------------------------------------
 
 $0285C0: Once the tiles have all been decompressed, they need to be transferred
 along with any other silhouettes that are currently on screen.
@@ -278,3 +346,6 @@ $01EABA has a table of 0xA pointers for OAM data for the animation frames.
 Each block of OAM data is terminated by FFFF.
 $01EAD8 $01EAE6 $01EB2C $01EBBE $01ECA8
 $01ED66 $01EE4C $01EF3E $01EFF0 $01F086
+
+If you're curious about how the compression optimizations affect the bookmark
+sprites, the 1 byte run case happens 24 times (nothing from 0x40 byte run case).
