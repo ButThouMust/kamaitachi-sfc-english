@@ -46,19 +46,23 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 | Data type | Decompressor? | Recompressor? |
 | :--- | :---: | :---: |
 | Background graphics tile*sets* | Done | Not started |
-| Background graphics tile*maps* | Done | Done |
-| Name entry character grid font | Done | Done |
-| Silhouette data | Done | Not planned |
+| Background graphics tile*maps* | Done | Needs testing |
+| Name entry character grid font | Done | Done, can improve |
+| Silhouettes | Done | Done |
 
 I do want to at least try working on a compressor for the background tilesets, but the compression format is quite intricate. The decompressor was a pain to get working, having to trace through Chunsoft's ASM code and figure out exactly what the code was doing.
 
-The background tilemap recompressor can use more testing. I got it working with one tilemap from the game but haven't checked its output for other tilemaps yet.
+While not currently a priority for the project, the background tilemap recompressor can use more testing. I got it working with one tilemap from the game but haven't checked its output for other tilemaps yet.
 
-The font for the grid of characters on the name entry screen, and some other graphics, have their own compression format. I tested my recompressor with all the game's data sets in that format, and it works as well as, or better than, the one that Chunsoft created for the game, thanks to realizing a space-saving trick with the format.
+The font for the grid of characters on the name entry screen, and some other graphics, have their own compression format. I tested my recompressor with all the game's data sets in that format, and it works as well as, or better than, the one that Chunsoft created for the game. But there are cases where mine sometimes loses a few bytes versus Chunsoft's, which I'd like to improve upon.
 
-No silhouettes contain any text, so nothing to change or translate.
+At first, I was expecting to not create a recompressor for the silhouettes' graphics data, because none of them contain any text to translate. However, I discovered some ways to improve the existing compression, which altogether let me free up ~6.5 KB from recompressing the existing data.
 
 ## Priorities, with relative difficulties:
+Currently, the main priority is taking my map of what are the purposes for all/most of the data blocks in the ROM, and using it to figure out where and how to move stuff around to dedicate as much space as possible for the script.
+- Beyond a few blocks of *outright* existing empty space, there are also *implicit* blocks of empty space that I can free up thanks to making better compressor tools.
+- It could be possible to fit the translation into a 3 MB file (same as original) if I move stuff around cleverly.
+
 ### <ins>English font</ins>
 - Insert a new font for the game. (**simple**)
 - Change the available characters you can select on the name entry screen
@@ -72,6 +76,7 @@ No silhouettes contain any text, so nothing to change or translate.
     - A Wayback Machine snapshot of their website had an email address for contacting them, but perhaps as expected, sending a message to it gave me an error that the address doesn't exist anymore.
 - Format and insert an English-translated script. (**medium**)
   - The game uses dedicated control codes for writing punctuation, usually with some combination of "wait for player input" and/or "do a line break". Need to format the script dump to prepare for insertion.
+  - Determine about how much space the translated script will take.
   - Playtest the script. (**simple, but tedious**)
   - Edit the systems for printing Japanese text to better suit English text. (**unsure, but putting medium for now**)
 
