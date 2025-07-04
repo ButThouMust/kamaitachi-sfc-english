@@ -1,0 +1,219 @@
+
+Silhouette graphics recompression notes
+
+Note: I do not plan to change any of the existing data itself, but only the
+compression format to get the data smaller.
+
+Recall the compression format that Chunsoft used for the silhouettes:
+
+00:    end of data
+01-3F: run of 00 bytes (size 01-3F)
+40:    LoROM bank advance
+41-7F: run of FF bytes (size 01-3F)
+80-BF: literal data    (size 01-40)
+C0-FF: run of NN bytes (size 01-40)
+
+At first, I'd thought that the format being RLE wouldn't allow much room for
+improvement, since that was my experience with the RLE format for the background
+graphics' tilesets and tilemaps in Otogirisou. However, that was more out of how
+had I changed the format, I would have had to recompress and *repoint* all the
+graphics. The graphics pointers were not in a neat pointer table but scattered
+about in many different structures with pointers and other data. So I'd have had
+to individually update pointers, instead of just using one loop for reinserting
+and collecting them, and another for updating them.
+
+Anyway, with the silhouettes, I found a surface-level way to save space with the
+format, and thought it was worth the deep dive into creating a recompressor.
+Chunsoft's compressor often encoded single 00 or FF bytes as a literal [80 00]
+or [80 FF], when you could save a byte by just encoding it as a run of length 1
+[01] or [41]. ("Often," because single 00s/FFs at the end of a gfx block *would*
+be encoded as a 1 run??? I don't know why specifically there)
+
+Over the 0x8C40F bytes of graphics, this could have saved them 0x77D bytes, not
+accounting for redoing the 0x40 bytes for advancing the bank. It also occurs 24
+times for the bookmark sprites.
+
+----------
+
+My first idea for improving the compression came from the 0x40 byte size limits.
+Change the 00/FF run cases to encode runs of length 02-40 bytes, versus 01-3F.
+Having runs of 0x40 bytes evenly matches up with tile and sprite boundaries.
+You can encode empty horiz. blocks of 4 tiles as just [3F] instead of needing
+two "tags" [3F ; 01].
+
+On its own, this did save space over Chunsoft's compressor (~300 bytes), but
+nowhere near much as the 1 byte run case mentioned above.
+
+In terms of ASM edits, it was sufficient to change the opcode at $0286D5 from a
+BNE (exit loop if counter 0) to a BPL (exit loop if counter negative). However,
+the trade-off with this simple ASM edit was that you MUST encode single 00 or FF
+bytes as literals e.g. [80 00] or [80 FF]. I was not satisfied with that, and
+decided to modify the compression format to be able to use both optimizations:
+
+00:    end of data
+01-3F: literal data    (size 01-3F)
+40:    LoROM bank advance
+41-7F: run of NN bytes (size 01-3F)
+80-BF: run of 00 bytes (size 01-40)
+C0-FF: run of FF bytes (size 01-40)
+
+The decompression ASM edits were not as simple as just changing a single opcode,
+but I got it working mostly just by rearranging and repointing the existing ASM.
+
+Altogether, these changes saved 0x888 bytes for the main silhouettes (0x8C40F to
+0x8BB87) and 0x18 bytes for the gold bookmark sprites (0xBDE to 0xBC6).
+
+I later realized that with the NN case, "runs" of length 1 would be the same
+size as storing a literal, i.e. [41 xx] vs [01 xx]. The "run" case is redundant,
+so you can upgrade the encoded size range for NN runs from 01-3F to 02-40.
+
+----------
+
+Editing the format like that inspired yet another idea to take it even further.
+Mostly equal size limits are okay for a general-purpose compressor, but what if
+you tailored the size limits specifically for the data present in the game?
+
+One of my remarks about the format that in the Japanese game's data, no groups
+of literals reach 0x40 bytes, nor do any runs of bytes other than 00 or FF. I
+retooled my recompressor to analyze the uncompressed data without regard for the
+cases' size limits (get the absolute biggest runs possible), and generate text
+logs with each line saying like: "Offset 0xABC: 0x8 run of 05" or "0x04 lits"
+
+I used grep to count up how many groups of each type fall within a specific size
+range. If you want just the total count, you can also append this text in
+backticks to a command: ` | wc -l`
+
+0x10+ lits:
+egrep "0x[1-F][0-F] lits" LOG*.txt
+
+Runs of 0x40-0xFF 00 bytes (can replace the 00 with FF):
+egrep "0x[4-F][0-F] run of 00" LOG*.txt
+
+Runs of 0x100+ 00 bytes:
+egrep "0x[1-F][0-F][0-F] run of 00" LOG*.txt
+
+Runs of 0x10+ bytes not 00 or FF:
+egrep "[1-F][0-F] run of .." LOG*.txt | grep -v "run of 00" | grep -v "run of FF"
+
+-----
+
+Here is a table of my findings. Read as, for example, "the number of runs of 00
+bytes with a size from 0x10-0x1F is 10291."
+
+Size range  | 00 bytes | FF bytes | NN bytes | Lits
+------------+----------+----------+----------+----- (not counting size 0-F)
+0x 10-0x 1F | 10291    | 1851     | 5 (0x10) | 5 (4 of 0x10, 1 of 0x11)
+0x 20-0x 2F |  5214    |  524     | ----     | ----
+0x 30-0x 3F |  1957    |  183
+0x 40-0x 4F |   984    |   84
+0x 50-0x 5F |   578    |   25
+0x 60-0x 6F |   360    |   13
+0x 70-0x 7F |   262    |    2 (0x70)
+0x 80-0x 8F |   269    |    9 (5 of 0x80, 0x83 0x84 0x86 0x88)
+0x 90-0x 9F |   181    |    2 (0x90 0x98)
+0x A0-0x AF |   135    |    1 (0xAC)
+0x B0-0x BF |    96    | ----
+0x C0-0x CF |   197
+0x D0-0x DF |   127
+0x E0-0x EF |   112
+0x F0-0x FF |    69
+
+0x100-0x1FF |   111 (counts of 0x10 ranges: 7 6 1 4 2 0 3 3 6 4 4 7 13 15 18 18)
+0x200-0x2FF |    19 (counts of 0x10 ranges: 2 0 0 2 0 1 0 0 1 1 0 1 9 1 1 0)
+0x300-0x3FF |     9 (300 304 31e 350 38e 3bc 3c8 3c8 3fa)
+0x400+      |  ----
+
+For specifically lits, 4 groups are size 0x10, and 1 group is size 0x11.
+    That 0x11 literal group is at offset 0x44F in gfx block 0x237.
+For specifically NN runs, all 5 are length 0x10.
+
+Hopefully, you can clearly see that for the data in the game, the format should:
+- STRONGLY prioritize 00 runs
+- prioritize FF runs less so
+- do the bare minimum for NN runs and literals
+
+How much could you save if the format was instead something like this?
+00:    end of data
+01-0F: literal data    (size 01-0F)
+10:    LoROM bank advance
+11-1F: run of NN bytes (size 02-10) | And you can vary the sizes for 00/FF runs:
+20-5F: run of FF bytes (size 01-40) | 20-4F (size 01-30) | 20-3F (size 01-20)
+60-FF: run of 00 bytes (size 01-A0) | 50-FF (size 01-B0) | 40-FF (size 01-C0)
+
+Experimenting like this is justified from an ASM point of view. Because the
+ranges are not sized equally, I can't just mask out some of the top bits of the
+type byte to determine what case to use. So subtraction from a base value is
+necessary, and we can redefine what base value to subtract.
+
+Some results for trying the compressor while varying the max size of 00 runs:
+max run size:  80       90       A0       B0      C0
+gold bookmark: BC0      BC0      BC0      BC0     BC3
+main silhs:    8aa8d    8a972    8a8cb    8a8b1   8a9d4
+
+I ultimately found that using A8/38 had the best results of 0xBC0 and 0x8a892
+(another 0x12D6 bytes saved!). If you prioritize 00 runs more than that, it 
+adversely impacts compression for the FF runs. On the flipside, prioritizing the
+FF runs more means you don't take full advantage of compressing the 00 runs.
+
+So I [almost] settled on the format:
+00:    end of data
+01-0F: literal data    (size 01-0F)
+10:    LoROM bank advance
+11-1F: run of NN bytes (size 02-10)
+20-57: run of FF bytes (size 01-38)
+58-FF: run of 00 bytes (size 01-A8)
+
+Initially, I was concerned that the new ASM might not fit in the original space.
+However, I was able to condense it down overall and even free up several bytes:
+- Chunsoft's code had two separate loops for the 00/FF runs and NN runs that
+  were not fundamentally different, but had different branch opcodes after the
+  size counter (either BEQ or BPL) and different direct page addresses. The new
+  format allowed reusing the same loop between all three cases.
+- A lot of Chunsoft's code went out of its way to make sure the M/X flags were
+  properly initialized. This was despite how it only deviates from M=1 and X=0
+  at $028657 in the "get jump table offset" code (M=0 for three instructions),
+  which I didn't (and couldn't) reuse with its replacement. I really shouldn't
+  make this a habit, but I removed most of the PHP/PLP/SEP/REP instructions.
+- ASM optimizations to save a few bytes here and there in the new code I wrote.
+
+----------
+
+Incorporating the bank advance case into the compressor was a pain in the butt,
+because you have to compress all the data, count how much cumulative compressed
+data you have so far, and appropriately handle writing the bank advance byte
+whenever the current group doesn't fit.
+
+I found that in the original compressed data, Chunsoft was sometimes forced to
+write the bank advance byte and a filler byte like FF before the end of a bank.
+For example, a group may have exactly fit in the bank (right before the bank
+boundary) but wouldn't leave space for the bank advance byte. Or, a group of
+literals would get split up into two groups, and waste a byte on overhead for
+encoding another "number of literals" value.
+
+The space I saved in the new decompression ASM code let me include code to check
+for LoROM bank wrapping upon every pointer increment. Some benefits:
+- simplifies the recompression code
+- frees up the bank advance byte value in the format
+- don't have to insert all the gfx as a single monolithic block
+- don't have to insert the gfx at the start of a bank
+
+That last point is icing on the cake, because the Japanese game has an unused
+block of 0x26 FF bytes before the original block, from 0x25FFDA to 0x25FFFF.
+
+Freeing up the bank advance value let me expand the max number of literals to
+0x10. The gold bookmark graphics contain a group of 0x10 literals, so doing this
+got back a byte that I'd lost from having a max literal length of 0xF. Final
+sizes for the blocks were:
+Gold bookmark:    0xBBF   (0x  1F saved)
+Main silhouettes: 0x8A878 (0x1B97 saved; improved by another 0x1A)
+
+Here is what I consider the final format for the silhouettes:
+00:    end of data
+01-10: literal data    (size 01-10)
+11-1F: run of NN bytes (size 02-10)
+20-57: run of FF bytes (size 01-38)
+58-FF: run of 00 bytes (size 01-A8)
+
+By recompressing the silhouettes' graphics, reinserting/repointing them, and
+both moving back and repointing OAM data block 3 right after, we can open up a
+block of 0x1C14 free bytes (0x26 + 0x1B97 + 0x57) at $5DE3EC-$5DFFFF.
