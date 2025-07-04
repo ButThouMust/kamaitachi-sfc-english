@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public class KamaitachiSilhouetteDecomp {
     private static final int SILH_BUFFER_SIZE = 0x2000;
-    private static final int NUM_SILH_IDS = 0x3AC;
+    private static final int NUM_FRAME_IDS = 0x3AC;
     private static final int NUM_SILH_CTRL_CODE_IDS = 0x2F6;
 
     private static final int NUM_BITS_IN_WORD = 0x10;
@@ -21,20 +21,19 @@ public class KamaitachiSilhouetteDecomp {
 
     private static final int SILH_CONSTR_DATA_PTR_LIST_LOCATION = 0x258000; // $4B8000
     private static final int SILH_OAM_PTR_LIST_LOCATION = 0x25A802; // $4BA802
-    private static final int SILH_ID_MAPPING_LOCATION   = 0x25B306; // $4BB306
+    private static final int FRAME_ID_MAPPING_LOCATION   = 0x25B306; // $4BB306
     private static final int SILH_OAM_GRID_PTR_LIST_LOCATION = 0x259CFE; // $4B9CFE
     private static final int SILH_PTR_LIST_LOCATION     = 0x25BA5E; // $4BBA5E
     private static final int SILH_DATA_SIZES_LOCATION   = 0x25C340; // $4BC340
-    
 
-    private static HashMap<Integer,Integer> silhCtrlCodeInputFromSilhID;
+    private static HashMap<Integer,Integer> silhCtrlCodeInputFromFrameId;
     private static int[] silhGFXPtrs = new int[NUM_SILH_CTRL_CODE_IDS];
-    private static int[] silhOAMPtrs = new int[NUM_SILH_IDS];
-    private static int[] silhOAMGridPtrs = new int[NUM_SILH_IDS];
+    private static int[] silhOAMPtrs = new int[NUM_FRAME_IDS];
+    private static int[] silhOAMGridPtrs = new int[NUM_FRAME_IDS];
     private static int[] silhConstrDataPtrs = new int[NUM_SILH_CTRL_CODE_IDS];
     private static int[] silhSizes = new int[NUM_SILH_CTRL_CODE_IDS];
     private static int[] silhBuffer = new int[SILH_BUFFER_SIZE];
-    private static HashMap<Integer, ArrayList<Integer>> silhSetListFromInputs;
+    private static HashMap<Integer, ArrayList<Integer>> frameIdListFromInputs;
     private static int silhBufferOffset;
 
     private static RandomAccessFile romFile;
@@ -64,18 +63,18 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    private static void getSilhIDSizes() throws IOException {
+    private static void getGraphicsSizes() throws IOException {
         romFile.seek(SILH_DATA_SIZES_LOCATION);
         for (int i = 0; i < NUM_SILH_CTRL_CODE_IDS; i++) {
             silhSizes[i] = readWord();
         }
     }
 
-    private static void getSilhIDMappings() throws IOException {
-        romFile.seek(SILH_ID_MAPPING_LOCATION);
-        silhCtrlCodeInputFromSilhID = new HashMap<>();
-        for (int i = 0; i < NUM_SILH_IDS; i++) {
-            silhCtrlCodeInputFromSilhID.put(i, readWord());
+    private static void getFrameIdMappings() throws IOException {
+        romFile.seek(FRAME_ID_MAPPING_LOCATION);
+        silhCtrlCodeInputFromFrameId = new HashMap<>();
+        for (int i = 0; i < NUM_FRAME_IDS; i++) {
+            silhCtrlCodeInputFromFrameId.put(i, readWord());
         }
     }
 
@@ -88,14 +87,14 @@ public class KamaitachiSilhouetteDecomp {
 
     private static void getSilhOAMPtrs() throws IOException {
         romFile.seek(SILH_OAM_PTR_LIST_LOCATION);
-        for (int i = 0; i < NUM_SILH_IDS; i++) {
+        for (int i = 0; i < NUM_FRAME_IDS; i++) {
             silhOAMPtrs[i] = readPtr();
         }
     }
 
     private static void getSilhOAMGridPtrs() throws IOException {
         romFile.seek(SILH_OAM_GRID_PTR_LIST_LOCATION);
-        for (int i = 0; i < NUM_SILH_IDS; i++) {
+        for (int i = 0; i < NUM_FRAME_IDS; i++) {
             silhOAMGridPtrs[i] = readPtr();
         }
     }
@@ -110,48 +109,48 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    private static HashMap<Integer, ArrayList<Integer>> getSilhSetListsForCtrlCodeInputs() {
+    private static HashMap<Integer, ArrayList<Integer>> getFrameIdListsForCtrlCodeInputs() {
         // assemble a HashMap that, given a silhouette ctrl code input, outputs
-        // a list of the silhouette set IDs that it accesses; e.g. in JP game,
-        // input 0x2E should give the list {04D, 04E, 04F, ..., 05C, 05D}
-        silhSetListFromInputs = new HashMap<>(NUM_SILH_CTRL_CODE_IDS);
-        for (int silhSetNum = 0; silhSetNum < NUM_SILH_IDS; silhSetNum++) {
-            // get silhouette ctrl code input from silhouette set ID
-            int ctrlCodeInput = silhCtrlCodeInputFromSilhID.get(silhSetNum);
+        // a list of the frame IDs that it accesses; e.g. in JP game, input 0x2E
+        // should give the list {04D, 04E, 04F, ..., 05C, 05D}
+        frameIdListFromInputs = new HashMap<>(NUM_SILH_CTRL_CODE_IDS);
+        for (int frameIdNum = 0; frameIdNum < NUM_FRAME_IDS; frameIdNum++) {
+            // get silhouette ctrl code input from frame ID
+            int ctrlCodeInput = silhCtrlCodeInputFromFrameId.get(frameIdNum);
 
-            // get the list of silhouette set IDs for the particular ctrl code input
+            // get the list of frame IDs for the particular ctrl code input
             // either get a populated list, or an empty list (not null)
-            ArrayList<Integer> silhListForThisInput = silhSetListFromInputs.get(ctrlCodeInput);
-            if (silhListForThisInput == null) {
-                silhListForThisInput = new ArrayList<>();
+            ArrayList<Integer> frameListForThisInput = frameIdListFromInputs.get(ctrlCodeInput);
+            if (frameListForThisInput == null) {
+                frameListForThisInput = new ArrayList<>();
             }
 
-            // add the current silhouette set ID, and update HashMap entry for
+            // add the current frame ID, and update HashMap entry for
             // the corresponding control code input
-            silhListForThisInput.add(silhSetNum);
-            silhSetListFromInputs.put(ctrlCodeInput, silhListForThisInput);
+            frameListForThisInput.add(frameIdNum);
+            frameIdListFromInputs.put(ctrlCodeInput, frameListForThisInput);
         }
 
-        return silhSetListFromInputs;
+        return frameIdListFromInputs;
     }
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    private static void outputListOfSilhSetsForCtrlCodeInputs() throws IOException {
+    private static void outputListOfFrameIdsForCtrlCodeInputs() throws IOException {
         BufferedWriter table = new BufferedWriter(new FileWriter("silhouette set lists.txt"));
 
         for (int ctrlCodeInput = 0; ctrlCodeInput < NUM_SILH_CTRL_CODE_IDS; ctrlCodeInput++) {
             String line = String.format("%03X: ", ctrlCodeInput);
-            ArrayList<Integer> silhSetList = silhSetListFromInputs.get(ctrlCodeInput);
+            ArrayList<Integer> frameIdList = frameIdListFromInputs.get(ctrlCodeInput);
 
             boolean firstInList = true;
-            for (int silhSetID : silhSetList) {
+            for (int frameID : frameIdList) {
                 String format = "%03X";
                 if (!firstInList) {
                     format =  ", " + format;
                 }
-                line += String.format(format, silhSetID);
+                line += String.format(format, frameID);
                 firstInList = false;
             }
             table.write(line + "\n");
@@ -165,15 +164,15 @@ public class KamaitachiSilhouetteDecomp {
         BufferedWriter table = new BufferedWriter(new FileWriter("silhouette pointer table.txt"));
 
         table.write("Tables: $4BB306   $4B8000    $4BA802    $4BBA5E    $4B9CFE    $4BC340\n");
-        table.write(" Set # | Input | Construct | OAM data | GFX data | X/Y grid |  Size   | 32x32?\n");
+        table.write(" Frame | Input | Construct | OAM data | GFX data | X/Y grid |  Size   | 32x32?\n");
         table.write("-------+-------+-----------+----------+----------+----------+---------+--------\n");
 
         String format = "  %3X  |  %s  |  %s  | $%06X  | %s  | $%06X  |   %s   | %s\n";
-        for (int silhSetNum = 0; silhSetNum < NUM_SILH_IDS; silhSetNum++) {
-            int ctrlCodeInput = silhCtrlCodeInputFromSilhID.get(silhSetNum);
+        for (int frameId = 0; frameId < NUM_FRAME_IDS; frameId++) {
+            int ctrlCodeInput = silhCtrlCodeInputFromFrameId.get(frameId);
             int lastCtrlCodeInput = -1;
-            if (silhSetNum > 0) {
-                lastCtrlCodeInput = silhCtrlCodeInputFromSilhID.get(silhSetNum - 1);
+            if (frameId > 0) {
+                lastCtrlCodeInput = silhCtrlCodeInputFromFrameId.get(frameId - 1);
             }
 
             String ctrlCodeInputHexString = String.format("%03X", ctrlCodeInput);
@@ -196,15 +195,15 @@ public class KamaitachiSilhouetteDecomp {
                 constrPtrString = String.format("$%06X", constrPtr);
                 sizeString = String.format("%3X", size);
 
-                boolean smallSprites = silhSetHasSmallSprites(silhSetNum);
+                boolean smallSprites = frameIdHasSmallSprites(frameId);
                 if (!smallSprites) {
                     largeSprites = "32x32";
                 }
             }
 
-            int oamPtr = silhOAMPtrs[silhSetNum];
-            int gridPtr = silhOAMGridPtrs[silhSetNum];
-            table.write(String.format(format, silhSetNum, ctrlCodeInputHexString, constrPtrString, oamPtr, gfxPtrString, gridPtr, sizeString, largeSprites));
+            int oamPtr = silhOAMPtrs[frameId];
+            int gridPtr = silhOAMGridPtrs[frameId];
+            table.write(String.format(format, frameId, ctrlCodeInputHexString, constrPtrString, oamPtr, gfxPtrString, gridPtr, sizeString, largeSprites));
         }
 
         table.flush();
@@ -215,7 +214,7 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
     // Silhouette construction data
 
-    private static void outputAllConstructionData() throws IOException {
+    private static void outputAllConstructionBinaryData() throws IOException {
         // create a text file and write the data to it
         BufferedWriter textFile = new BufferedWriter(new FileWriter("silhouette construction data.txt"));
 
@@ -254,11 +253,11 @@ public class KamaitachiSilhouetteDecomp {
         textFile.close();
     }
 
-    private static boolean silhSetHasSmallSprites(int silhSetID) throws IOException {
+    private static boolean frameIdHasSmallSprites(int frameId) throws IOException {
         // preserve file pointer for romFile after this call
         long filePtr = romFile.getFilePointer();
 
-        int ctrlCodeInput = silhCtrlCodeInputFromSilhID.get(silhSetID);
+        int ctrlCodeInput = silhCtrlCodeInputFromFrameId.get(frameId);
         int constrPtr = getRomPtr(silhConstrDataPtrs[ctrlCodeInput]);
         romFile.seek(constrPtr);
         int firstWord = readWord();
@@ -284,13 +283,13 @@ public class KamaitachiSilhouetteDecomp {
         int colorValue = DEFAULT_COLOR_VAL;
 
         // keep track of what silhouette graphics need to be loaded
-        int silhIdWithCorrectGfxData = 0;
+        int frameIdWithCorrectGfxData = 0;
 
         // keep track of what frame(s) need to be displayed
         ArrayList<Integer> frameData = new ArrayList<>();
 
         int firstWord = readWord();
-        int baseSilhSetID = firstWord & 0x1FFF;
+        int baseFrameId = firstWord & 0x1FFF;
 
         // first, just write all the raw data from the pointer
         String line = String.format("Raw data for input 0x%3X:\n" + dataFormat, ctrlCodeInput, firstWord);
@@ -307,7 +306,7 @@ public class KamaitachiSilhouetteDecomp {
 
             // check for range 2000-3FFF
             if (word >= 0x2000 && word <= 0x3FFF) {
-                silhIdWithCorrectGfxData = word & 0x1FFF;
+                frameIdWithCorrectGfxData = word & 0x1FFF;
             }
 
             // special case for printing color value for silhouette
@@ -334,12 +333,12 @@ public class KamaitachiSilhouetteDecomp {
             textFile.write(" (default)\n");
         }
 
-        // indicate source of graphics data for the silhouette set
-        int ctrlCodeInputForGfx = silhCtrlCodeInputFromSilhID.get(silhIdWithCorrectGfxData);
-        String gfxDataFormat = "Gfx data sourced from silh ID 0x%03X (code input 0x%03X)\n";
-        textFile.write(String.format(gfxDataFormat, silhIdWithCorrectGfxData, ctrlCodeInputForGfx));
-        if (silhIdWithCorrectGfxData != baseSilhSetID) {
-            textFile.write("NOTE: Mismatch between base silh set # for OAM, and silh set # for gfx data!\n");
+        // indicate source of graphics data for the frame
+        int ctrlCodeInputForGfx = silhCtrlCodeInputFromFrameId.get(frameIdWithCorrectGfxData);
+        String gfxDataFormat = "Gfx data sourced from frame 0x%03X (code input 0x%03X)\n";
+        textFile.write(String.format(gfxDataFormat, frameIdWithCorrectGfxData, ctrlCodeInputForGfx));
+        if (frameIdWithCorrectGfxData != baseFrameId) {
+            textFile.write("NOTE: Mismatch between base frame # for OAM, and frame # for gfx data!\n");
         }
 
         textFile.write("\nThe order of silhouette frames to be displayed:\n");
@@ -348,12 +347,12 @@ public class KamaitachiSilhouetteDecomp {
             int numFrames = frameWord & 0xFF;
 
             String format = "ID %03X for %d frames\n";
-            textFile.write(String.format(format, baseSilhSetID + offset, numFrames));
+            textFile.write(String.format(format, baseFrameId + offset, numFrames));
         }
 
         // special case of unused animation frames for one control code input
         if (ctrlCodeInput == 0x13A) {
-            textFile.write("\nIMPORTANT: Chunsoft forgot to also use silhouette IDs 184, 185, 186, 187 with this animation");
+            textFile.write("\nNOTE: Chunsoft forgot to also use frame IDs 184, 185, 186, 187 with this animation");
         }
 
         textFile.flush();
@@ -364,10 +363,10 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
     // Silhouette raw OAM data from pointer
 
-    private static int getSizeOfRawOamData(int silhSetID) throws IOException {
+    private static int getSizeOfRawOamData(int frameId) throws IOException {
         int numEntries = 0;
 
-        int gridPtr = getRomPtr(silhOAMGridPtrs[silhSetID]);
+        int gridPtr = getRomPtr(silhOAMGridPtrs[frameId]);
         romFile.seek(gridPtr);
 
         final int BITMASK = 0x8000;
@@ -387,13 +386,13 @@ public class KamaitachiSilhouetteDecomp {
         return numEntries * 2;
     }
 
-    private static void outputRawOamDataFromPointer(int silhSetID, String outputFolder) throws IOException {
-        String outputName = String.format(outputFolder + "/silh set ID %03d (0x%03X) raw OAM data.bin", silhSetID, silhSetID);
+    private static void outputRawOamDataFromPointer(int frameId, String outputFolder) throws IOException {
+        String outputName = String.format(outputFolder + "/silh frame 0x%03X raw OAM data.bin", frameId);
         FileOutputStream rawData = new FileOutputStream(outputName);
 
         // first, need to calculate # bytes to read, from grid data
-        int numBytes = getSizeOfRawOamData(silhSetID);
-        int oamPtr = getRomPtr(silhOAMPtrs[silhSetID]);
+        int numBytes = getSizeOfRawOamData(frameId);
+        int oamPtr = getRomPtr(silhOAMPtrs[frameId]);
         romFile.seek(oamPtr);
 
         for (int i = 0; i < numBytes; i++) {
@@ -424,11 +423,11 @@ public class KamaitachiSilhouetteDecomp {
         return pixelPositions;
     }
 
-    private static void getXYGridData(int silhSetID, String outputFolder) throws IOException {
-        String outputName = String.format(outputFolder + "/silh set ID %03d (0x%03X) X Y data.bin", silhSetID, silhSetID);
+    private static void getXYGridData(int frameId, String outputFolder) throws IOException {
+        String outputName = String.format(outputFolder + "/silh frame 0x%03X X Y data.bin", frameId);
         FileOutputStream output = new FileOutputStream(outputName);
 
-        int gridPtr = getRomPtr(silhOAMGridPtrs[silhSetID]);
+        int gridPtr = getRomPtr(silhOAMGridPtrs[frameId]);
         romFile.seek(gridPtr);
 
         int rowBytes = readWord();
@@ -527,7 +526,7 @@ public class KamaitachiSilhouetteDecomp {
         }
     }
 
-    private static void convertOamToTilemap(int silhSetID, String outputFolder) throws IOException {
+    private static void convertOamToTilemap(int frameId, String outputFolder) throws IOException {
         // generate a 32x32 tilemap where all the entries are initially set to
         // use tile ID 0x3FF, palette 0, priority 0, and no X/Y flipping
         // must do this because sprites cannot necessarily assume tile ID 0 is empty
@@ -539,15 +538,15 @@ public class KamaitachiSilhouetteDecomp {
         }
 
         // get the decompressed X Y data from the corresponding file
-        String xyDataFileName = String.format(outputFolder + "/silh set ID %03d (0x%03X) X Y data.bin", silhSetID, silhSetID);
+        String xyDataFileName = String.format(outputFolder + "/silh frame 0x%03X X Y data.bin", frameId);
         FileInputStream xyFile = new FileInputStream(xyDataFileName);
         byte xyData[] = xyFile.readAllBytes();
         xyFile.close();
 
-        boolean smallSprites = silhSetHasSmallSprites(silhSetID);
+        boolean smallSprites = frameIdHasSmallSprites(frameId);
 
         // seek in the ROM to the raw OAM data for the silhouette set
-        int oamPtr = getRomPtr(silhOAMPtrs[silhSetID]);
+        int oamPtr = getRomPtr(silhOAMPtrs[frameId]);
         romFile.seek(oamPtr);
 
         for (int filePos = 0; filePos < xyData.length; filePos += 2) {
@@ -567,7 +566,7 @@ public class KamaitachiSilhouetteDecomp {
             }
         }
 
-        String outputName = String.format(outputFolder + "/silh set ID %03d (0x%03X) converted tilemap.bin", silhSetID, silhSetID);
+        String outputName = String.format(outputFolder + "/silh frame 0x%03X converted tilemap.bin", frameId);
         writeConvertedTilemapToFile(outputName, tilemap);
     }
 
@@ -656,75 +655,107 @@ public class KamaitachiSilhouetteDecomp {
         }
     }
 
-    private static void decompressSilhouetteGfxForCodeInput(int silhID) throws IOException {
-        int gfxPtr = silhGFXPtrs[silhID];
-        decompressSilhouetteGfxFromPtr(gfxPtr);
-    }
+    private static void decompressSilhouetteGfxFromPtr(int gfxPtr, String outputFolder) throws IOException {
+        int startOffset = getRomPtr(gfxPtr);
+        romFile.seek(startOffset);
 
-    private static void decompressSilhouetteGfxFromPtr(int gfxPtr) throws IOException {
-        romFile.seek(getRomPtr(gfxPtr));
+        String debugLogFilename = String.format("%s/$%06X sprite gfx log.txt", outputFolder, gfxPtr);
+        BufferedWriter debugLog = new BufferedWriter(new FileWriter(debugLogFilename));
 
-        // int typeByteOffset = gfxPtr;
+        debugLog.write("ROM pos (size) | Offset | Data  | Description\n");
+        debugLog.write("---------------+--------+-------+------------\n");
+        String lineFormat = " %06X (%4X) |  %4X  | %-5s | %s\n";
+
         int typeByte = romFile.readUnsignedByte();
         silhBufferOffset = 0;
         while (typeByte != END_DATA && silhBufferOffset < SILH_BUFFER_SIZE) {
             int size = typeByte & 0x3F;
+            int romPos = (int) romFile.getFilePointer() - 1;
+            int compSizeSoFar = romPos - startOffset;
+            int uncompSizeSoFar = silhBufferOffset;
+            String dataPrintout = String.format("%02X", typeByte);
+            String description = "";
 
             if (typeByte == ADV_BANK) {
                 // the ASM sets bank offset to 0x8000, and increments bank num;
                 // when reading data from the contiguous file, this is automatic
 
                 String notice = "Got 0x40 \"bank advance\" byte at 0x%06X";
-                System.out.println(String.format(notice, (int) romFile.getFilePointer() - 1));
+                notice = String.format(notice, (int) romFile.getFilePointer() - 1);
+                System.out.println(notice);
+                description = "Bank advance byte";
 
                 while ((romFile.getFilePointer() & 0x7FFF) != 0) {
                     romFile.readUnsignedByte();
                 }
             }
             else switch (typeByte >> 6) {
-                case 0x0: {
+                case 0x0:
                     fillWithDataByte(0x00, size);
+                    description = String.format("%2X run of 00", size);
                     break;
-                }
-                case 0x1: {
+                case 0x1:
                     fillWithDataByte(0xFF, size);
+                    description = String.format("%2X run of FF", size);
                     break;
-                }
                 case 0x2:
+                    // size = (typeByte & 0x3F) + 1;
+                    description = String.format("%02X lits", size + 1);
                     readLiteralData(typeByte);
+
+                    // check for specific case that Chunsoft missed
+                    if (size + 1 == 1) {
+                        int value = silhBuffer[silhBufferOffset - 1];
+                        if (value == 0x00 || value == 0xFF) {
+                            description += " - is 00 or FF, could have been optimized!";
+                        }
+                    }
                     break;
-                case 0x3: {
+                case 0x3:
                     int dataByte = romFile.readUnsignedByte();
+                    description = String.format("%2X run of %02X", size + 1, dataByte);
+                    dataPrintout += String.format(" %02X", dataByte);
                     // size = (typeByte & 0x3F) + 1;
                     fillWithDataByte(dataByte, size + 1);
                     break;
-                }
             }
-            // typeByteOffset = (int) romFile.getFilePointer();
             typeByte = romFile.readUnsignedByte();
+            debugLog.write(String.format(lineFormat, romPos, compSizeSoFar, uncompSizeSoFar, dataPrintout, description));
         }
+
+        int endOfDataOffset = (int) romFile.getFilePointer() - 1;
+        debugLog.write(String.format("\nEnd of data @ %06X (%4X), decompressed size of %X", endOfDataOffset, endOfDataOffset - startOffset + 1, silhBufferOffset));
+
+        debugLog.flush();
+        debugLog.close();
     }
 
-    // use primarily for gold bookmark animation's tile data
+    // use for gold bookmark animation's tile data
     private static void writeSilhDataFromPtr(int gfxPtr) throws IOException {
-        String outputName = String.format("gold bookmark data/silh indep ptr $%06X gfx data.2bpp", gfxPtr);
-        writeSilhGfxDataToFile(outputName);
+        String outputName = String.format("gold bookmark data/gold bookmark $%06X gfx data.2bpp", gfxPtr);
+        writeSilhGfxDataToFile(true, outputName);
+	
+		outputName = String.format("gold bookmark data/gold bookmark $%06X raw decompressed gfx.bin", gfxPtr);
+		writeSilhGfxDataToFile(false, outputName);
     }
 
     private static void writeSilhGfxDataForCodeInput(int silhID, String outputFolder) throws IOException {
         String outputName = String.format(outputFolder + "/silh code input 0x%03X gfx data.2bpp", silhID);
-        writeSilhGfxDataToFile(outputName);
+        writeSilhGfxDataToFile(true, outputName);
+		
+		outputName = String.format(outputFolder + "/silh code input 0x%03X raw decompressed gfx.bin", silhID);
+		writeSilhGfxDataToFile(false, outputName);
     }
 
-    private static void writeSilhGfxDataToFile(String outputFilePath) throws IOException {
+    private static void writeSilhGfxDataToFile(boolean interleave, String outputFilePath) throws IOException {
         FileOutputStream output = new FileOutputStream(outputFilePath);
 
         // directly writing the data to the file
-        /*
-        for (int i = 0; i < silhBufferOffset; i++) {
-            output.write(silhBuffer[i]);
+		if (!interleave) {
+			for (int i = 0; i < silhBufferOffset; i++) {
+				output.write(silhBuffer[i]);
+			}
         }
-        */
 
         // raw decompression output is in the NES's 2bpp standard format, but
         // in the interest of having Tilemap Studio auto-detect the graphics,
@@ -733,21 +764,24 @@ public class KamaitachiSilhouetteDecomp {
         // indices:   [0    1    2    ... 7    8    9    A    ... F]
         // SNES 2bpp: [r0p0 r0p1 r1p0 r1p1 r2p0 r2p1 ... r7p0 r7p1]
         // new order: [0    8    1    9    2    A    ... 7    F]
-
-        int interleaveSequence[] = {0, 8, 1, 9, 2, 0xa, 3, 0xb, 4, 0xc, 5, 0xd, 6, 0xe, 7, 0xf};
-        for (int tileNum = 0; tileNum < silhBufferOffset; tileNum += interleaveSequence.length) {
-            for (int i = 0; i < interleaveSequence.length; i++) {
-                output.write(silhBuffer[tileNum + interleaveSequence[i]]);
-                // output.write(silhBuffer[tileNum + (i & 0x1) * 8 + (i >> 1)]);
-            }
-        }
+		else {
+			int interleaveSequence[] = {0, 8, 1, 9, 2, 0xa, 3, 0xb, 4, 0xc, 5, 0xd, 6, 0xe, 7, 0xf};
+			for (int tileNum = 0; tileNum < silhBufferOffset; tileNum += interleaveSequence.length) {
+				for (int i = 0; i < interleaveSequence.length; i++) {
+					output.write(silhBuffer[tileNum + interleaveSequence[i]]);
+					// output.write(silhBuffer[tileNum + (i & 0x1) * 8 + (i >> 1)]);
+				}
+			}
+		}
 
         output.flush();
         output.close();
     }
 
     private static void decompressSilhouetteGfxForCodeInput(int ctrlCodeInput, String outputFolder) throws IOException {
-        decompressSilhouetteGfxForCodeInput(ctrlCodeInput);
+        int gfxPtr = silhGFXPtrs[ctrlCodeInput];
+        // add ctrl code input number to the log file
+        decompressSilhouetteGfxFromPtr(gfxPtr, outputFolder);
         writeSilhGfxDataForCodeInput(ctrlCodeInput, outputFolder);
     }
 
@@ -756,16 +790,16 @@ public class KamaitachiSilhouetteDecomp {
 
     private static void getAllDataForCtrlCodeInput(int ctrlCodeInput) throws IOException {
         // create a folder to write data files into
-        String outputFolder = String.format("output/%03d (0x%03X) silh code input", ctrlCodeInput, ctrlCodeInput);
+        String outputFolder = String.format("output/0x%03X silh code input", ctrlCodeInput);
         Files.createDirectories(Paths.get(outputFolder));
 
         decompressSilhouetteGfxForCodeInput(ctrlCodeInput, outputFolder);
         outputConstructionData(ctrlCodeInput, outputFolder);
-        ArrayList<Integer> setList = silhSetListFromInputs.get(ctrlCodeInput);
-        for (int silhSetID : setList) {
-            getXYGridData(silhSetID, outputFolder);
-            outputRawOamDataFromPointer(silhSetID, outputFolder);
-            convertOamToTilemap(silhSetID, outputFolder);
+        ArrayList<Integer> frameList = frameIdListFromInputs.get(ctrlCodeInput);
+        for (int frameId : frameList) {
+            getXYGridData(frameId, outputFolder);
+            outputRawOamDataFromPointer(frameId, outputFolder);
+            convertOamToTilemap(frameId, outputFolder);
         }
     }
 
@@ -773,28 +807,29 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
 
     private static void readPointerTables() throws IOException {
-        getSilhIDMappings();
+        getFrameIdMappings();
         getSilhGFXPtrs();
-        getSilhIDSizes();
+        getGraphicsSizes();
         getSilhOAMPtrs();
         getSilhOAMGridPtrs();
         getSilhConstrDataPtrs();
-        getSilhSetListsForCtrlCodeInputs();
+        getFrameIdListsForCtrlCodeInputs();
     }
 
     private static void outputDataForSilhCtrlCodeIDs() throws IOException {
-        outputAllConstructionData();
+        outputAllConstructionBinaryData();
         outputTableOfSilhPtrs();
-        // getAllDataForCtrlCodeInput(0x13A);
-        outputListOfSilhSetsForCtrlCodeInputs();
+        getAllDataForCtrlCodeInput(0x13A);
+        outputListOfFrameIdsForCtrlCodeInputs();
         for (int ctrlCodeInput = 0; ctrlCodeInput < NUM_SILH_CTRL_CODE_IDS; ctrlCodeInput++) {
             getAllDataForCtrlCodeInput(ctrlCodeInput);
         }
     }
 
     private static void outputDataForGoldBookmark() throws IOException {
-        Files.createDirectories(Paths.get("gold bookmark data"));
-        decompressSilhouetteGfxFromPtr(GOLD_BOOKMARK_SHINE_PTR);
+        String goldBookmarkFolder = "gold bookmark data";
+        Files.createDirectories(Paths.get(goldBookmarkFolder));
+        decompressSilhouetteGfxFromPtr(GOLD_BOOKMARK_SHINE_PTR, goldBookmarkFolder);
         writeSilhDataFromPtr(GOLD_BOOKMARK_SHINE_PTR);
         for (int frameNum = 0; frameNum < GOLD_BOOKMARK_OAM_TABLE_SIZE; frameNum++) {
             convertGoldBookmarkOamToTilemap(frameNum);
