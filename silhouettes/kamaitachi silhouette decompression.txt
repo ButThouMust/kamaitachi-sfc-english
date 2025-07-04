@@ -2,34 +2,36 @@ Vocabulary:
 
 Silhouette control code input
 - A value (range 000 to 2F5) that is the input to a silhouette control code.
-  It can have several silhouette sets associated with it for animations.
+  It uniquely identifies a set of silhouette graphics. It is possible for one
+  set of graphics to be shared between several frames of an animation.
 
-Silhouette set ID value
-- A value (range 000 to 3AB) that represents a set of silhouette graphics data.
-  Each set has a unique control code input value that can access it.
+Silhouette frame ID value
+- A value (range 000 to 3AB) that represents one way to arrange one specific set
+  of graphics on screen. There is a unique control code input for each frame ID.
 
 --------------------------------------------------------------------------------
 
 $4B8000: Given a silhouette ctrl code input, get a 24-bit pointer from here for
-         some kind of data for how to construct silhouette sets.
+         data about how to construct the frames of silhouette graphics.
     The first 2 byte word in a group will have its MSB set.
     - Bit pos 0x8000: indicates start of group
     - Bit pos 0x4000: uses memory flag at 091A - if bit=1, leave flag alone
                       if bit=0, set the flag ON (see $02813E) - purpose=???
     - Bit pos 0x2000: indicates size of each sprite: 0 -> 16x16, 1 -> 32x32
-    - The other 13 bits (10 in practice) store the input's base silh set #.
+    - The other 13 bits (10 in practice) store the input's base silh frame ID.
 
     Bit positions 0x4000 and 0x2000 also encode how to process the decompressed
     graphics data for the silhouettes. More details below in decompression code.
 
     Main routine for interpretting data here is at $02815B.
     - Value from 0000-1FFF: read OAM data. (028196)
-      High byte: which frame to show, from base silhouette set #. (0281a4)
+      High byte: which frame to show, from base silhouette frame ID. (0281a4)
       * (One ctrl code input can have up to 0x20 unique frames of animation)
       Low byte:  how long to display the silhouette set, in frames? (0281d9)
 
     - Value from 2000-3FFF: read silhouette tile data. (0281ea)
-      Easy, (value & 0x1FFF) contains which silhouette set's gfx to load.
+      Easy, (value & 0x1FFF) is the base frame ID to use as an index to $4BB306
+      (see below) to know which set of graphics to load.
 
     - Value from 6000-7FFF: change the color of the silhouette (028242)
       Simply put the color value you wish to use after the 6000 value.
@@ -48,22 +50,22 @@ $4B8000: Given a silhouette ctrl code input, get a 24-bit pointer from here for
     Pointer list: $4B8000-$4B88E1
     Data range:   $4B88E2-$4B9CFD
 
-$4B9CFE: Given a silhouette set ID value, get a 24-bit pointer from here for
-         data that details a 16x16 grid of what 16x16 pixel regions should have
-         silhouettes on them. Basically, they generate OAM X/Y coordinates.
+$4B9CFE: Given a frame ID value, get a 24-bit pointer from here for compressed
+         data that specifies a 16x16 grid of what 16x16 pixel regions should
+         have silhouettes on them. In other words, data for OAM X/Y coordinates.
          Note: this format works the same for both 16x16 or 32x32 sprite sets.
-         Pointer list: $4B9CFE-$4BA801
-         Data ranges: $02A871-$02B938, $48D1A3-$48FFF0, $02B939-$02C31E.
+         Pointer list: $4B9CFE-$4BA801; See ASM at $028719
+         Data ranges:  $02A871-$02B938, $48D1A3-$48FFF0, $02B939-$02C31E
 
-$4BA802: Given a silhouette set ID value, get a 24-bit pointer to data related
-         to OAM entry data, specifically tile ID numbers and sprite attributes.
+$4BA802: Given a frame ID value, get a 24-bit pointer to data related to OAM
+         entry data, specifically tile ID numbers and sprite attributes.
          (See above: X/Y coordinates are multiples of 0x10 generated on the fly)
-         Pointer range: $4BA802-$4BB305; See ASM at $028719
+         Pointer range: $4BA802-$4BB305; See ASM at $0287D2
          Ranges for pointed data:
-         $498000-$4AFFFF, $4BC92C-$4BFFD9, $5DC40F-$5DFFA8, $04DF87-$04EADE
+         $498000-$49FF89, $4A8000-$4AFFFF, $4BC92C-$4BFFD9, $5DC40F-$5DFFA8, $04DF87-$04EADE
 
-$4BB306: Given a silhouette set ID value, get value of the silhouette ctrl code
-         input (note: singular, not plural) that references it.
+$4BB306: Given a frame ID value, get the two-byte value of the silhouette ctrl
+         code input (note: singular, not plural) that references it.
          Data range:    $4BB306-$4BBA5D
 
 $4BBA5E: Given a silhouette ctrl code input, use it as an index here to get a
@@ -81,34 +83,37 @@ $4BC340: Given a silhouette ctrl code input, use it as an index here to get a
 
 Summarize the ROM data blocks:
 
-0x012871-0x013938: X/Y grid data block 1 (sets 000-0DB)
-0x013939-0x01431E: X/Y grid data block 3 (sets 32E-3AB)
+0x012871-0x013938: X/Y grid data block 1 (frames 000-0DB)
+0x013939-0x01431E: X/Y grid data block 3 (frames 32E-3AB)
 (Total: 0x1AAE)
 
-0x025F87-0x026ADE: OAM data block 4 (sets 392-3AB)
+0x025F87-0x026ADE: OAM data block 5 (frames 392-3AB)
 (Total: 0xB58)
 
-0x2451A3-0x247FF0: X/Y grid data block 2 (sets 0DC-32D)
-[0xF bytes of empty space, FF]
-0x248000-0x257FFF: OAM data block 1 (sets 000-26D)
+0x2451A3-0x247FF0: X/Y grid data block 2 (frames 0DC-32D)
+[0x F bytes of FF]
+0x248000-0x257FFF: OAM data block 1 (frames 000-12C)
+[0x76 bytes of FF]
+0x248000-0x257FFF: OAM data block 2 (frames 12D-26D)
+[0x 6 bytes of FF]
 0x258000-0x2588E1: Pointer table for silhouette construction
 0x2588E2-0x259CFD: Silhouette construction data block
 0x259CFE-0x25A801: Pointer table for X/Y grid data
 0x25A802-0x25B305: Pointer table for OAM data
-0x25B306-0x25BA5D: Lookup table for control code input value from silh set ID
+0x25B306-0x25BA5D: Lookup table for control code input value from silh frame ID
 0x25BA5E-0x25C33F: Pointer table for graphics data
 0x25C340-0x25C92B: Lookup table for "data size"
-0x25C92C-0x25FFD9: OAM data block 2 (sets 26E-2FE)
-[0x26 bytes of empty space, FF]
+0x25C92C-0x25FFD9: OAM data block 3 (frames 26E-2FE)
+[0x26 bytes of FF]
 0x260000-0x2EC40E: Graphics data block
-0x2EC40F-0x2EFFA8: OAM data block 3 (sets 2FF-391)
-Total: 0x2EFFA8 - 0x2451a3 + 1 - 0xF - 0x26 = 0xAADD1
+0x2EC40F-0x2EFFA8: OAM data block 4 (frames 2FF-391)
+Total: 0x2EFFA8 - 0x2451a3 + 1 - 0xF - 0x26 - 0x76 - 0x6 = 0xAAD55
 
 So all in all, this much data in the ROM is for the silhouettes:
-0xAADD1 + 0x1AAE + 0xB58 = 0xAD3D7 = 709,591 bytes (692.96 KB)
+0xAAD55 + 0x1AAE + 0xB58 = 0xAD35B = 709,467 bytes (692.84 KB)
 
 Graphics data:   0x8C40F = 574,479 bytes, about 561.01 KB.
-Everything else: 0x20FC8 = 135,112 bytes, about 131.94 KB.
+Everything else: 0x20F4C = 134,988 bytes, about 131.82 KB.
 Graphics would be a good target if you want to try freeing up ROM space.
 
 --------------------------------------------------------------------------------
@@ -120,7 +125,7 @@ mistake on the part of Chunsoft. The animation for input 0x13A doesn't correctly
 show all its frames, and I confirmed this by carefully cross referencing these
 two particular sets of data:
 
-- Control code input lookup table for silhouette IDs 0x183-0x187:
+- Control code input lookup table for silhouette frame IDs 0x183-0x187:
   Table entries for all five are control code input 0x13A
   Applicable data at 0x25B306 + 0x183*2 = 0x25B60C - 0x25B615
   
@@ -140,12 +145,12 @@ data somewhere and update the pointer accordingly. Steps would be:
 - Insert the new 0x10 bytes at any position in the ROM you like. $4BFFDA works.
 - Update the pointer at $4B83AE from [36 91 4B] to the new pointer [DA FF 4B].
 
-I don't know for sure what the intended order for the silhouettes would be (it
+I don't know for sure what would be the intended order for the five frames (it
 involves one character attacking another), but some guesses are:
 - 187, 183, 186, 184, 185 (4, 0, 3, 1, 2)
 - 187, 183, 185, 184, 186 (4, 0, 2, 1, 3)
 
-The scale of the silhouettes seems to fit with background image 1F.
+The silhouettes' scale and position seem to fit with background image 1F.
 
 --------------------------------------------------------------------------------
 
@@ -161,11 +166,11 @@ silhouettes.
 Relevant subroutines/code:
 
 $028532, $028719
-- Use ctrl code input value to get pointers from $4BA802 and $4B9CFE.
+- Use frame ID to get pointers from $4BA802 and $4B9CFE.
 - For pointer from $4B9CFE, read two bytes from it. This contains 16 bit flags
   for when and how many 2-byte words to read. For example, 0x2AAA has 7 bit
   flags at positions 2, 4, 6, 8, A, C, and E (position 0 is the MSB).
-- For each bit position with a 1, read another two-byte word. Same format
+- For each bit position with a 1, read another two-byte word. Same format.
 - For each bit position with a 1, run $0287A3 to write an OAM entry to buffer.
 
 So in a way, it generates a grid of 16x16 flags that say "silhouette is here"
@@ -198,8 +203,8 @@ E -      |                |
 F -      |                |
          +----------------+
 
-$028572: Read a pointer for what silhouette(s) to load based on an input to a
-         silhouette control code from the script.
+$028572: Read a pointer for what silhouette graphics to load based on an input
+         to a silhouette control code from the script.
 
 $02863B: Start reading data from the above mentioned pointer.
 
@@ -208,19 +213,20 @@ $02863B: Start reading data from the above mentioned pointer.
 Silhouette graphics data decompression format
 
 Short version: silhouette graphics are compressed with run-length encoding.
+
 Given a pointer from the table at $4BBA5E, execute the loop at $02864A.
 Keep reading bytes that encode both the compression case and a data size.
 
 - If the byte is 00, end of data.
   Decompression will also end if 0x2000 bytes have been written to the buffer.
 - If the byte is 40 (see $0286A2), this indicates to do LoROM bank wrapping for
-  the graphics data pointer.
+  the graphics data pointer = increment bank number, set bank offset to 0x8000.
 
 If the byte is not 00 or 40, check bits 6-7 and run a subroutine:
 00xx xxxx: $028684 = run of consecutive 00
 01xx xxxx: $028698 = run of consecutive FF
-10xx xxxx: $0286D9 = read uncompressed data
-11xx xxxx: $0286F9 = run of some consecutive byte not 00 or FF (read from ROM)
+10xx xxxx: $0286D9 = read uncompressed data from ROM one byte at a time
+11xx xxxx: $0286F9 = run of some consecutive byte (read from ROM)
 
 ----------
 
@@ -247,8 +253,6 @@ $0286F9 (range C0-FF):
 - Read one byte from the ROM, and repeat it up to (type byte & 0x3F) + 1 times
   in the buffer, or until it is completely filled.
 
-----------
-
 So to summarize the format:
 00:    end of data
 01-3F: run of 00 bytes (size 01-3F)
@@ -256,6 +260,8 @@ So to summarize the format:
 41-7F: run of FF bytes (size 01-3F)
 80-BF: literal data    (size 01-40)
 C0-FF: run of NN bytes (size 01-40)
+
+----------
 
 Remarks about the graphics compression format:
 - Runs of 00 or FF can be up to 0x3F bytes long, whereas runs of any other byte
@@ -265,10 +271,9 @@ Remarks about the graphics compression format:
   However, there would be plenty of 0x40 byte runs of 00 or FF.
 - Chunsoft's silhouette RLE compressor seemingly didn't account for how if you
   have a single literal of 00 or FF, it is better to encode that as a run of 1,
-  since the overhead byte implies the value. However, the optimization *does*
-  pop up if this case occurs at the very end of the file??? Over the 500+ KB of
-  graphics, they could have saved 1917 (0x77D) bytes. Whether saving this space
-  and repurposing it is worth all the recompression and repointing is up to you.
+  since the overhead byte implies the value. For example, instead of [80 00],
+  use [01]. Similarly, [41] instead of [80 FF]. However, the optimization *does*
+  pop up if this case occurs at the very end of the file???
 
 Remarks about the format of the graphics data itself:
 - The raw decompressed output is 2bpp graphics, but is not usable as-is for SNES
@@ -282,33 +287,11 @@ Remarks about the format of the graphics data itself:
   For example, if a 32x32 sprite set only needs 3 sprites, one sprite's worth of
   tile data will be wasted as padding.
 
-----------
-
-At first, I'd thought that the format being RLE wouldn't allow much room for
-improvement. I did brainstorm another idea for how to improve the compression
-based on the 0x40 byte size limits. It did save space over Chunsoft's compressor
-(~300 bytes), but nowhere near much as the 1 byte run case mentioned above:
-- Change the 00/FF run cases to encode runs of length 02-40 bytes, versus 01-3F?
-  Having runs of 0x40 bytes evenly matches up with tile and sprite boundaries.
-  You can encode empty horiz. blocks of 4 tiles as just [3F] instead of needing
-  two "tags" [3F ; 01]. Of course, the trade-off is that you MUST encode single
-  00 or FF bytes as literals e.g. [80 00] or [80 FF].
-- In terms of ASM edits, it is sufficient to change the opcode at $0286D5 from a
-  BNE (exit loop if counter 0) to a BPL (exit loop if counter negative).
-  So make the CPU do one more loop iteration. 
-
-That simple ASM edit would preclude the 1 byte run case. I was not satisfied
-with that, and decided to modify the compression format itself to be able to use
-BOTH optimizations with 1 byte runs and 0x40 byte runs:
-00:    end of data
-01-3F: literal data    (size 01-3F)
-40:    LoROM bank advance
-41-7F: run of NN bytes (size 01-3F)
-80-BF: run of 00 bytes (size 01-40)
-C0-FF: run of FF bytes (size 01-40)
-
-The decompression ASM edits were not as simple as just changing a single opcode,
-but you can mostly just rearrange and repoint the existing ASM.
+In the specific case of control code input 0x097 (Aki holding her camera and
+asking Tooru for him to take a picture), it effectively has an entire sprite row
+of tile data wasted on padding, because sprites 0 and 39-3F are all filled with
+00. If you're really starving for more space in the ROM, you could try to edit
+the OAM data (both X/Y and other) and cut out the padding.
 
 --------------------------------------------------------------------------------
 
@@ -340,12 +323,10 @@ is for an animation that you see if your bookmark is gold (it shines).
 
 If you want to be able to view it in the game without necessarily fulfilling the
 frankly ridiculous requirements to get it normally, change two bytes at 0x8167
-in the ROM from [04 08] to [0C 0C]. You will see it on the top bookmark.
+in the ROM from [04 08] to [0C 0C]. You will see it on the top bookmark provided
+the save data for it is not empty.
 
 $01EABA has a table of 0xA pointers for OAM data for the animation frames.
 Each block of OAM data is terminated by FFFF.
 $01EAD8 $01EAE6 $01EB2C $01EBBE $01ECA8
 $01ED66 $01EE4C $01EF3E $01EFF0 $01F086
-
-If you're curious about how the compression optimizations affect the bookmark
-sprites, the 1 byte run case happens 24 times (nothing from 0x40 byte run case).
