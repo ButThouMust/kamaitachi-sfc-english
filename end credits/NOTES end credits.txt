@@ -1,0 +1,339 @@
+At a high level, the character graphics for the credits are all loaded directly
+into VRAM on a line-by-line basis in real time. Note that Kamaitachi uses a
+unique system for storing the credits, unlike how Otogirisou's credits came in
+its "standard" graphics loading system. I found that this is because the total
+number of tiles exceeds the 0x400 tile limit that a single tilemap can access.
+I assume this would be the case even if you were to optimize out tiles while
+accounting for X/Y flip and empty tiles.
+
+The main subroutine for the credits is at $01D96D:
+- $01D9D0: set BG3 control registers for the credits
+- $01D9FD: set up DMA for the tileSET for the credits
+- $01DA51: set up DMA for the tileMAP for the credits
+- $01DA81: write gfx for next char row to VRAM
+
+- $01DAB6: Given # lines shown so far (stored in $46), get number indicating:
+  - $01DAD3: relative offset for next credit line from list (store to $48)
+  - $01DAF0: 80 = a line break (skip down 3 tile rows)
+  - $01DAFD: FF = end of data for lines of credits
+
+- $01DB10: Given relative offset for line, read a character value and do either:
+  - $01DB31: read gfx data for credits character ($01DB44)
+  - $01DB36: 00 = go one tile column right ($01DB8A)
+  - $01DB3B: FF = end of data for this line's characters
+
+---
+
+Relevant data addresses:
+$5EC49C: Sequential list of ID numbers for every line of the credits.
+         0x80 indicates to skip down 0xC tiles (3 lines). 0xFF is end of data.
+         Minus the 0x80 bytes, it is wholly sequential except for a [32] at
+         $5EC4C6. The list ends at $5EC4E0 with an FF byte.
+
+$5EC4E1: Given a credit line ID # from $5EC49C to display, obtain a relative
+         offset from $5EC547 to a list of 1-byte character values:
+
+$5EC547: Contains 0x33 lists of ID values for characters (each list = one line).
+         00 indicates "go right by 1 tile". 0xFF is end of data for credit line.
+         Use these as indexes into a table of pointers to graphics data.
+         You can make a table file out of these characters and view the text in
+         the ROM with it here.
+
+$5EC82B: Contains 0x88 24-bit pointers to graphics data. Each block is 0x48
+         bytes and consists of a 3x3 grid of 1bpp 8x8 tiles (24x24 total).
+         Perhaps note that Chunsoft decided to hard-code this pointer table,
+         rather than use the first one as a base and add (ID value-1)*0x48.
+
+$5EC9C3: The credits graphics data exists in the ROM from here until $5EF002.
+         This is 0x2640 bytes. After this is FF bytes until the end of the bank.
+
+Note: 0x88 * 9 = 0x4C8; 0xC8 = 200 tiles (!) that would have to be optimized out
+
+Here are two tables summarizing this data: one of the character values, and
+another for the lines of text.
+
+ Value | Gfx ptr | Char      Value | Gfx ptr | Char      Value | Gfx ptr | Char 
+-------+---------+------    -------+---------+------    -------+---------+------
+  00   |  N/A    | [spc]      30   | 5ED6FB  | 々         60   | 5EE47B  | 西
+  01   | 5EC9C3  | 脚         31   | 5ED743  | 木         61   | 5EE4C3  | 村
+  02   | 5ECA0B  | 本         32   | 5ED78B  | 治         62   | 5EE50B  | 光
+  03   | 5ECA53  | 絵         33   | 5ED7D3  | 藤         63   | 5EE553  | 麻
+  04   | 5ECA9B  | 音         34   | 5ED81B  | 圭         64   | 5EE59B  | 哉
+  05   | 5ECAE3  | 楽         35   | 5ED863  | 長         65   | 5EE5E3  | ひ
+  06   | 5ECB2B  | 開         36   | 5ED8AB  | 谷         66   | 5EE62B  | と
+  07   | 5ECB73  | 発         37   | 5ED8F3  | 川         67   | 5EE673  | み
+  08   | 5ECBBB  | 曲         38   | 5ED93B  | 薫         68   | 5EE6BB  | ア
+  09   | 5ECC03  | 監         39   | 5ED983  | 原         69   | 5EE703  | ク
+  0a   | 5ECC4B  | 督         3a   | 5ED9CB  | 田         6a   | 5EE74B  | マ
+  0b   | 5ECC93  | 助         3b   | 5EDA13  | 久         6b   | 5EE793  | リ
+  0c   | 5ECCDB  | 手         3c   | 5EDA5B  | 美         6c   | 5EE7DB  | ン
+  0d   | 5ECD23  | 写         3d   | 5EDAA3  | 三         6d   | 5EE823  | ジ
+  0e   | 5ECD6B  | 真         3e   | 5EDAEB  | 俣         6e   | 5EE86B  | カ
+  0f   | 5ECDB3  | 撮         3f   | 5EDB33  | 千         6f   | 5EE8B3  | ル
+  10   | 5ECDFB  | 影         40   | 5EDB7B  | 代         70   | 5EE8FB  | ラ
+  11   | 5ECE43  | 協         41   | 5EDBC3  | 加         71   | 5EE943  | キ
+  12   | 5ECE8B  | 力         42   | 5EDC0B  | 恒         72   | 5EE98B  | ワ
+  13   | 5ECED3  | 効         43   | 5EDC53  | 太         73   | 5EE9D3  | イ
+  14   | 5ECF1B  | 果         44   | 5EDC9B  | 中         74   | 5EEA1B  | ド
+  15   | 5ECF63  | 造         45   | 5EDCE3  | 嶋         75   | 5EEA63  | ペ
+  16   | 5ECFAB  | 型         46   | 5EDD2B  | 康         76   | 5EEAAB  | シ
+  17   | 5ECFF3  | 製         47   | 5EDD73  | 二         77   | 5EEAF3  | ヌ
+  18   | 5ED03B  | 作         48   | 5EDDBB  | 郎         78   | 5EEB3B  | プ
+  19   | 5ED083  | 補         49   | 5EDE03  | 斉         79   | 5EEB83  | ピ
+  1a   | 5ED0CB  | 佐         4a   | 5EDE4B  | 昌         7a   | 5EEBCB  | ポ
+  1b   | 5ED113  | 制         4b   | 5EDE93  | 快         7b   | 5EEC13  | ト
+  1c   | 5ED15B  | 著         4c   | 5EDEDB  | 位         7c   | 5EEC5B  | チ
+  1d   | 5ED1A3  | 株         4d   | 5EDF23  | 裕         7d   | 5EECA3  | ソ
+  1e   | 5ED1EB  | 式         4e   | 5EDF6B  | 山         7e   | 5EECEB  | フ
+  1f   | 5ED233  | 会         4f   | 5EDFB3  | 洋         7f   | 5EED33  | ッ
+  20   | 5ED27B  | 社         50   | 5EDFFB  | 一         80   | 5EED7B  | ョ
+  21   | 5ED2C3  | 有         51   | 5EE043  | 島         81   | 5EEDC3  | ュ
+  22   | 5ED30B  | 限         52   | 5EE08B  | 雄         82   | 5EEE0B  | ー
+  23   | 5ED353  | 我         53   | 5EE0D3  | 大         83   | 5EEE53  | ・
+  24   | 5ED39B  | 孫         54   | 5EE11B  | 森         84   | 5EEE9B  | （
+  25   | 5ED3E3  | 子         55   | 5EE163  | 不         85   | 5EEEE3  | ）
+  26   | 5ED42B  | 武         56   | 5EE1AB  | 可         86   | 5EEF2B  | 県
+  27   | 5ED473  | 丸         57   | 5EE1F3  | 止         87   | 5EEF73  | 白
+  28   | 5ED4BB  | 小         58   | 5EE23B  | 黒         88   | 5EEFBB  | 馬
+  29   | 5ED503  | 泉         59   | 5EE283  | 剛
+  2a   | 5ED54B  | 冬         5a   | 5EE2CB  | 志
+  2b   | 5ED593  | 彦         5b   | 5EE313  | 塩
+  2c   | 5ED5DB  | 落         5c   | 5EE35B  | 野
+  2d   | 5ED623  | 合         5d   | 5EE3A3  | 勝
+  2e   | 5ED66B  | 信         5e   | 5EE3EB  | 浦
+  2f   | 5ED6B3  | 也         5f   | 5EE433  | 昇         FF   | N/A     | <END>
+
+Shorthand: "--" = 00 byte, "[]" = sequence of three 00 bytes
+Note that the horizontal positioning is not to scale.
+
+C49C   5EC4E1   5EC547
+Line | Offset | Tile block IDs                         | Text
+=====+========+========================================+======================
+00   |  0000  | [] -- -- 01 02 FF                      | 脚本
+01   |  0008  | [] [] [] -- -- 23 24 25 -- 26 27 FF    | 　　我孫子　武丸
+  80=+========+========================================+======================
+  80=+========+========================================+======================
+02   |  001A  | [] -- -- 03 FF                         | 絵
+03   |  0021  | [] [] [] -- -- 28 29 -- 2A 2B FF       | 　　小泉　冬彦
+04   |  0032  | [] [] [] -- -- 2C 2D -- 2E 2F FF       | 　　落合　信也
+05   |  0043  | [] [] [] -- -- 1A 30 31 -- 0E 32 FF    | 　　佐々木　真治
+06   |  0055  | [] [] [] -- -- 1A 33 -- 34 25 FF       | 　　佐藤　圭子
+07   |  0066  | [] [] [] -- -- 35 36 37 -- 38 FF       | 　　長谷川　薫
+08   |  0077  | [] [] [] -- -- 39 3A -- 3B 3C 25 FF    | 　　原田　久美子
+  80=+========+========================================+======================
+09   |  0089  | [] -- -- 04 05 06 07 FF                | 音楽開発
+0A   |  0093  | [] [] [] -- -- 3D 3E -- 3F 40 25 FF    | 　　三俣　千代子
+  80=+========+========================================+======================
+0B   |  00A5  | [] -- -- 08 FF                         | 曲
+0C   |  00AC  | [] [] [] -- -- 41 33 -- 42 43 FF       | 　　加藤　恒太
+0D   |  00BD  | [] [] [] -- -- 44 45 -- 46 47 48 FF    | 　　中嶋　康二郎
+  80=+========+========================================+======================
+0E   |  00CF  | [] -- -- 06 07 09 0A FF                | 開発監督
+0F   |  00D9  | [] [] -- -- 1D 1E 1F 20 FF             | 　株式会社
+10   |  00E6  | [] [] [] [] 68 69 68 6A 6B 6C FF       | 　　　アクアマリン
+11   |  00F9  | [] [] [] -- -- 49 33 -- 4A 4B FF       | 　　斉藤　昌快
+  80=+========+========================================+======================
+12   |  010A  | [] -- -- 06 07 FF                      | 開発
+13   |  0112  | [] [] [] -- -- 47 4C -- 0E 4D FF       | 　　二位　真裕
+14   |  0123  | [] [] [] -- -- 4E 3A -- 2E 4F FF       | 　　山田　信洋
+15   |  0134  | [] [] [] -- -- 28 37 -- 50 3C FF       | 　　小川　一美
+16   |  0145  | [] [] [] -- -- 44 51 -- 46 52 FF       | 　　中島　康雄
+17   |  0156  | [] [] [] -- -- 53 54 3A -- 55 56 57 FF | 　　大森田　不可止
+  80=+========+========================================+======================
+18   |  0169  | [] -- -- 0B 0C FF                      | 助手
+19   |  0171  | [] [] [] -- -- 49 33 -- 65 66 67 FF    | 　　斉藤　ひとみ
+1A   |  0183  | [] [] [] -- -- 58 3A -- 59 5A FF       | 　　黒田　剛志
+1B   |  0194  | [] [] [] -- -- 5B 5C -- 5D 2B FF       | 　　塩野　勝彦
+  80=+========+========================================+======================
+1C   |  01A5  | [] -- -- 0D 0E FF                      | 写真
+1D   |  01AD  | [] [] [] -- -- 4E 5E -- 5F 50 48 FF    | 　　山浦　昇一郎
+  80=+========+========================================+======================
+1E   |  01BF  | [] -- -- 0F 10 11 12 FF                | 撮影協力
+1F   |  01C9  | [] [] -- -- 75 6C 76 80 6C -- FF       | 　ペンション
+20   |  01D8  | [] [] [] [] [] -- -- 69 77 6F 78 FF    | 　　　　クヌルプ
+32***|  02D3  | [] [] -- -- 84 35 5C 86 87 88 61 85 FF | 　（長野県白馬村）
+  80=+========+========================================+======================
+21   |  01EE  | [] -- -- 13 14 04 FF                   | 効果音
+22   |  01F7  | [] [] -- -- 21 22 1F 20 FF             | 　有限会社
+23   |  0204  | [] [] [] [] [] -- -- 6A 6D 6E 6F FF    | 　　　　マジカル
+  80=+========+========================================+======================
+24   |  021A  | [] -- -- 15 16 FF                      | 造型
+25   |  0222  | [] [] -- -- 1D 1E 1F 20 FF             | 　株式会社
+26   |  022F  | [] [] [] -- 70 7F 71 82 72 73 74 FF    | 　　ラッキーワイド
+  80=+========+========================================+======================
+27   |  0241  | [] -- -- 11 12 FF                      | 協力
+28   |  0249  | [] [] -- -- 1D 1E 1F 20 -- FF          | 　株式会社
+29   |  0257  | [] [] [] [] 79 6C 7A 73 6C 7B FF       | 　　　ピンポイント
+  80=+========+========================================+======================
+2A   |  026A  | [] -- -- 17 18 19 1A FF                | 製作補佐
+2B   |  0274  | [] [] [] -- -- 44 60 -- 50 2B FF       | 　　中西　一彦
+  80=+========+========================================+======================
+2C   |  0285  | [] -- -- 17 18 FF                      | 製作
+2D   |  028D  | [] [] [] -- -- 44 61 -- 62 50 FF       | 　　中村　光一
+  80=+========+========================================+======================
+2E   |  029E  | [] [] 09 0A FF                         | 監督
+2F   |  02A7  | [] [] [] -- -- 63 5C -- 50 64 FF       | 　　麻野　一哉
+  80=+========+========================================+======================
+  80=+========+========================================+======================
+30   |  02B8  | [] [] -- -- 1B 18 83 1C 18 FF          | 　　制作・著作
+31   |  02C6  | -- 1D 1E 1F 20 -- 7C 81 6C 7D 7E 7B FF | 株式会社　チュンソフト
+
+FF END
+
+--------------------------------------------------------------------------------
+
+How to translate the credits:
+
+The big limitation to the existing system: the smallest block of graphics data
+we can obtain with a single character ID is a 3x3 tile block. Unlike the credits
+for Otogirisou, the tilemaps do not support X/Y flip and cannot be generated on
+a tile-by-tile granularity.
+
+When translating Otogirisou, I had learned about a program called superfamiconv
+that can automate tileset/tilemap generation. It lets me generate a tileMAP with
+24x24 pixel blocks (nine 8x8 cells in a 3x3 grid) and both a tileSET and tileMAP
+with 8x8 blocks, but it does not allow generating 24x24 tilesets. However, I was
+able to make a program to generate a 24x24 tileset from the 8x8 tileset+tilemap
+and 24x24 tilemap.
+
+I made an ASM hack for a "go left by one tile" character ID control code value.
+I felt a suitable value was FE. I injected it into the control flow by replacing
+the AND.w #$00FF at $01DB2B with a JSR to my custom code in bank 01. Purpose was
+to mitigate potential issues where a word can just barely exceed the right bound
+of a 3x3 tile block. It can claw back horizontal space that otherwise would be
+wasted either on screen or from baking a tile column into the gfx data. Example
+use case: reusing the tiles of the word "Development" between the two lines
+"Music Development" and "Development Director".
+
+Accounting for 00/FE/FF as control codes, we are limited to char values 01-FD
+(253 values) for text gfx blocks. The contiguous gfx data space only allows 0xC0
+blocks without repointing, but the pointers are 24-bit anyway.
+
+Can all the text fit within this 01-FD limit? Could using a formula for graphics
+pointers (where to put the code?) free up space versus the full pointer table?
+The table is 0x88*3 = 0x198 bytes, which fits 5 blocks with 0x30 bytes leftover.
+
+A clean 1-1 value-to-char mapping is most likely infeasible for English.
+However, table files allow you to do multi-byte entries like this:
+010203=NineTileWideText
+
+--------------------------------------------------------------------------------
+
+As for accurately romanizing the names, I found this page:
+https://www.mobygames.com/game/65563/kamaitachi-no-yoru/credits/snes/
+
+脚本
+Scenario
+　我孫子　武丸
+  Takemaru Abiko
+
+絵
+Graphics
+　小泉　冬彦
+  Fuyuhiko Koizumi
+　落合　信也
+  Shin'ya Ochiai
+　佐々木　真治
+  Shinji Sasaki 
+　佐藤　圭子
+  Keiko Satō
+　長谷川　薫
+  Kaoru Hasegawa
+　原田　久美子
+  Kumiko Harada
+
+音楽開発
+Music Development
+　三俣　千代子
+  Chiyoko Mitsumata
+
+曲
+Music 
+　加藤 恒太
+  Kōta Katō 
+　中嶋 康二郎
+  Kōjirō Nakashima 
+
+開発監督
+Development Director 
+　開発会社
+　　アクアマリン
+    Development Co.
+	Aquamarine 
+　 斉藤 昌快
+   Masayoshi Saitō 
+
+開発
+Development 
+　　二位 真裕
+    Masahiro Nii 
+　　山田 信洋
+    Nobuhiro Yamada 
+　　小川 一美
+    Kazumi Ogawa 
+　　中島 康雄
+    Yasuo Nakajima 
+　　大森田 不可止
+    Fukashi Ōmorita 
+
+助手
+Assistant 
+    斉藤 ひとみ
+    Hitomi Saitō 
+    黒田 剛志
+    Tsuyoshi Kuroda 
+    塩野 勝彦
+    Katsuhiko Shiono 
+
+写真
+Photography 
+    山浦 昇一郎
+    Shōichirō Yamaura 
+
+撮影協力
+Photography Assistance 
+  ペンション
+        クヌルプ
+  Pension Knulp
+  （長野県白馬村）
+  (Hakuba Village, Nagano Prefecture)
+
+効果音
+Sound Effects 
+  有限会社
+        マジカル
+MAGICAL Co., Ltd. 
+
+造型
+Models
+[note: models as in modelling something in miniatures (used for the basement
+ and the bathroom), not like people modelling for the silhouettes]
+  株式会社
+   ラッキーワイド
+  Lucky-Wide Co., Ltd. 
+
+協力
+Support 
+  株式会社
+     ピンポイント
+  Pinpoint Co., Ltd. 
+
+製作補佐
+Assistant Producer
+    中西 一彦
+    Kazuhiko Nakanishi 
+
+製作
+Producer
+    中村 光一
+    Kōichi Nakamura 
+
+監督
+Director 
+   麻野 一哉
+   Kazuya Asano 
+
+     制作・著作
+Production/Copyright 
+株式会社 チュンソフト
+Chunsoft Co., Ltd.
