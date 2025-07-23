@@ -92,9 +92,9 @@ Summarize the ROM data blocks:
 
 0x2451A3-0x247FF0: X/Y grid data block 2 (frames 0DC-32D)
 [0x F bytes of FF]
-0x248000-0x257FFF: OAM data block 1 (frames 000-12C)
+0x248000-0x257F89: OAM data block 1 (frames 000-12C)
 [0x76 bytes of FF]
-0x248000-0x257FFF: OAM data block 2 (frames 12D-26D)
+0x248000-0x257FF9: OAM data block 2 (frames 12D-26D)
 [0x 6 bytes of FF]
 0x258000-0x2588E1: Pointer table for silhouette construction
 0x2588E2-0x259CFD: Silhouette construction data block
