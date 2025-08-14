@@ -63,9 +63,10 @@ but I got it working mostly just by rearranging and repointing the existing ASM.
 Altogether, these changes saved 0x888 bytes for the main silhouettes (0x8C40F to
 0x8BB87) and 0x18 bytes for the gold bookmark sprites (0xBDE to 0xBC6).
 
-I later realized that with the NN case, "runs" of length 1 would be the same
-size as storing a literal, i.e. [41 xx] vs [01 xx]. The "run" case is redundant,
-so you can upgrade the encoded size range for NN runs from 01-3F to 02-40.
+I later realized that with the NN case, a "run" of length 1 would be encoded in
+the same number of bytes as storing a literal, i.e. [41 xx] vs [01 xx]. The
+"run" case is redundant if the length is 1, so you can upgrade the encoded size
+range for NN runs from 01-3F to 02-40.
 
 ----------
 
@@ -101,31 +102,27 @@ Here is a table of my findings. Read as, for example, "the number of runs of 00
 bytes with a size from 0x10-0x1F is 10291."
 
 Size range  | 00 bytes | FF bytes | NN bytes | Lits
-------------+----------+----------+----------+----- (not counting size 0-F)
-0x 10-0x 1F | 10291    | 1851     | 5 (0x10) | 5 (4 of 0x10, 1 of 0x11)
-0x 20-0x 2F |  5214    |  524     | ----     | ----
-0x 30-0x 3F |  1957    |  183
-0x 40-0x 4F |   984    |   84
-0x 50-0x 5F |   578    |   25
-0x 60-0x 6F |   360    |   13
-0x 70-0x 7F |   262    |    2 (0x70)
-0x 80-0x 8F |   269    |    9 (5 of 0x80, 0x83 0x84 0x86 0x88)
-0x 90-0x 9F |   181    |    2 (0x90 0x98)
-0x A0-0x AF |   135    |    1 (0xAC)
-0x B0-0x BF |    96    | ----
+------------+----------+----------+----------+-------
+0x  1-0x  F | 90624    | 65953    | 93827    | 68836
+0x 10-0x 1F | 10291    |  1851    | 5 (0x10) | 5 (4 of 0x10, 1 of 0x11)
+0x 20-0x 2F |  5214    |   524    | -----    | -----
+0x 30-0x 3F |  1957    |   183
+0x 40-0x 4F |   984    |    84
+0x 50-0x 5F |   578    |    25
+0x 60-0x 6F |   360    |    13
+0x 70-0x 7F |   262    |     2 (0x70)
+0x 80-0x 8F |   269    |     9 (5 of 0x80, 0x83 0x84 0x86 0x88)
+0x 90-0x 9F |   181    |     2 (0x90 0x98)
+0x A0-0x AF |   135    |     1 (0xAC)
+0x B0-0x BF |    96    | -----
 0x C0-0x CF |   197
 0x D0-0x DF |   127
 0x E0-0x EF |   112
 0x F0-0x FF |    69
-
 0x100-0x1FF |   111 (counts of 0x10 ranges: 7 6 1 4 2 0 3 3 6 4 4 7 13 15 18 18)
 0x200-0x2FF |    19 (counts of 0x10 ranges: 2 0 0 2 0 1 0 0 1 1 0 1 9 1 1 0)
 0x300-0x3FF |     9 (300 304 31e 350 38e 3bc 3c8 3c8 3fa)
-0x400+      |  ----
-
-For specifically lits, 4 groups are size 0x10, and 1 group is size 0x11.
-    That 0x11 literal group is at offset 0x44F in gfx block 0x237.
-For specifically NN runs, all 5 are length 0x10.
+0x400+      | -----
 
 Hopefully, you can clearly see that for the data in the game, the format should:
 - STRONGLY prioritize 00 runs
@@ -172,9 +169,8 @@ However, I was able to condense it down overall and even free up several bytes:
 - A lot of Chunsoft's code went out of its way to make sure the M/X flags were
   properly initialized. This was despite how it only deviates from M=1 and X=0
   at $028657 in the "get jump table offset" code (M=0 for three instructions),
-  which I didn't (and couldn't) reuse with its replacement. I really shouldn't
-  make this a habit, but I removed most of the PHP/PLP/SEP/REP instructions.
-- ASM optimizations to save a few bytes here and there in the new code I wrote.
+  so I removed most of the PHP/PLP/SEP/REP instructions in the interest of space.
+- ASM optimizations to reuse code as much as I could.
 
 ----------
 
@@ -207,7 +203,7 @@ sizes for the blocks were:
 Gold bookmark:    0xBBF   (0x  1F saved)
 Main silhouettes: 0x8A878 (0x1B97 saved; improved by another 0x1A)
 
-Here is what I consider the final format for the silhouettes:
+For some time, I was satisfied with this format for the silhouettes:
 00:    end of data
 01-10: literal data    (size 01-10)
 11-1F: run of NN bytes (size 02-10)
@@ -217,3 +213,79 @@ Here is what I consider the final format for the silhouettes:
 By recompressing the silhouettes' graphics, reinserting/repointing them, and
 both moving back and repointing OAM data block 3 right after, we can open up a
 block of 0x1C14 free bytes (0x26 + 0x1B97 + 0x57) at $5DE3EC-$5DFFFF.
+
+--------------------------------------------------------------------------------
+
+For completeness, I tried seeing if it was possible to get better compression by
+further shrinking the size limits for literals and NN runs? Would the trade-off
+of losing a handful of bytes for them be worth it to increase the size limits
+for 00 or FF runs?
+
+---
+
+For specifically lits:
+- Of the 68836 groups in the size range 0x1-0xF, only 98 are size 0x9+:
+  40 of 9, 22 of 0xA, 10 of 0xB, 14 of 0xC, 3 of 0xD, 7 of 0xE, 2 of 0xF
+- 4 groups are size 0x10
+- 1 group is size 0x11 (see offset 0x44F in gfx block 0x237)
+
+If you reduce the block size limit from 0x10 to 0x9, all groups of lits would
+fit into two blocks. You would need to encode an extra block for each group of
+size 0xA-0x10, of which there are 62*. Each extra block uses 1 byte to encode
+the size [N-9], so this change would take 62 bytes.
+*: 98-40+4 = 62. The 0x11 lits group needed two blocks anyway.
+If you bumped it up to 0xC or 0xE, the change would only take 17 or 7 bytes.
+
+---
+
+For specifically NN runs:
+- Of the 93827 groups in the size range 0x1-0xF, only 23 are size 0x9+:
+  14 of 9, 5 of 0xA, 1 of 0xB, 1 of 0xC, 2 of 0xD, 0 of both 0xE and 0xF
+- Another 5 are length 0x10.
+
+If you reduce the block size limit from 0x10 to 0x8, all groups of NN runs fit
+into two blocks. You would need to encode another block for each group of size
+0x9-0x10, of which there are 28. Each extra block uses two bytes to encode the
+size [N-8] and the run's value NN, so this change would take 28*2 = 56 bytes.
+If you bumped it up to 0xA, then the change would take 9*2 = 18 bytes instead.
+
+---
+
+With this in mind, what if you instead had the compression format like:
+00:    end of data
+01-09: literal data    (size 01-09)
+0A-10: run of NN bytes (size 02-08)
+11-??: run of FF bytes (size 01-??)
+??-FF: run of 00 bytes (size 01-??)
+
+Starting with 0xA8 for the 00 run size limit, the size was 0x8A890, which was
+surprisingly not much worse than the previous format. Gold bookmark sprites were
+also not much worse, 0xBC9 versus 0xBBF.
+
+After trying a handful of combinations of 00/FF run size limits for when max
+lits were 09 and max NN runs were 08, I noticed I got the best size when the max
+FF run was *also* 0x38 like my "control" from above. Looking at the size table,
+you can see that all but 12 groups of FF can fit into two blocks of up to 0x38
+bytes, and 11 of those 12 will fit into three blocks of up to 0x38 bytes.
+So 0x38 seems to be the optimal size limit for the FF runs present in the game.
+
+Some size limit combinations I tried out:
+Format: 00,FF,LL,NN -> bookmark + silhs
+A8,38,10,10 -> BBF + 8a878 ("control group" from above)
+B7,38,09,08 -> BC9 + 8A87E (0x10 bytes worse)
+AD,38,0E,0D -> BC0 + 8a868 (save 0x F bytes overall)
+AF,38,0E,0B -> BC0 + 8a864 (save 0x13 bytes overall)
+B5,38,0A,09 -> BC3 + 8A85D (save 0x17 bytes overall)
+B3,38,0B,0A -> BC1 + 8A851 (save 0x25 bytes overall)
+B2,38,0C,0A -> BC0 + 8A84F (save 0x28 bytes overall)
+B0,38,0E,0A -> BC0 + 8A84A (save 0x2D bytes overall)
+
+So giving up 25 (0x19) bytes for the smaller size limits for NN runs and lits
+allowed me to save 70 (0x46) bytes total, for an overall savings of 0x2D bytes.
+
+New format unless I can figure out some other way to compress stuff down more:
+00:    end of data
+01-0E: literal data    (size 01-0E)
+0F-17: run of NN bytes (size 02-0A)
+18-4F: run of FF bytes (size 01-38)
+50-FF: run of 00 bytes (size 01-B0)
