@@ -1,7 +1,7 @@
 # Background GFX translation
 TL;DR, graphics to translate are: end credits, opening credits, Kamaitachi title logo, and a graphic that's debatably a funny spoiler (check the spoiler README).
 
-This page will focus on just the graphics that are encoded as background images. The end credits are in a separate format, and I have dedicated notes for them [here](/end%20credits/NOTES%20end%credits.txt).
+This page will focus on just the graphics that are encoded as background images. The end credits are in a separate format, and I have dedicated notes for them [here](/end%20credits/NOTES%20end%20credits.txt).
 
 Kamaitachi does not have that many graphics to translate, and none of the translatable graphics are strictly necessary for understanding the story, either. However, the reinsertion process will be fairly difficult due to the complicated compression format.
 
