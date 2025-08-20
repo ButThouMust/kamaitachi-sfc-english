@@ -30,6 +30,7 @@ From solely a translation point of view, I personally would like to translate th
 ![](/repo%20images/title%20screen%20background%20basic.png)
 ![](/repo%20images/title%20screen%20background%20frame%201.png)
 ![](/repo%20images/title%20screen%20background%20frame%202.png)
+
 The gray background for the title screen has its graphics data arranged so that depending on the palette you apply to it, a pixel will either be:
 - red on both frames 1 and 2
 - red on just frame 2
@@ -38,10 +39,10 @@ The gray background for the title screen has its graphics data arranged so that 
 Red pixels will default to gray if not on the frame where they should be red.
 
 ### Title logo
-![](/repo%20images/title%20logo.png)
+![](/repo%20images/title%20logo%20isolated.png)
 
-One notable thing about the title logo itself is that with the final palette you see after the fade, most of the characters have a gray border around them. It looks incomplete in isolation but has the empty spots filled in with the gray background.
+One notable thing about the title logo itself is that with the final palette you see after the fade, the Japanese characters have gray borders around them. It looks incomplete in isolation but has the empty spots filled in with the gray background.
 
-![](/repo%20images/title%20logo%20in%20middle%20of%20fade%20to%20logo.png)
+![](/repo%20images/title%20screen%20in%20middle%20of%20fade%20to%20logo.png)
 
 And if you're wondering, yes, the shape of the splatter was designed with the Japanese title logo in mind. Some contours of the splatter fit with the logo, which you can see if you take a screenshot in the middle of the fade like above.
