@@ -13,6 +13,10 @@
 ![](/repo%20images/file%20prompt%20resume%20from%20last%20save.png)
 ![](/repo%20images/file%20prompt%20delete.png)
 
+## Name entry screen's character grid
+![](/repo%20images/name%20entry%20grid%20translated%20-%20pg%201.png)
+![](/repo%20images/name%20entry%20grid%20translated%20-%20pg%202.png)
+
 ## Silhouette decompression
 ![](/repo%20images/example%20silhouette%20-%20basic.png)
 ![](/repo%20images/example%20silhouette%20-%20not%20basic.png)
