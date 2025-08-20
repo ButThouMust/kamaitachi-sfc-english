@@ -14,7 +14,7 @@ Actual movie:
 
 ## Baka vaca
 One path you can take for dinner leads to a pun that depends on both Japanese and Spanish, interestingly. Tooru can call Mari's uncle Mr. Kobayashi an idiot (馬鹿 *baka*) for quitting his job as a lawyer to start up the ski lodge, which she takes offense to. He manages to start smoothing things over by saying:
-> 「ところでスペイン語で『バカ』って<『牛』の意味って知ってた？」\
+> 「ところでスペイン語で『バカ』って『牛』の意味って知ってた？」\
 > More literal:
 > - "By the way, did you know that 'baka' means cow in Spanish?"
 > 
@@ -24,7 +24,7 @@ One path you can take for dinner leads to a pun that depends on both Japanese an
 One way I'd thought of to translate this was to have Tooru call him a moron instead, and try to explain it away with, "By the way, did you know that the word 'oxymoron' is itself an oxymoron, meaning 'sharp-dull' in Greek?"
 
 ## Japanese comedians and foie gras
-Some choices at dinner lead you to a path with some references to famous Japanese comedians (谷啓 Kei Tani, ハナ肇 Hajime Hana, 植木等 Hitoshi Ueki) and/or a discussion of foie gras and culinary delicacies. According to some videos, the Rinne Saisei translation replaces them with references to Robin Williams.
+Some choices at dinner lead you to a path with some references to famous Japanese comedians (谷啓 Kei Tani, ハナ肇 Hajime Hana, 植木等 Hitoshi Ueki) and/or a discussion of foie gras and culinary delicacies. According to some videos, the Rinne Saisei translation replaces the comedian references with references to Robin Williams.
 
 ## Ikkyuu-san
 Tooru compares Kayama, hesitating when jokingly confronted about going to find the killer in the blizzard, to "Ikkyuu-san."
@@ -58,10 +58,22 @@ I was insatiably curious about how the Rinne Saisei translation handled this, an
 If this wasn't enough, Chunsoft put in *even more* subliminal messages after that, for the player to try to spot. It has directions to do, *something* that I don't want to give away here. Not the fault of Project Kamai, but the directions in the SFC version are much cooler than what's in Rinne Saisei (regardless of whether you play in Japanese or English).
 
 ## Mysterious Fountain
-One of the pink bookmark routes has a joke that is completely lost in translation to English in particular. It involves a sign that reads, in English, "Welcome to Mysterious Fountain." Tooru and Mari have this exchange about it:
+One of the pink bookmark routes has a joke that is completely lost in translation to English in particular. It involves a sign that reads, in English, "Welcome to Mysterious Fountain." Mari and Tooru have this exchange about it:
 > 「ファウンテンって確か英語で泉のことよね？」\
 > "I'm sure 'fountain' is the English word for 泉, right?"\
 > 「馬鹿だな真理。ファウンテンって言ったら山に決まってるじゃないか」\
-> "No it's not, Mari. They're talking about a 山."
+> "No it's not, Mari. They're obviously talking about a 山."
 
 Where the joke is that 泉 *izumi* means fountain and 山 *yama* means mountain.
+
+## Otogirisou title screen
+![](/repo%20images/otogirisou%20title%20screen%20recreation%20tv%20border.png)
+![](/repo%20images/otogirisou%20title%20screen%20recreation%20full.png)
+
+No, I'm not making this up! This involves a joke route that you unlock after solving the murder mystery. In the lounge, Tooru and Mari find a Super Famicom with copies of Otogirisou and Kamaitachi no Yoru. If you pick Otogirisou, you will see a recreation of that game's title screen.
+
+The graphics for the TV border are separate, but in normal play, you will only ever see the title screen recreation with the TV border.
+
+I suppose you can argue that since the story says Super *Famicom* instead of Super *Nintendo*, you can get away with keeping in the original logo. I'd gotten permission from Muttvil, the user who created the translated title logo for my Otogirisou translation project, to reuse it for Kamaitachi no Yoru.
+
+There's one thing that complicates inserting the translated logo. In the original game, the logo and the background image of the mansion and field of flowers are on separate background layers. The recreation in Kamaitachi combines them into one layer, and the colors between each version are not 100% the same.
