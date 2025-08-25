@@ -3,6 +3,10 @@ In case anyone happens upon this repo, I wanted to put at the top that *I do not
 
 I had created a [translation patch](https://github.com/ButThouMust/otogirisou-english) for the Chunsoft sound novel Otogirisou on Super Famicom. At some point during the creation of that patch, I tried digging around in Chunsoft's next game in the same style, and found enough things in common between their internal workings that I wanted to work on it, too.
 
+![]("/repo%20images/title%20screen%20screenshot.png")
+![]("/repo%20images/file%20select%20screen%20translated.png")
+![]("/repo%20images/english%20script%20insertion.png")
+
 Kamaitachi no Yoru (かまいたちの夜) is a murder mystery sound novel that takes place in a ski lodge during a blizzard. If you had to translate the title using only English words, it would be *The Night of the Sickle Weasel*.
 
 Some innovations over Otogirisou:
@@ -34,8 +38,10 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 - Dump the compressed Japanese script.
 - Compress and reinsert modified versions of the Japanese script into the game.
   - I used this to test scripts for viewing unused content, in particular some silhouettes and visual effects.
-- Compress an English translated script into the format the game expects.
+- Insert and compress an English font and a translated script into the game.
 - Insert translated menu prompts for managing files, like "start game", "delete file", "change names", etc.
+- Edited the name entry screen to let the player input a name in English.
+  - This was more difficult than it sounds, interestingly. The short version is, the text encoding table and the visible graphics were stored separately.
 
 ### <ins>Graphics</ins>
 - Insert translated graphics for the stereo/mono option.
@@ -43,7 +49,6 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
   - Exact translated graphics are not set in stone, but easily editable.
 - Find graphics for the boxes on the name entry screen.
 - Reverse engineer the format for how the end credits are displayed.
-- Replace the visible graphics for the characters you can select on the name entry screen (underlying character encodings are separate, but easy to change).
 
 ### <ins>Graphics compression formats</ins>
 | Data type | Decompressor | Recompressor |
@@ -57,36 +62,34 @@ I do want to at least try working on a compressor for the background tilesets, b
 
 My background tilemap recompressor saves a total of ~1 KB across all the tilemaps present in the game. I think it can still be improved, but I'm happy with it as it is now.
 
-The font for the grid of characters on the name entry screen, and some other graphics, have their own compression format (it's a flavor of LZSS). My recompressor saves about 700 bytes with the Japanese font data block (moot point, it's been replaced with an equivalent English data block), and over 1 KB total with all the game's other data sets in that format.
+The font graphics for the grid of characters on the name entry screen, and some other graphics, have their own compression format (it's a flavor of LZSS). My recompressor saves about 700 bytes with the Japanese font data block (moot point, it's been replaced with an equivalent English data block), and over 1 KB total with all the game's other data sets in that format.
 
 At first, I was expecting to not create a recompressor for the silhouettes' graphics data, because none of them contain any text to translate. However, I discovered some ways to improve the existing compression, which altogether let me free up ~6.9 KB from recompressing the existing data.
 
 ## Priorities for the project:
-Currently, the main priority is taking my map of what are the purposes for all/most of the data blocks in the ROM, and using it to figure out where and how to move stuff around to dedicate as much space as possible for the script.
-- Beyond a few blocks of *outright* existing empty space, there are also *implicit* blocks of empty space that I can free up thanks to making better compressor tools.
-- It could be possible to fit the translation into a 3 MB file (same as original) if I move stuff around cleverly.
+I have recompressed and/or rearranged enough data in the ROM to allow fitting an English script and font into it. Moreover, I succeeded at a self-imposed challenge to do so without needing to expand the ROM like I had to for Otogirisou.
 
-As of August 19, 2025, I have a working and repeatable process for taking the new English font, generating the graphics for the grid of characters on the name entry screen, compressing them into the correct format, and inserting into the game. The result ended up being much smaller than the Japanese equivalent and, theoretically speaking, frees up enough space to let me start playtesting the script. I can say for sure once I make ASM files to do some more repointing.
-
-### <ins>English font</ins>
-- Insert a new font for the game. (**simple**)
-- Update the internal character encoding values for the selectable characters on the name entry screen (**easy**)
+I can technically start playtesting the script and marking pages as needing reformatting or not. However, I first need to do ASM hacks for the text printing logic and the systems related to letting the player enter a name.
 
 ### <ins>English script</ins>
+![]("/repo%20images/english%20script%20insertion.png")
+
+- Create ASM hacks to make the English text look better on screen. (**medium**)
+  - More suitable logic for automatically line breaking English text (see above).
+  - [Optional] Text kerning, to fix character pairs like `ac` above or `at`.
+- Once that's done, playtest the script. (**simple, but tedious**)
 - Fully translate the Japanese script to English. (**medium**)
   - Translation mostly done, but quite a few places are difficult to translate.  More details in the [spoiler folder's readme](spoilers/README.md).
   - If I could, I'd like to reach out to the Project Kamai team and ask for permission to use their translation choices for certain parts.
     - A Wayback Machine snapshot of their website had an email address for contacting them. Perhaps as expected, though, sending a message to it gave me an error that the address doesn't exist anymore.
-- Once enough space is carved out for it, format and insert an English-translated script. (**medium**)
-  - Playtest the script. (**simple, but tedious**)
-  - Edit the systems for printing Japanese text to better suit English text. (**unsure, but putting medium for now**)
 
 ### <ins>Name entry screen</ins>
 #### Change logic for menu
-The Japanese game allows entering a name with a combination of kanji, hiragana, or katakana. Each category has 488, 90, and 90 slots in their respective grids of characters. 488 is a bit too many for English, so I've been trying to see if it's possible to make an ASM hack to only allow access to the blocks for hiragana or katakana. (**medium**)
+The Japanese game allows entering a name with a combination of kanji, hiragana, or katakana. Each category has 1160, 90, and 90 slots in their respective grids of characters. 1160 is much too many for English!
 
+I want to see if it's possible to make an ASM hack to only allow access to the blocks for hiragana or katakana. (**medium**)
 For example:
-- Replace hiragana with the standard English alphabet.
+- Replace hiragana with the standard alphabet, digits, punctuation.
 - Replace katakana with accented letters and other special characters.
 - Dummy out the kanji category, and make the player unable to access or interact with it.
 
