@@ -3,9 +3,9 @@ In case anyone happens upon this repo, I wanted to put at the top that *I do not
 
 I had created a [translation patch](https://github.com/ButThouMust/otogirisou-english) for the Chunsoft sound novel Otogirisou on Super Famicom. At some point during the creation of that patch, I tried digging around in Chunsoft's next game in the same style, and found enough things in common between their internal workings that I wanted to work on it, too.
 
-![]("/repo%20images/title%20screen%20screenshot.png")
-![]("/repo%20images/file%20select%20screen%20translated.png")
-![]("/repo%20images/english%20script%20insertion.png")
+![](/repo%20images/title%20screen%20screenshot.png)
+![](/repo%20images/file%20select%20screen%20translated.png)
+![](/repo%20images/english%20script%20insertion.png)
 
 Kamaitachi no Yoru (かまいたちの夜) is a murder mystery sound novel that takes place in a ski lodge during a blizzard. If you had to translate the title using only English words, it would be *The Night of the Sickle Weasel*.
 
@@ -72,7 +72,7 @@ I have recompressed and/or rearranged enough data in the ROM to allow fitting an
 I can technically start playtesting the script and marking pages as needing reformatting or not. However, I first need to do ASM hacks for the text printing logic and the systems related to letting the player enter a name.
 
 ### <ins>English script</ins>
-![]("/repo%20images/english%20script%20insertion.png")
+![](/repo%20images/english%20script%20insertion.png)
 
 - Create ASM hacks to make the English text look better on screen. (**medium**)
   - More suitable logic for automatically line breaking English text (see above).
