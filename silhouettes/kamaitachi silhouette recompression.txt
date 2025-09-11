@@ -18,9 +18,9 @@ improvement, since that was my experience with the RLE format for the background
 graphics' tilesets and tilemaps in Otogirisou. However, that was more out of how
 had I changed the format, I would have had to recompress and *repoint* all the
 graphics. The graphics pointers were not in a neat pointer table but scattered
-about in many different structures with pointers and other data. So I'd have had
-to individually update pointers, instead of just using one loop for reinserting
-and collecting them, and another for updating them.
+about with other data in many structures of varying sizes. So I'd have had to
+individually update pointers, instead of just using one loop for updating them
+in one fell swoop after reinserting the data.
 
 Anyway, with the silhouettes, I found a surface-level way to save space with the
 format, and thought it was worth the deep dive into creating a recompressor.
@@ -74,8 +74,8 @@ Editing the format like that inspired yet another idea to take it even further.
 Mostly equal size limits are okay for a general-purpose compressor, but what if
 you tailored the size limits specifically for the data present in the game?
 
-One of my remarks about the format that in the Japanese game's data, no groups
-of literals reach 0x40 bytes, nor do any runs of bytes other than 00 or FF. I
+One remark I had about the format was: the Japanese game's data has no groups of
+0x40 literals, nor any runs of 0x40 of the same byte (except 00 and FF). I
 retooled my recompressor to analyze the uncompressed data without regard for the
 cases' size limits (get the absolute biggest runs possible), and generate text
 logs with each line saying like: "Offset 0xABC: 0x8 run of 05" or "0x04 lits"
@@ -139,8 +139,8 @@ How much could you save if the format was instead something like this?
 
 Experimenting like this is justified from an ASM point of view. Because the
 ranges are not sized equally, I can't just mask out some of the top bits of the
-type byte to determine what case to use. So subtraction from a base value is
-necessary, and we can redefine what base value to subtract.
+type byte to determine what case to use. So we need to subtract a base value
+from the byte we read from the ROM, and we can redefine what value to subtract.
 
 Some results for trying the compressor while varying the max size of 00 runs:
 max run size:  80       90       A0       B0      C0
@@ -164,8 +164,8 @@ Initially, I was concerned that the new ASM might not fit in the original space.
 However, I was able to condense it down overall and even free up several bytes:
 - Chunsoft's code had two separate loops for the 00/FF runs and NN runs that
   were not fundamentally different, but had different branch opcodes after the
-  size counter (either BEQ or BPL) and different direct page addresses. The new
-  format allowed reusing the same loop between all three cases.
+  size counter (either BEQ or BPL) and different direct page addresses. I made
+  the replacement decompression code reuse the same loop between all 3 cases.
 - A lot of Chunsoft's code went out of its way to make sure the M/X flags were
   properly initialized. This was despite how it only deviates from M=1 and X=0
   at $028657 in the "get jump table offset" code (M=0 for three instructions),
@@ -217,9 +217,9 @@ block of 0x1C14 free bytes (0x26 + 0x1B97 + 0x57) at $5DE3EC-$5DFFFF.
 --------------------------------------------------------------------------------
 
 For completeness, I tried seeing if it was possible to get better compression by
-further shrinking the size limits for literals and NN runs? Would the trade-off
-of losing a handful of bytes for them be worth it to increase the size limits
-for 00 or FF runs?
+further shrinking the size limits for literals and NN runs. In other words,
+is the trade-off of losing a handful of bytes for them worth it to increase the
+size limits for 00 or FF runs?
 
 ---
 
@@ -229,12 +229,14 @@ For specifically lits:
 - 4 groups are size 0x10
 - 1 group is size 0x11 (see offset 0x44F in gfx block 0x237)
 
-If you reduce the block size limit from 0x10 to 0x9, all groups of lits would
-fit into two blocks. You would need to encode an extra block for each group of
-size 0xA-0x10, of which there are 62*. Each extra block uses 1 byte to encode
-the size [N-9], so this change would take 62 bytes.
-*: 98-40+4 = 62. The 0x11 lits group needed two blocks anyway.
-If you bumped it up to 0xC or 0xE, the change would only take 17 or 7 bytes.
+Say you reduce the block size limit from 0x10 to 9 so all groups of lits fit
+into at most 2 blocks. You would need to encode an extra block for each group of
+size 0xA-0x10, of which there are 62. Each extra block uses 1 byte to encode the
+size [N-9], so a limit of 0xA loses 62 bytes versus a limit of 0x10.
+
+Here is a table from applying the same logic for each possible size:
+Limit | 0x9 | 0xA | 0xB | 0xC | 0xD | 0xE | 0xF | 0x10
+Loss  |  62 |  40 |  30 |  16 |  13 |   6 |   4 |    0
 
 ---
 
@@ -243,11 +245,20 @@ For specifically NN runs:
   14 of 9, 5 of 0xA, 1 of 0xB, 1 of 0xC, 2 of 0xD, 0 of both 0xE and 0xF
 - Another 5 are length 0x10.
 
-If you reduce the block size limit from 0x10 to 0x8, all groups of NN runs fit
-into two blocks. You would need to encode another block for each group of size
-0x9-0x10, of which there are 28. Each extra block uses two bytes to encode the
-size [N-8] and the run's value NN, so this change would take 28*2 = 56 bytes.
-If you bumped it up to 0xA, then the change would take 9*2 = 18 bytes instead.
+Say you reduce the block size limit from 0x10 to 8 so all NN runs fit into at
+most 2 blocks. You would need to encode an extra block for each group of size
+0x9-0x10, of which there are 28. Each extra block uses 2 bytes to encode the
+size* [N-8] and the run's value NN, so a limit of 0x8 loses 28*2 = 56 bytes
+versus a limit of 0x10. Make another table:
+
+Limit  | 0x8 | 0x9 | 0xA | 0xB | 0xC | 0xD | 0xE | 0xF | 0x10
+Blocks |  28 |  14 |   9 |   8 |   7 |   5 |   5 |   5 |    0
+Bytes  |  56 |  28 |  18 |  16 |  14 |  10 |  10 |  10 |    0
+
+*: If (run size) - (size limit) = 1, you'd need to encode the leftover byte as a
+lit. In isolation, it would take up 2 bytes, but might take up just 1 if it's
+followed by more lits and would fit in the lit size limit. Above, I assume the
+worst case of it needing 2 bytes.
 
 ---
 
@@ -258,27 +269,43 @@ With this in mind, what if you instead had the compression format like:
 11-??: run of FF bytes (size 01-??)
 ??-FF: run of 00 bytes (size 01-??)
 
+Let the format from the previous section be our "control" to compare against:
+up to 0x10 literals, up to 0x10 of NN, up to 0x38 of FF, up to 0xA8 of 00
+
 Starting with 0xA8 for the 00 run size limit, the size was 0x8A890, which was
 surprisingly not much worse than the previous format. Gold bookmark sprites were
 also not much worse, 0xBC9 versus 0xBBF.
 
+---
+
 After trying a handful of combinations of 00/FF run size limits for when max
 lits were 09 and max NN runs were 08, I noticed I got the best size when the max
-FF run was *also* 0x38 like my "control" from above. Looking at the size table,
-you can see that all but 12 groups of FF can fit into two blocks of up to 0x38
-bytes, and 11 of those 12 will fit into three blocks of up to 0x38 bytes.
+FF run was *also* 0x38 like the control format. Looking at the size table:
+- Only 12 runs of FF don't fit into two blocks of up to 0x38 bytes.
+- 11 of those 12 will fit into three blocks. Only one (size 0xAC) needs four.
+- Bumping up the limit to 0x3A would let the 0xAC run fit in 3 blocks (save 1
+  byte when compressing), and two runs of size 0x39 fit in 1 block each (save 2
+  bytes). But that's it. You only end up saving a total of three bytes.
+
 So 0x38 seems to be the optimal size limit for the FF runs present in the game.
 
-Some size limit combinations I tried out:
-Format: 00,FF,LL,NN -> bookmark + silhs
-A8,38,10,10 -> BBF + 8a878 ("control group" from above)
-B7,38,09,08 -> BC9 + 8A87E (0x10 bytes worse)
-AD,38,0E,0D -> BC0 + 8a868 (save 0x F bytes overall)
-AF,38,0E,0B -> BC0 + 8a864 (save 0x13 bytes overall)
-B5,38,0A,09 -> BC3 + 8A85D (save 0x17 bytes overall)
-B3,38,0B,0A -> BC1 + 8A851 (save 0x25 bytes overall)
-B2,38,0C,0A -> BC0 + 8A84F (save 0x28 bytes overall)
-B0,38,0E,0A -> BC0 + 8A84A (save 0x2D bytes overall)
+Finding an absolute best size limit for 00 runs isn't quite as simple and
+straightforward. In my compressor, I fix the size limits for FF runs, NN runs,
+and literals, then just give everything left over to the 00 runs.
+
+---
+
+Some size limit combinations I tried out: ("GBM" = gold bookmark)
+00,FF,LL,NN | GBM + silhs | saved overall
+------------+-------------+---------------
+A8,38,10,10 | bbf + 8a878 | "control", 0
+B7,38,09,08 | bc9 + 8a87e | -0x10 (worse)
+AD,38,0E,0D | bc0 + 8a868 | +0x F
+AF,38,0E,0B | bc0 + 8a864 | +0x13
+B5,38,0A,09 | bc3 + 8a85d | +0x17
+B3,38,0B,0A | bc1 + 8a851 | +0x25
+B2,38,0C,0A | bc0 + 8a84f | +0x28
+B0,38,0E,0A | bc0 + 8a84a | +0x2D
 
 So giving up 25 (0x19) bytes for the smaller size limits for NN runs and lits
 allowed me to save 70 (0x46) bytes total, for an overall savings of 0x2D bytes.
