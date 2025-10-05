@@ -33,17 +33,21 @@ Tooru compares Kayama, hesitating when jokingly confronted about going to find t
 
 The first result I found for it was a 1970s/1980s anime series based on the life of a real-life Zen Buddhist monk. Don't know a good way to translate the nuance behind this.
 
-## Peashooters...?
+## Peashooters and water guns
 Shortly before the first opportunity to point out the killer's identity, there is this piece of dialogue between Mari and Tooru.
 > 「どうしたの？　鳩が水鉄砲食らったみたいな顔して」\
 > "What's the matter? You look really surprised [like a dove that got hit by a water gun]."\
 > 「それを言うなら豆鉄砲だろ」\
-> "If you say that, was it a peashooter?"
+> "I thought the expression used a peashooter instead?"
+> 「いいじゃないの、どっちでも。それで、一体どうしたのよ」
+> “It's fine, it doesn't matter. Anyway, what is it?”
+
+The Japanese expression usually uses 豆鉄砲 "peashooter" instead of 水鉄砲 "water gun" like what Mari said. I wonder if there's a good way to incorporate a joke here.
 
 ## The Night of the Kamai-tachi
 One route you unlock after solving the murder mystery has Tooru finding a Super Famicom (or a PS1, in all subsequent rereleases) in the ski lodge's lounge. Without giving too much away, it turns into a joke situation where they all find out that near everyone has a surname pronounced Kamai (but with different spellings).
 
-The joke is that in Japanese, you can say that かまいたち refers to multiple people named Kamai (鎌井達 kamai-tachi) as opposed to the yokai kamaitachi (kama-itachi). The Rinne Saisei translation localized the joke with all the Kamais starting up a session of tai chi, so Kamai tai chi.
+The joke is that in Japanese, you can say that かまいたち refers to multiple people named Kamai (鎌井達 *kamai-tachi* "Kamai and others") as opposed to the yokai kamaitachi (kama-itachi). The Rinne Saisei translation localized the joke with all the Kamais starting up a session of tai chi, so Kamai tai chi.
 
 ## Okama-ita-chi
 One part of the game that aged poorly to me regards a route you unlock once you get the pink bookmark. One character is an okama, which is a Japanese word for an effeminate man who dresses like a woman. Clyde Mandelin has an [article](https://legendsoflocalization.com/articles/okama-in-game-translation/) about the word. The relevant text needs to be translated, *carefully*, to say the least. I plan to just leave the word as-is whenever it pops up.
@@ -55,7 +59,38 @@ One pink bookmark route is about the cast finding a cryptic hint about a treasur
 
 I was insatiably curious about how the Rinne Saisei translation handled this, and must say that they translated it much better than anything I could have ever come up with myself. It is not only accurate but preserves the subliminal message.
 
-If this wasn't enough, Chunsoft put in *even more* subliminal messages after that, for the player to try to spot. It has directions to do, *something* that I don't want to give away here. Not the fault of Project Kamai, but the directions in the SFC version are much cooler than what's in Rinne Saisei (regardless of whether you play in Japanese or English).
+I reused what the subliminal message turns out to be. My translation is not as flowery as what was in the Rinne Saisei translation, but it does fit the limitations of the SNES screen resolution with the font I'm using. Improvements and suggestions are welcome:
+
+Original:\
+> 宝はシュプールの中にある。\
+> １と３の間、\
+> 冥土へと向かう道の途中。\
+> 負け犬は去れ。\
+> 車井戸がきしるから、\
+> あの泥棒がうらやましい。\
+> あなたに似た人より早く、\
+> たからのありかを探りだせ。
+
+Translating each line more literally:\
+> A treasure is in the Spur.\
+> It is between 1 and 3,\
+> on the road to the underworld.\
+> Send the losers away. [unsure]\
+> Because the well creaks,\
+> it is jealous of that thief.\
+> Faster than a person who looks like you,\
+> seek out the treasure.\
+
+Attempt to preserve hidden message:\
+> Hark, a treasure is hidden in the spur.\
+> Try checking from between 1 and 3, to\
+> the underworld where all losers shall be.\
+> The creaking well passionately envies\
+> that kleptomaniac of a thief.\
+> Seek out the treasure, before\
+> the one who looks like you finds it.
+
+Chunsoft also put in two more subliminal messages in the text after the answer is revealed, for the player to try to spot. They are directions to do something *wholly unique* to the SFC version that I don't want to give away here. I did figure out a way to translate the text while preserving the subliminal messages.
 
 ## Mysterious Fountain
 One of the pink bookmark routes has a joke that is completely lost in translation to English in particular. It involves a sign that reads, in English, "Welcome to Mysterious Fountain." Mari and Tooru have this exchange about it:
