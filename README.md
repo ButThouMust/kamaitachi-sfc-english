@@ -1,11 +1,12 @@
 # kamaitachi-sfc-english
-In case anyone happens upon this repo, I wanted to put at the top that *I do not have a translation patch yet*. For the time being, this will just be a place where I'll do project updates, but I will also eventually put my source code and patches here.
+In case anyone happens upon this repo, I wanted to put at the top that *I do not have a translation patch file yet*. For the time being, this will just be a place where I'll do project updates, but I will also eventually put my source code and patches here.
 
 I had created a [translation patch](https://github.com/ButThouMust/otogirisou-english) for the Chunsoft sound novel Otogirisou on Super Famicom. At some point during the creation of that patch, I tried digging around in Chunsoft's next game in the same style, and found enough things in common between their internal workings that I wanted to work on it, too.
 
 ![](/repo%20images/title%20screen%20screenshot.png)
 ![](/repo%20images/file%20select%20screen%20translated.png)
 ![](/repo%20images/english%20script%20insertion.png)
+![](/repo%20images/name%20entry%20grid%20translated%20-%20pg%201.png)
 
 Kamaitachi no Yoru (かまいたちの夜) is a murder mystery sound novel that takes place in a ski lodge during a blizzard. If you had to translate the title using only English words, it would be *The Night of the Sickle Weasel*.
 
@@ -47,24 +48,29 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 - Insert translated graphics for the stereo/mono option.
 - Translate the 終 graphic that the player sees upon reaching a bad end.
   - Exact translated graphics are not set in stone, but easily editable.
-- Find graphics for the boxes on the name entry screen.
+- For the boxes on the name entry screen, find both the graphics themselves and the myriad of ways they get drawn to the screen.
 - Reverse engineer the format for how the end credits are displayed.
 
 ### <ins>Graphics compression formats</ins>
 | Data type | Decompressor | Recompressor |
 | :--- | :---: | :---: |
 | Background graphics tile*sets* | Done | Not started |
-| Background graphics tile*maps* | Done | Mostly done |
+| Background graphics tile*maps* | Done | Done |
 | Name entry character grid font | Done | Done |
 | Silhouettes | Done | Done |
 
 I do want to at least try working on a compressor for the background tilesets, but the compression format is quite intricate. The decompressor was a pain to get working, having to trace through Chunsoft's ASM code and figure out exactly what the code was doing. However, the code does have a case for loading uncompressed graphics data, so that can work as a stopgap if need be.
 
-My background tilemap recompressor saves a total of ~1 KB across all the tilemaps present in the game. I think it can still be improved, but I'm happy with it as it is now.
+My background tilemap recompressor saves about 2.45 KB across all the tilemaps present in the game.
+- I saved 1 KB while staying within the confines of the compression formats (note the plural) in the original Japanese game.
+- I saved another 1.45 KB from tweaking one format to better handle certain data patterns, as well as allow some existing compression cases to compress more data at once for all the formats.
 
-The font graphics for the grid of characters on the name entry screen, and some other graphics, have their own compression format (it's a flavor of LZSS). My recompressor saves about 700 bytes with the Japanese font data block (moot point, it's been replaced with an equivalent English data block), and over 1 KB total with all the game's other data sets in that format.
+The font graphics for the grid of characters on the name entry screen, and some other graphics, have their own compression format (it's a flavor of LZSS). My recompressor saves about 700 bytes with the Japanese font data block (moot point, it's been replaced with an equivalent English data block), and over 1.2 KB total with all the game's other data sets in that format.
 
 At first, I was expecting to not create a recompressor for the silhouettes' graphics data, because none of them contain any text to translate. However, I discovered some ways to improve the existing compression, which altogether let me free up ~6.9 KB from recompressing the existing data.
+- Another reason was that, as I was playing the game, I found one silhouette that has an apparent error with the graphics? A 16x8 pixel block in the top left of this screenshot is missing the silhouette color. I was able to fix this and reincorporate it into the game.
+
+![](/repo%20images/silhouette%20gfx%20error%200x06E.png)
 
 ## Priorities for the project:
 I have recompressed and/or rearranged enough data in the ROM to allow fitting an English script and font into it. Moreover, I succeeded at a self-imposed challenge to do so without needing to expand the ROM like I had to for Otogirisou.
@@ -84,10 +90,14 @@ I can technically start playtesting the script and marking pages as needing refo
     - A Wayback Machine snapshot of their website had an email address for contacting them. Perhaps as expected, though, sending a message to it gave me an error that the address doesn't exist anymore.
 
 ### <ins>Name entry screen</ins>
+Getting the name entry screen to work for an English translation is going to take a very extensive ASM hack. I felt that using only in-place ASM code edits would be too restrictive for what I want to do, so I got a disassembly of all the code in bank 04 and started editing it. I saved over 0x500 bytes of code from things like cutting out unneeded code, optimizing out repeated code snippets, and replacing lots of intra-bank `JSL`s with `JSR`s. Hopefully plenty of space to let me do what I want there.
+
 #### Change logic for menu
+![](/repo%20images/name%20entry%20grid%20translated%20-%20pg%201.png)
+
 The Japanese game allows entering a name with a combination of kanji, hiragana, or katakana. Each category has 1160, 90, and 90 slots in their respective grids of characters. 1160 is much too many for English!
 
-I want to see if it's possible to make an ASM hack to only allow access to the blocks for hiragana or katakana. (**medium**)
+I want to try making an ASM hack to only allow access to the blocks for hiragana or katakana. (**medium**)
 For example:
 - Replace hiragana with the standard alphabet, digits, punctuation.
 - Replace katakana with accented letters and other special characters.
@@ -97,10 +107,11 @@ For example:
 I want to be able to change the name entry screen to support a limit of 10+ characters instead of 6 like in the original (**difficult**).
 - The code is used for naming the protagonist and his girlfriend, but also for certain points in the story where the player must enter the name of who they believe to be the killer in the murder mystery. Most characters' names are longer than six letters when translated into English.
 - Getting this right is very important, because solving the murder mystery opens up more routes and endings for the player to view.
+- See if it would be possible to use the game's VWF to print the name than have the characters monospaced.
 
 ## "Nice to have" items
 - Translate the end credits (medium).
 - Create a recompressor for the background graphics' tilesets. (**difficult**)
   - Translate a screen of credits that appears before the title screen.
   - Translate the logo on the title screen.
-  - Possibly translate a screen that parodies another Chunsoft game.
+  - Possibly translate a screen that references another Chunsoft game.
