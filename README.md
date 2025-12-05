@@ -42,14 +42,14 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 - Insert and compress an English font and a translated script into the game.
 - Insert translated menu prompts for managing files, like "start game", "delete file", "change names", etc.
 - Edited the name entry screen to let the player input a name in English.
-  - This was more difficult than it sounds, interestingly. The short version is, the text encoding table and the visible graphics were stored separately.
+  - This was more difficult than it sounds, interestingly. The short version is, the graphics for the 9x10 grid of characters does not use the typical font printing routine, but rather its own format. So updating only the text encoding table would not change what characters the player sees on the screen.
 
 ### <ins>Graphics</ins>
 - Insert translated graphics for the stereo/mono option.
 - Translate the 終 graphic that the player sees upon reaching a bad end.
   - Exact translated graphics are not set in stone, but easily editable.
-- For the boxes on the name entry screen, find both the graphics themselves and the myriad of ways they get drawn to the screen.
-- Reverse engineer the format for how the end credits are displayed.
+- For the boxes on the name entry screen, translate both their text and painstakingly update the absolute myriad of ways they get drawn to the screen.
+- Reverse engineer the format for how the [end credits](/end%20credits/NOTES%20end%20credits.txt) are displayed.
 
 ### <ins>Graphics compression formats</ins>
 | Data type | Decompressor | Recompressor |
@@ -67,12 +67,12 @@ My background tilemap recompressor saves about 2.45 KB across all the tilemaps p
 
 The font graphics for the grid of characters on the name entry screen, and some other graphics, have their own compression format (it's a flavor of LZSS). My recompressor saves about 700 bytes with the Japanese font data block (moot point, it's been replaced with an equivalent English data block), and over 1.2 KB total with all the game's other data sets in that format.
 
-At first, I was expecting to not create a recompressor for the silhouettes' graphics data, because none of them contain any text to translate. However, I discovered some ways to improve the existing compression, which altogether let me free up ~6.9 KB from recompressing the existing data.
+At first, I was expecting to not have to create a recompressor for the silhouettes' graphics data, because none of them contain any text to translate. However, I discovered some ways to improve the existing compression, which altogether let me free up ~6.9 KB from recompressing the existing data.
 - Another reason was that, as I was playing the game, I found one silhouette that has an apparent error with the graphics? A 16x8 pixel block in the top left of this screenshot is missing the silhouette color. I was able to fix this and reincorporate it into the game.
 
 ![](/repo%20images/silhouette%20gfx%20error%200x06E.png)
 
-## Priorities for the project:
+## Priorities for the project
 I have recompressed and/or rearranged enough data in the ROM to allow fitting an English script and font into it. Moreover, I succeeded at a self-imposed challenge to do so without needing to expand the ROM like I had to for Otogirisou.
 
 I can technically start playtesting the script and marking pages as needing reformatting or not. However, I first need to do ASM hacks for the text printing logic and the systems related to letting the player enter a name.
@@ -90,24 +90,22 @@ I can technically start playtesting the script and marking pages as needing refo
     - A Wayback Machine snapshot of their website had an email address for contacting them. Perhaps as expected, though, sending a message to it gave me an error that the address doesn't exist anymore.
 
 ### <ins>Name entry screen</ins>
-Getting the name entry screen to work for an English translation is going to take a very extensive ASM hack. I felt that using only in-place ASM code edits would be too restrictive for what I want to do, so I got a disassembly of all the code in bank 04 and started editing it. I saved over 0x500 bytes of code from things like cutting out unneeded code, optimizing out repeated code snippets, and replacing lots of intra-bank `JSL`s with `JSR`s. Hopefully plenty of space to let me do what I want there.
-
-#### Change logic for menu
 ![](/repo%20images/name%20entry%20grid%20translated%20-%20pg%201.png)
 
-The Japanese game allows entering a name with a combination of kanji, hiragana, or katakana. Each category has 1160, 90, and 90 slots in their respective grids of characters. 1160 is much too many for English!
+Getting the name entry screen to work for an English translation is going to take a very extensive ASM hack. I felt that using only in-place ASM code edits would be too restrictive for what I want to do, so I got a disassembly of all the code in bank 04 and started editing it. I saved over 0x500 bytes of code from things like cutting out unneeded code, optimizing out repeated code snippets, and replacing lots of intra-bank `JSL`s with `JSR`s. Hopefully plenty of space to let me do what I want there.
 
-I want to try making an ASM hack to only allow access to the blocks for hiragana or katakana. (**medium**)
-For example:
-- Replace hiragana with the standard alphabet, digits, punctuation.
-- Replace katakana with accented letters and other special characters.
-- Dummy out the kanji category, and make the player unable to access or interact with it.
+#### <ins>DONE Change logic for character grid</ins>
+The Japanese game allows entering a name with a combination of kanji, hiragana, or katakana. Each category has 1160, 90, and 90 slots in their respective grids of characters. 1160 slots is much too many for English!
 
-#### Character limit for names
+I was able to make an ASM hack to only allow access to the blocks for hiragana/katakana, which I repurposed for the standard alphabet, digits, some punctuation, and accented characters. Below is a GIF of the result.
+
+![](/repo%20images/kamaitachi%20english%20name%20entry.gif)
+
+#### <ins>Character limit for names</ins>
 I want to be able to change the name entry screen to support a limit of 10+ characters instead of 6 like in the original (**difficult**).
 - The code is used for naming the protagonist and his girlfriend, but also for certain points in the story where the player must enter the name of who they believe to be the killer in the murder mystery. Most characters' names are longer than six letters when translated into English.
 - Getting this right is very important, because solving the murder mystery opens up more routes and endings for the player to view.
-- See if it would be possible to use the game's VWF to print the name than have the characters monospaced.
+- See if it would be possible to print the name with the game's VWF, as opposed to printing the characters monospaced.
 
 ## "Nice to have" items
 - Translate the end credits (medium).
