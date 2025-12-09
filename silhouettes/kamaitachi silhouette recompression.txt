@@ -177,20 +177,25 @@ However, I was able to condense it down overall and even free up several bytes:
 Incorporating the bank advance case into the compressor was a pain in the butt,
 because you have to compress all the data, count how much cumulative compressed
 data you have so far, and appropriately handle writing the bank advance byte
-whenever the current group doesn't fit.
+whenever the current group doesn't fit. It involves a handful of special cases.
 
 I found that in the original compressed data, Chunsoft was sometimes forced to
 write the bank advance byte and a filler byte like FF before the end of a bank.
-For example, a group may have exactly fit in the bank (right before the bank
-boundary) but wouldn't leave space for the bank advance byte. Or, a group of
-literals would get split up into two groups, and waste a byte on overhead for
-encoding another "number of literals" value.
+This would happen if a group of literal bytes, or the two bytes for an NN run,
+would exactly fit in the bank (e.g. size byte on $xxFFFE, value on $xxFFFF).
+However, doing this would leave no space for the bank advance byte.
+
+Similarly, bank boundaries may split up one group of literals into two. You'd
+have to waste another byte on overhead for encoding a "# literals" value.
 
 The space I saved in the new decompression ASM code let me include code to check
-for LoROM bank wrapping upon every pointer increment. Some benefits:
-- simplifies the recompression code
+LoROM bank wrapping automatically, upon every pointer increment. Some benefits:
+- greatly simplifies the encoding code for recompression, due to:
+  * reducing necessary bookkeeping (some data is still useful for making/looking
+    at debug logs) e.g. how much data has been inserted so far
+  * not handling special cases for inserting data if a tag either won't fit into
+    a bank at all, or if it wouldn't leave space for the bank advance byte
 - frees up the bank advance byte value in the format
-- don't have to insert all the gfx as a single monolithic block
 - don't have to insert the gfx at the start of a bank
 
 That last point is icing on the cake, because the Japanese game has an unused
@@ -247,8 +252,8 @@ For specifically NN runs:
 
 Say you reduce the block size limit from 0x10 to 8 so all NN runs fit into at
 most 2 blocks. You would need to encode an extra block for each group of size
-0x9-0x10, of which there are 28. Each extra block uses 2 bytes to encode the
-size* [N-8] and the run's value NN, so a limit of 0x8 loses 28*2 = 56 bytes
+0x9-0x10, of which there are 28. Each extra block uses 2 bytes* to encode the
+size [N-8] and the run's value NN, so a limit of 0x8 loses 28*2 = 56 bytes
 versus a limit of 0x10. Make another table:
 
 Limit  | 0x8 | 0x9 | 0xA | 0xB | 0xC | 0xD | 0xE | 0xF | 0x10
