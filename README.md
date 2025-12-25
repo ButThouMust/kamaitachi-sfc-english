@@ -54,12 +54,18 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 ### <ins>Graphics compression formats</ins>
 | Data type | Decompressor | Recompressor |
 | :--- | :---: | :---: |
-| Background graphics tile*sets* | Done | Not started |
+| Background graphics tile*sets* | Done | In progress |
 | Background graphics tile*maps* | Done | Done |
 | Name entry character grid font | Done | Done |
 | Silhouettes | Done | Done |
 
-I do want to at least try working on a compressor for the background tilesets, but the compression format is quite intricate. The decompressor was a pain to get working, having to trace through Chunsoft's ASM code and figure out exactly what the code was doing. However, the code does have a case for loading uncompressed graphics data, so that can work as a stopgap if need be.
+Although the game already has a case in its tileset decompression ASM code for loading uncompressed graphics data, the programmer in me took making a recompressor as a challenge.
+- When first documenting and porting the ASM code, I found the compression format to be pretty obtuse and complicated, but I now have a much better grasp on how it all works.
+- *Just about done*: code that checks (depending on the compression case) either:
+  - "*How well* does this compression type work for this tile's data?"
+  - "*Can* this compression type work for this tile's data?"
+- *Not started*: code for "which compression type is *the best* (uses the least space) for this tile?"
+- *Not started*: encoding the compression for each tile as raw binary data
 
 My background tilemap recompressor saves about 2.45 KB across all the tilemaps present in the game.
 - I saved 1 KB while staying within the confines of the compression formats (note the plural) in the original Japanese game.
@@ -94,7 +100,7 @@ I can technically start playtesting the script and marking pages as needing refo
 
 Getting the name entry screen to work for an English translation is going to take a very extensive ASM hack. I felt that using only in-place ASM code edits would be too restrictive for what I want to do, so I got a disassembly of all the code in bank 04 and started editing it. I saved over 0x500 bytes of code from things like cutting out unneeded code, optimizing out repeated code snippets, and replacing lots of intra-bank `JSL`s with `JSR`s. Hopefully plenty of space to let me do what I want there.
 
-#### <ins>DONE Change logic for character grid</ins>
+#### <ins>DONE Change menu logic for character grid</ins>
 The Japanese game allows entering a name with a combination of kanji, hiragana, or katakana. Each category has 1160, 90, and 90 slots in their respective grids of characters. 1160 slots is much too many for English!
 
 I was able to make an ASM hack to only allow access to the blocks for hiragana/katakana, which I repurposed for the standard alphabet, digits, some punctuation, and accented characters. Below is a GIF of the result.
