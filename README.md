@@ -54,27 +54,24 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 ### <ins>Graphics compression formats</ins>
 | Data type | Decompressor | Recompressor |
 | :--- | :---: | :---: |
-| Background graphics tile*sets* | Done | In progress |
+| Background graphics tile*sets* | Done | Done, improvable |
 | Background graphics tile*maps* | Done | Done |
 | Name entry character grid font | Done | Done |
-| Silhouettes | Done | Done |
+| Silhouette graphics | Done | Done |
 
-Although the game already has a case in its tileset decompression ASM code for loading uncompressed graphics data, the programmer in me took making a recompressor as a challenge.
-- When first documenting and porting the ASM code, I found the compression format to be pretty obtuse and complicated, but I now have a much better grasp on how it all works.
-- *Just about done*: code that checks (depending on the compression case) either:
-  - "*How well* does this compression type work for this tile's data?"
-  - "*Can* this compression type work for this tile's data?"
-- *Not started*: code for "which compression type is *the best* (uses the least space) for this tile?"
-- *Not started*: encoding the compression for each tile as raw binary data
+The tileset compression format was really complicated to figure out from the decompression ASM code. It already has a case for loading uncompressed graphics data, but the programmer in me took making a recompressor as a challenge.
+- Currently, it is not fully optimal and can work better or worse than Chunsoft's original compressor based on the tilesets you feed it. However, it works well enough for my purposes.
+  - I've spent too much time on something that I'd initially marked as "nice to have" for the patch, and I want to move on from it.
+- If you care what can be improved, compressed tilesets have a data header consisting of two blocks. Two decompression cases allow you to use less data by doing "get 1 byte containing an index or indices for reading data from the header" instead of "get 2 or 3 bytes for the data itself." My method of choosing what data to put into the header is still improvable.
 
 My background tilemap recompressor saves about 2.45 KB across all the tilemaps present in the game.
 - I saved 1 KB while staying within the confines of the compression formats (note the plural) in the original Japanese game.
-- I saved another 1.45 KB from tweaking one format to better handle certain data patterns, as well as allow some existing compression cases to compress more data at once for all the formats.
+- I saved another 1.45 KB from tweaking one format to better handle certain data patterns, as well as allowing some existing compression cases to compress more data at once for all the formats.
 
 The font graphics for the grid of characters on the name entry screen, and some other graphics, have their own compression format (it's a flavor of LZSS). My recompressor saves about 700 bytes with the Japanese font data block (moot point, it's been replaced with an equivalent English data block), and over 1.2 KB total with all the game's other data sets in that format.
 
 At first, I was expecting to not have to create a recompressor for the silhouettes' graphics data, because none of them contain any text to translate. However, I discovered some ways to improve the existing compression, which altogether let me free up ~6.9 KB from recompressing the existing data.
-- Another reason was that, as I was playing the game, I found one silhouette that has an apparent error with the graphics? A 16x8 pixel block in the top left of this screenshot is missing the silhouette color. I was able to fix this and reincorporate it into the game.
+- A bonus to figuring out the format was that I was able to fix a silhouette that has an apparent error with the graphics. When I was playing the game, I found that a 16x8 pixel block in the top left of this screenshot was missing the silhouette color.
 
 ![](/repo%20images/silhouette%20gfx%20error%200x06E.png)
 
@@ -115,7 +112,5 @@ I want to be able to change the name entry screen to support a limit of 10+ char
 
 ## "Nice to have" items
 - Translate the end credits (medium).
-- Create a recompressor for the background graphics' tilesets. (**difficult**)
-  - Translate a screen of credits that appears before the title screen.
-  - Translate the logo on the title screen.
-  - Possibly translate a screen that references another Chunsoft game.
+- Translate other graphics like the title screen (**difficult**), or another screen that references another Chunsoft game (medium). More details [here](/notes/gfx translation/README.md).
+- Done: Translate the screen containing the opening credits (thanks to FCandChill for designing the translated graphic!).
