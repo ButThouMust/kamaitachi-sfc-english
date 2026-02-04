@@ -49,7 +49,7 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 - Translate the 終 graphic that the player sees upon reaching a bad end.
   - Exact translated graphics are not set in stone, but easily editable.
 - For the boxes on the name entry screen, translate both their text and painstakingly update the absolute myriad of ways they get drawn to the screen.
-- Reverse engineer the format for how the [end credits](/end%20credits/NOTES%20end%20credits.txt) are displayed.
+- Reverse engineer the format for how the [end credits](/notes/end%20credits/NOTES%20end%20credits.txt) are displayed.
 
 ### <ins>Graphics compression formats</ins>
 | Data type | Decompressor | Recompressor |
@@ -91,7 +91,7 @@ I can technically start playtesting the script and marking pages as needing refo
   - [Optional] Text kerning, to fix character pairs like `ac` above or `at`.
 - Once that's done, playtest the script. (**simple, but tedious**)
 - Fully translate the Japanese script to English. (**medium**)
-  - Translation mostly done, but quite a few places are difficult to translate.  More details in the [spoiler folder's readme](spoilers/README.md).
+  - Translation mostly done, but quite a few places are difficult to translate.  More details in the [spoiler folder's readme](/notes/spoilers/README.md).
   - If I could, I'd like to reach out to the Project Kamai team and ask for permission to use their translation choices for certain parts.
     - A Wayback Machine snapshot of their website had an email address for contacting them. Perhaps as expected, though, sending a message to it gave me an error that the address doesn't exist anymore.
 
