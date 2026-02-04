@@ -1,19 +1,16 @@
 # Background GFX translation
 TL;DR, graphics to translate are: end credits, opening credits, Kamaitachi title logo, and a graphic that's debatably a funny spoiler (check the spoiler README).
 
-This page will focus on just the graphics that are encoded as background images. The end credits are in a separate format, and I have dedicated notes for them [here](/end%20credits/NOTES%20end%20credits.txt).
+This page will focus on just the graphics that are encoded as background images. The end credits are in a separate format, and I have dedicated notes for them [here](/notes/end%20credits/NOTES%20end%20credits.txt).
 
 Kamaitachi does not have that many graphics to translate, and none of the translatable graphics are strictly necessary for understanding the story, either. However, the reinsertion process will be fairly difficult due to the complicated compression format.
 
 ## Opening credits
 ![](/repo%20images/opening%20credits%20screenshot.png)
 
-When you boot up the game, there is a screen of copyrights after the "Chunsoft Presents" logo. I'd say this is the simplest graphic to translate, and interestingly, there is a reason to translate it.
-```
-(c) 1994 Chunsoft
-(c) 1994 Takemaru Abiko
-         Pinpoint
-```
+When you boot up the game, there is a screen of copyrights after the "Chunsoft Presents" logo. I'd say this is the simplest graphic to translate. Thanks to FCandChill from RHDI creating a translated version of the graphic, I was able to insert its new data into the game.
+
+![](/repo%20images/translated%20opening%20credits%20screenshot.png)
 
 ## Kamaitachi title screen
 ![](/repo%20images/title%20screen%20screenshot.png)
@@ -45,4 +42,4 @@ One notable thing about the title logo itself is that with the final palette you
 
 ![](/repo%20images/title%20screen%20in%20middle%20of%20fade%20to%20logo.png)
 
-And if you're wondering, yes, the shape of the splatter was designed with the Japanese title logo in mind. Some contours of the splatter fit with the logo, which you can see if you take a screenshot in the middle of the fade like above.
+And if you're wondering, yes, the shape of the splatter was designed with the Japanese title logo in mind. Some contours of the splatter fit with the logo, which you can see if you take a screenshot in the middle of the fade like above. So on top of translating the logo itself, you would have to also redraw the two blood splatter frames to have them match the logo.
