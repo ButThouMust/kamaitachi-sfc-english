@@ -12,3 +12,18 @@
 
 # Do not upload compiled Java bytecode
 **/*.class
+
+# Do not upload external .exe tools like Atlas, Asar, etc.
+**/*.exe
+
+# Folder where I keep stuff I don't need, just in case I do need them later
+OLD/**
+
+# Do not upload decompressed or recompressed data from the game
+# Let the user run the programs to generate them on their own
+decompressed*/**
+recompressed*/**
+
+# By default, `git status` will not list off .bin files you haven't uploaded
+# Be careful about which files you do upload; do not distribute partial ROM data
+**/*.bin
