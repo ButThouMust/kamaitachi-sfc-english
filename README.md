@@ -1,5 +1,5 @@
 # kamaitachi-sfc-english
-In case anyone happens upon this repo, I wanted to put at the top that *I do not have a translation patch file yet*. For the time being, this will just be a place where I'll do project updates, but I will also eventually put my source code and patches here.
+In case anyone happens upon this repo, I wanted to put at the top that *I do not have a translation patch file yet*. For the time being, this will just be a place where I'll do project updates, but I will also eventually put my source code and patches here. [Also, I will not make the mistake of separating out the project into multiple repositories; everything related to the project will go here]
 
 I had created a [translation patch](https://github.com/ButThouMust/otogirisou-english) for the Chunsoft sound novel Otogirisou on Super Famicom. At some point during the creation of that patch, I tried digging around in Chunsoft's next game in the same style, and found enough things in common between their internal workings that I wanted to work on it, too.
 
@@ -12,7 +12,7 @@ Kamaitachi no Yoru (かまいたちの夜) is a murder mystery sound novel that 
 
 Some innovations over Otogirisou:
 - background images being mostly digitized photos, and a handful of pixel art
-- silhouettes of the cast of characters
+- silhouettes of the cast of characters; some are even animated!
 - bad endings where the story concludes prematurely
 - the ability to start from a previous chapter upon reaching an ending
 
@@ -40,9 +40,10 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 - Compress and reinsert modified versions of the Japanese script into the game.
   - I used this to test scripts for viewing unused content, in particular some silhouettes and visual effects.
 - Insert and compress an English font and a translated script into the game.
+  - Restore an unused background graphic and a few unused silhouettes. They were added to the PS1 release but do exist in the SFC version's data, and so I decided to incorporate them into the script.
 - Insert translated menu prompts for managing files, like "start game", "delete file", "change names", etc.
 - Edited the name entry screen to let the player input a name in English.
-  - This was more difficult than it sounds, interestingly. The short version is, the graphics for the 9x10 grid of characters does not use the typical font printing routine, but rather its own format. So updating only the text encoding table would not change what characters the player sees on the screen.
+  - This was more difficult than it sounds, interestingly. The short version is, the graphics for the 9x10 grid of characters does not use the typical font printing routine, but rather its own format. So updating only the text encoding table would not change what characters the player sees in the grid.
 
 ### <ins>Graphics</ins>
 - Insert translated graphics for the stereo/mono option.
@@ -50,6 +51,7 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
   - Exact translated graphics are not set in stone, but easily editable.
 - For the boxes on the name entry screen, translate both their text and painstakingly update the absolute myriad of ways they get drawn to the screen.
 - Reverse engineer the format for how the [end credits](/notes/end%20credits/NOTES%20end%20credits.txt) are displayed.
+- Translate the screen containing the opening credits (thanks to FCandChill for designing the translated graphic!).
 
 ### <ins>Graphics compression formats</ins>
 | Data type | Decompressor | Recompressor |
@@ -60,9 +62,10 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 | Silhouette graphics | Done | Done |
 
 The tileset compression format was really complicated to figure out from the decompression ASM code. It already has a case for loading uncompressed graphics data, but the programmer in me took making a recompressor as a challenge.
-- Currently, it is not fully optimal and can work better or worse than Chunsoft's original compressor based on the tilesets you feed it. However, it works well enough for my purposes.
+- Currently, the recompressor is not fully optimal and can work better or worse than Chunsoft's original compressor based on the tilesets you feed it. However, it works well enough for my purposes.
   - I've spent too much time on something that I'd initially marked as "nice to have" for the patch, and I want to move on from it.
-- If you care what can be improved, compressed tilesets have a data header consisting of two blocks. Two decompression cases allow you to use less data by doing "get 1 byte containing an index or indices for reading data from the header" instead of "get 2 or 3 bytes for the data itself." My method of choosing what data to put into the header is still improvable.
+- If you care what can be improved, compressed tilesets have a data header consisting of two blocks. Two decompression cases allow you to use less data by doing "get 1 byte containing an index or indices for reading data from the header" instead of "get 2 or 3 bytes for the data itself."
+  - The compressor should select commonly used sets of data for the header blocks, so that space is saved overall. My method of doing so is still improvable.
 
 My background tilemap recompressor saves about 2.45 KB across all the tilemaps present in the game.
 - I saved 1 KB while staying within the confines of the compression formats (note the plural) in the original Japanese game.
@@ -78,14 +81,15 @@ At first, I was expecting to not have to create a recompressor for the silhouett
 ## Priorities for the project
 I have recompressed and/or rearranged enough data in the ROM to allow fitting an English script and font into it. Moreover, I succeeded at a self-imposed challenge to do so without needing to expand the ROM like I had to for Otogirisou.
 
-I can technically start playtesting the script and marking pages as needing reformatting or not. However, I first need to do ASM hacks for the text printing logic and the systems related to letting the player enter a name.
+With the automatic linebreaking updated to work better for English, I can start playtesting the script and marking pages as needing reformatting or not. But before investing too much time into a save file for that, I need to modify the systems related to letting the player enter a name.
 
 ### <ins>English script</ins>
 ![](/repo%20images/english%20script%20insertion.png)
 
 - Create ASM hacks to make the English text look better on screen. (**medium**)
-  - More suitable logic for automatically line breaking English text (see above).
-  - [Optional] Text kerning, to fix character pairs like `ac` above or `at`.
+  - DONE: Better logic for automatically line breaking English text (fix what you see in the above screenshot).
+    - Fixed for both the usual text printing, as well as the mode for showing text that the player has previously read.
+  - Planned: Text kerning, to fix character pairs like `ac` above or `aj`.
 - Once that's done, playtest the script. (**simple, but tedious**)
 - Fully translate the Japanese script to English. (**medium**)
   - Translation mostly done, but quite a few places are difficult to translate.  More details in the [spoiler folder's readme](/notes/spoilers/README.md).
@@ -108,9 +112,8 @@ I was able to make an ASM hack to only allow access to the blocks for hiragana/k
 I want to be able to change the name entry screen to support a limit of 10+ characters instead of 6 like in the original (**difficult**).
 - The code is used for naming the protagonist and his girlfriend, but also for certain points in the story where the player must enter the name of who they believe to be the killer in the murder mystery. Most characters' names are longer than six letters when translated into English.
 - Getting this right is very important, because solving the murder mystery opens up more routes and endings for the player to view.
-- See if it would be possible to print the name with the game's VWF, as opposed to printing the characters monospaced.
+- See if it would be possible to print the name with the game's variable-width font, as opposed to printing the characters monospaced.
 
 ## "Nice to have" items
 - Translate the end credits (medium).
-- Translate other graphics like the title screen (**difficult**), or another screen that references another Chunsoft game (medium). More details [here](/notes/gfx translation/README.md).
-- Done: Translate the screen containing the opening credits (thanks to FCandChill for designing the translated graphic!).
+- Translate other graphics like the title screen (**difficult**), or another screen that references another Chunsoft game (medium, debatably unnecessary). More details [here](/notes/gfx%20translation/README.md).
