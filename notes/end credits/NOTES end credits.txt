@@ -52,7 +52,7 @@ Note: 0x88 * 9 = 0x4C8; 0xC8 = 200 tiles (!) that would have to be optimized out
 Here are two tables summarizing this data: one of the character values, and
 another for the lines of text.
 
- Value | Gfx ptr | Char      Value | Gfx ptr | Char      Value | Gfx ptr | Char 
+ Value | Gfx ptr | Char      Value | Gfx ptr | Char      Value | Gfx ptr | Char
 -------+---------+------    -------+---------+------    -------+---------+------
   00   |  N/A    | [spc]      30   | 5ED6FB  | 々         60   | 5EE47B  | 西
   01   | 5EC9C3  | 脚         31   | 5ED743  | 木         61   | 5EE4C3  | 村
@@ -201,9 +201,9 @@ I felt a suitable value was FE. I injected it into the control flow by replacing
 the AND.w #$00FF at $01DB2B with a JSR to my custom code in bank 01. Purpose was
 to mitigate potential issues where a word can just barely exceed the right bound
 of a 3x3 tile block. It can claw back horizontal space that otherwise would be
-wasted either on screen or from baking a tile column into the gfx data. Example
-use case: reusing the tiles of the word "Development" between the two lines
-"Music Development" and "Development Director".
+wasted either on screen or from baking a tile column into the gfx data.
+Example use case: reusing the tiles of the word "Development" between the two
+lines "Music Development" and "Development Director".
 
 Accounting for 00/FE/FF as control codes, we are limited to char values 01-FD
 (253 values) for text gfx blocks. The contiguous gfx data space only allows 0xC0
@@ -234,7 +234,7 @@ Graphics
 　落合　信也
   Shin'ya Ochiai
 　佐々木　真治
-  Shinji Sasaki 
+  Shinji Sasaki
 　佐藤　圭子
   Keiko Satō
 　長谷川　薫
@@ -243,97 +243,103 @@ Graphics
   Kumiko Harada
 
 音楽開発
-Music Development
+Music Programmer
 　三俣　千代子
   Chiyoko Mitsumata
 
 曲
-Music 
+Composer
 　加藤 恒太
-  Kōta Katō 
+  Kōta Katō
 　中嶋 康二郎
-  Kōjirō Nakashima 
+  Kōjirō Nakashima
 
 開発監督
-Development Director 
+Programming Director
 　開発会社
 　　アクアマリン
     Development Co.
-	Aquamarine 
+	Aquamarine
 　 斉藤 昌快
-   Masayoshi Saitō 
+   Masayoshi Saitō
 
 開発
-Development 
+Programmer
 　　二位 真裕
-    Masahiro Nii 
+    Masahiro Nii
 　　山田 信洋
-    Nobuhiro Yamada 
+    Nobuhiro Yamada
 　　小川 一美
-    Kazumi Ogawa 
+    Kazumi Ogawa
 　　中島 康雄
-    Yasuo Nakajima 
+    Yasuo Nakajima
 　　大森田 不可止
-    Fukashi Ōmorita 
+    Fukashi Ōmorita
 
 助手
-Assistant 
+Assistance
     斉藤 ひとみ
-    Hitomi Saitō 
+    Hitomi Saitō
     黒田 剛志
-    Tsuyoshi Kuroda 
+    Tsuyoshi Kuroda
     塩野 勝彦
-    Katsuhiko Shiono 
+    Katsuhiko Shiono
 
 写真
-Photography 
+Photography
     山浦 昇一郎
-    Shōichirō Yamaura 
+    Shōichirō Yamaura
 
 撮影協力
-Photography Assistance 
+Photography Assistance
+- note: the game was photographed at a real ski lodge that still exists today,
+  and I've read that people will stay there in search of the game's atmosphere
   ペンション
         クヌルプ
   Pension Knulp
   （長野県白馬村）
   (Hakuba Village, Nagano Prefecture)
+  or more simply: (Hakuba, Nagano)
 
 効果音
-Sound Effects 
+Sound Effects
   有限会社
         マジカル
-MAGICAL Co., Ltd. 
+MAGICAL Co., Ltd.
 
 造型
-Models
-[note: models as in modelling something in miniatures (used for the basement
- and the bathroom), not like people modelling for the silhouettes]
+Scale Models
+- note 1: photos of the basement and the bathroom used miniatures
+- note 2: company website https://www.lucky-wide.jp/
   株式会社
    ラッキーワイド
-  Lucky-Wide Co., Ltd. 
+  Lucky Wide Co., Ltd.
 
 協力
-Support 
+Support
+- note: I found a website for a company with this name, but it appears to not be
+  the same as the one that worked on Kamaitachi; it was founded in 2010
+  https://web.archive.org/web/20210621110221/https://pin-point.co.jp/corporateprofile.html
   株式会社
      ピンポイント
-  Pinpoint Co., Ltd. 
+  Pinpoint Co., Ltd.
 
 製作補佐
 Assistant Producer
     中西 一彦
-    Kazuhiko Nakanishi 
+    Kazuhiko Nakanishi
 
 製作
 Producer
     中村 光一
-    Kōichi Nakamura 
+    Kōichi Nakamura
 
 監督
-Director 
+Director
    麻野 一哉
-   Kazuya Asano 
+   Kazuya Asano
 
      制作・著作
-Production/Copyright 
+Production/Copyright
 株式会社 チュンソフト
 Chunsoft Co., Ltd.
