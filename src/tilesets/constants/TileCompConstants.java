@@ -38,6 +38,9 @@ public class TileCompConstants {
     public static final int METADATA_HEADER_SIZE =
         COMMON_BP_SUB_INDEX_DATA_SIZE + COMMON_BITMASK_BIT_POSITIONS_DATA_SIZE;
 
+    public static final int FLAG_FOR_ENCODING_IN_2_BYTES = 0x40;
+    public static final int FLAG_FOR_INDEX_3_OF_ALL_FF = 0x04;
+
     // -------------------------------------------------------------------------
 
     public static final int READ_8_RAW_BYTES = 0x00;
@@ -195,6 +198,17 @@ public class TileCompConstants {
         }
     }
 
+    public static boolean bitplaneCombinationTypeDoesBasicReuse(int index) {
+        switch (index) {
+            case USE_BP0: case USE_NOT_BP0:
+            case USE_BP1: case USE_NOT_BP1:
+            case USE_BP2: case USE_NOT_BP2:
+            case FILL_BP_WITH_00: case FILL_BP_WITH_FF:
+                return true;
+        }
+        return false;
+    }
+
     public static String summarizePurposeOfBitplaneIndex(int index) {
         int mainIndex = getWhichSubIdToDoBeforeSpotChanges(index);
         boolean doSpotChanges = index != mainIndex;
@@ -202,15 +216,15 @@ public class TileCompConstants {
         String result = "";
         switch (mainIndex) {
             case READ_8_RAW_BYTES:  result = "bp <- 8 raw bytes"; break;
-            case RLE_BITPLANE:        result = "Pseudo-RLE with byte chunks"; break;
+            case RLE_BITPLANE:      result = "RLE with byte chunks"; break;
             case FILL_BP_WITH_00:   result = "bp <- all 00"; break;
             case FILL_BP_WITH_FF:   result = "bp <- all FF"; break;
             case FILL_BP_WITH_BYTE: result = "bp <- all next byte from ROM"; break;
 
             case FILL_BP_WITH_TWO_BYTE_SEQ:
-                result = "Read 2 bytes B0, B1; bp <- [B0 B1 B0 B1 B0 B1 B0 B1]"; break;
+                result = "Read 2 bytes X Y; bp <- [X Y; X Y; X Y; X Y]"; break;
             case FILL_BP_WITH_FOUR_BYTE_SEQ:
-                result = "Read 4 bytes B0-B3; bp <- [B0 B1 B2 B3 B0 B1 B2 B3]"; break;
+                result = "Read 4 bytes W-Z; bp <- [W X Y Z; W X Y Z]"; break;
 
             case CREATE_BP_FROM_TWO_BIT_INDICES_AND_BYTES:
                 result = "Build bp data from 8 2-bit indices and 3 or 4 BYTES"; break;
@@ -257,5 +271,51 @@ public class TileCompConstants {
 
         if (doSpotChanges) result += ", and do spot changes";
         return result;
+    }
+
+    public static int[] decodeBitplaneIndices(int bpMetadataValue) {
+        int byte0 = bpMetadataValue & 0xFF;
+        int byte1 = (bpMetadataValue >> 8) & 0xFF;
+        int byte2 = (bpMetadataValue >> 16) & 0xFF;
+
+        int index0 = 0;
+        int index1 = (byte1 >> 3) & 0x1F;
+        int index2 = byte0 & 0x3F;
+        int index3 = 0;
+
+        int twoByteEncodingFlag = byte0 & FLAG_FOR_ENCODING_IN_2_BYTES;
+        if (twoByteEncodingFlag != 0) {
+            index0 = byte1 & 0x3;
+            int bitForIndex3 = byte1 & FLAG_FOR_INDEX_3_OF_ALL_FF;
+            index3 = bitForIndex3 == 0 ? FILL_BP_WITH_00 : FILL_BP_WITH_FF;
+        }
+        else {
+            index3 = byte2 & 0x7F;
+            int lowBit = (byte2 & 0x80) >> 7;
+            index0 = (lowBit | (byte1 << 1)) & 0xF;
+        }
+
+        int indexList[] = {index0, index1, index2, index3};
+        return indexList;
+    }
+
+    public static String getMetadataPrintout(int metadataByte0, int metadataByte1, int metadataByte2) {
+        int bpMetadataValue = (metadataByte0 & 0xFF) | ((metadataByte1 & 0xFF) << 8) | ((metadataByte2 & 0xFF) << 16);
+        return getMetadataPrintout(bpMetadataValue);
+    }
+
+    public static String getMetadataPrintout(int bpMetadataValue) {
+        String output = "";
+        String lineFormat = "BP%d: %02X -> %s\n";
+
+        output += String.format("Data: %02X %02X %02X\n", bpMetadataValue & 0xFF,
+            (bpMetadataValue >> 8) & 0xFF, (bpMetadataValue >> 16) & 0xFF);
+
+        int decodedIndices[] = decodeBitplaneIndices(bpMetadataValue);
+        for (int bp = 0; bp < decodedIndices.length; bp++) {
+            output += String.format(lineFormat, bp, decodedIndices[bp],
+                TileCompConstants.summarizePurposeOfBitplaneIndex(decodedIndices[bp]));
+        }
+        return output;
     }
 }

@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 
 import static tilesets.constants.TileCompConstants.*;
 import tilesets.constants.BitplaneCombiner;
+import tilesets.constants.TileCompConstants;
 
 public class KamaitachiTileDumper {
 
@@ -74,14 +75,14 @@ public class KamaitachiTileDumper {
         bitplaneSubroutineRawBytes[0] = typeByte;
         bitplaneSubroutineRawBytes[1] = romFile.readUnsignedByte();
         // $029396: check bit 6, 1x__ ____
-        if ((typeByte & 0x40) != 0) {
+        if ((typeByte & FLAG_FOR_ENCODING_IN_2_BYTES) != 0) {
             // $02939A: 11__ ____
             // this case uses 1 fewer byte but limits how to fill in BP0 and BP3
 
             // subroutine index 3 <- fill BP3 with either 00 or FF (perfect match)
-            boolean fillWith00 = (bitplaneSubroutineRawBytes[1] & 0x4) == 0;
+            boolean fillWith00 = (bitplaneSubroutineRawBytes[1] & FLAG_FOR_INDEX_3_OF_ALL_FF) == 0;
             // bitplaneSubroutineRawBytes[2] = fillWith00 ? 0x08 : 0x0A;
-            bitplaneSubroutineRawBytes[2] = fillWith00 ? (FILL_BP_WITH_00 << 1) : (FILL_BP_WITH_FF << 1);
+            bitplaneSubroutineRawBytes[2] = (fillWith00 ? FILL_BP_WITH_00 : FILL_BP_WITH_FF) << 1;
             if (DEBUG) {
                 String output = "0x%06X: Read one byte %02X; checking (%02X & 4) -> BP3 is all %02X\n";
                 log.write(String.format(output, romFile.getFilePointer() - 1, bitplaneSubroutineRawBytes[1], bitplaneSubroutineRawBytes[1], fillWith00 ? 0x00 : 0xFF));
@@ -692,8 +693,8 @@ public class KamaitachiTileDumper {
         // 00xx 0001, see $028E42; use bytes at F6E5+(xx), F6E9+(xx), F6ED+(xx)
         int offset = (typeByte >> 4) & 0x3;
         bitplaneSubroutineRawBytes[0] = commonBitplaneSubIndexDataF6E5[offset];
-        bitplaneSubroutineRawBytes[1] = commonBitplaneSubIndexDataF6E5[offset + 0x4];
-        bitplaneSubroutineRawBytes[2] = commonBitplaneSubIndexDataF6E5[offset + 0x8];
+        bitplaneSubroutineRawBytes[1] = commonBitplaneSubIndexDataF6E5[offset + MAX_BP_METADATA_ENTRIES];
+        bitplaneSubroutineRawBytes[2] = commonBitplaneSubIndexDataF6E5[offset + MAX_BP_METADATA_ENTRIES * 2];
 
         if (DEBUG) {
             String details = "Get subroutine IDs from tileset metadata, column %d ($028E46)\n";
@@ -1227,7 +1228,7 @@ public class KamaitachiTileDumper {
         String tileMetadataOutput = String.format("Metadata @ 0x%06X:",
             romFile.getFilePointer() - METADATA_HEADER_SIZE);
 
-        countsForBitplaneSubIndexUsage = new int[COMMON_BP_SUB_INDEX_DATA_SIZE];
+        countsForBitplaneSubIndexUsage = new int[MAX_BP_METADATA_ENTRIES];
         countsForBitmaskMetadataUsage = new int[COMMON_BITMASK_BIT_POSITIONS_DATA_SIZE];
 
         for (int i = 0; i < commonBitplaneSubIndexDataF6E5.length; i++) { // 0xC bytes
@@ -1235,16 +1236,29 @@ public class KamaitachiTileDumper {
             tileMetadataOutput += String.format("%02X", commonBitplaneSubIndexDataF6E5[i]);
         }
         tileMetadataOutput += "\n";
+
         for (int i = 0; i < commonDataForBitmaskBitPositionListF6F0.length; i++) { // 0xF bytes
             tileMetadataOutput += String.format("%02X ", commonDataForBitmaskBitPositionListF6F0[i]);
         }
-        log.write(tileMetadataOutput + "\n\n");
+        tileMetadataOutput += "\n\n";
+
+        for (int i = 0; i < MAX_BP_METADATA_ENTRIES; i++) {
+            tileMetadataOutput += "Bitplane metadata column " + i + ":\n";
+            tileMetadataOutput += TileCompConstants.getMetadataPrintout(
+                commonBitplaneSubIndexDataF6E5[i],
+                commonBitplaneSubIndexDataF6E5[i + MAX_BP_METADATA_ENTRIES],
+                commonBitplaneSubIndexDataF6E5[i + MAX_BP_METADATA_ENTRIES * 2]
+            );
+            tileMetadataOutput += "\n";
+        }
+
+        log.write(tileMetadataOutput + "--------------------\n");
     }
 
     private static void logTilesetMetadataUsage() throws IOException {
         log.write("\nUsage for bitplane sub index metadata:");
         int sum = 0;
-        for (int i = 0; i < COMMON_BP_SUB_INDEX_DATA_SIZE / NUM_BYTES_FOR_ENCODED_BP_SUBS; i++) {
+        for (int i = 0; i < countsForBitplaneSubIndexUsage.length; i++) {
             int count = countsForBitplaneSubIndexUsage[i];
             log.write(String.format(" %d", count));
             sum += count;
