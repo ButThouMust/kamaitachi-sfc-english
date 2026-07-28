@@ -1,16 +1,20 @@
 # kamaitachi-sfc-english
-In case anyone happens upon this repo, I wanted to put at the top that *I do not have a translation patch file yet*. For the time being, this will just be a place where I'll do project updates, but I will also eventually put my source code and patches here. [Also, I will not make the mistake of separating out the project into multiple repositories; everything related to the project will go here]
+In case anyone happens upon this repo, I wanted to put at the top that *I do not have a translation patch file yet*. However, I think it is reasonable to expect a patch release in August 2026.
+
+For the time being, this will just be a place where I'll do project updates, but I will also eventually put my source code and patches here. [Also, I will not make the mistake of separating out the project into multiple repositories; everything related to the project will go here]
+
+## Project credits:
+- Translation: ButThouMust
+- Hacking/programming: ButThouMust
+- Graphics design for opening credits: FCC
+- Graphics design for end credits: FredArtz
 
 **No generative AI or LLMs have touched, nor will touch, any part of this translation project.** All code for my custom tools, all ASM hacks, all graphics edits, and particularly the translated script, were created manually.
 
-TL;DR on project status:
-- I think it is reasonable to expect a patch release during 2026. Exactly when, I cannot say.
-- I am primarily polishing the script and doing play-testing.
-- Most of the necessary assembly code modifications are done.
-  - I would like to add text kerning at some point.
-
 ## Project overview
 I had created a [translation patch](https://github.com/ButThouMust/otogirisou-english) for the Chunsoft sound novel Otogirisou on Super Famicom. At some point during the creation of that patch, I tried digging around in Chunsoft's next game in the same style, and found enough things in common between their internal workings that I wanted to work on it, too.
+
+If you care about how working on each compared, I would say that Otogirisou had the harder script to translate, but was relatively easy to hack. Kamaitachi was the opposite: its script was more straightforward to translate, but hacking it was much more difficult. Without that previous experience with Otogirisou, I never would've been able to crack Kamaitachi open.
 
 ![](/repo%20images/title%20screen%20screenshot.png)
 ![](/repo%20images/file%20select%20screen%20translated.png)
@@ -30,6 +34,8 @@ The game was originally released for the Super Famicom in 1994, and has been por
 - an official localization *Banshee's Last Cry* for old 32-bit versions of iOS, with the Japanese setting changed to British Columbia
 - a [fan localization patch by Project Kamai](https://web.archive.org/web/20230801045909/https://projectkamai.com/) of the Rinne Saisei remake for PC
 
+Even if you've played the Rinne Saisei version before, some aspects of the original SFC release remain unique to it, and don't appear exactly one-to-one in the PS1 and GBA releases.
+
 I've put most of my project updates in [this thread](https://discord.com/channels/266412086291070988/1089409844743782440) in the RHDI Discord server. Feel free to check it out.
 
 I also have a sparsely updated thread in the RHDI forums [here](https://romhack.ing/forum/topic/m4by-ZUB5QO4GBdZ3zyn).
@@ -46,26 +52,31 @@ SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
 ```
 
 ## Project priorities
-### <ins>English script</ins>
-The main things to do with the script are to fully translate (it's ~95% done), and playtest it.
-- Quite a few places in the script are difficult to translate.
-  - More details in the [spoiler folder's readme](/notes/spoilers/README.md).
-  - If I could, I'd like to reach out to the Project Kamai team and ask for permission to use their translation choices for certain parts.
-- Nice to have: Create ASM hack for [text kerning](https://en.wikipedia.org/wiki/Kerning).
+I have just about finished playtesting the patch in an emulator. I've also done some basic playtesting on a real SFC.
 
-I attempted to contact the Project Kamai team via an email address that was on a Wayback Machine snapshot of their website. Perhaps as expected, though, sending a message to it gave me an error that the address doesn't exist anymore.
+### <ins>English script</ins>
+The script is almost 100% done. Some places in the script are difficult to translate. More details in the [spoiler folder's readme](/notes/spoilers/README.md).
+
+If I could, I'd like to reach out to the Project Kamai team and ask for permission to use their translation choices for certain parts. I had attempted to contact them through the email address in the readme for their patch. Perhaps as expected, though, sending a message to it gave me an error that the address no longer exists.
+
+### <ins>Known issue(s)</ins>
+When playtesting the game on both the Mesen emulator and a real SFC, I found one silhouette that will sometimes make the game hang on a black screen. I have no clue about how to fix it, why it happens at all, and certainly not why it happens only sometimes.
+- It pops up after a choice, over how to reply to the question, "Nothing strange has happened, has there?"
+- The crash may or may not occur after advancing either one page of text past picking "Huh, how'd you know?" or two pages past picking "Not really, no..."
+
+Resetting the game on the black screen and resuming from your auto save usually lets you proceed as normal. I'm very sorry to say that as things stand now, your only choice as a player is to just keep resetting until it lets you through.
 
 ## Solved items
 ### <ins>Text</ins>
 - Dump the Japanese font.
 - Dump the compressed Japanese script.
 - Compress and reinsert modified versions of the Japanese script into the game.
-  - I used this to test scripts for viewing unused content, in particular some silhouettes and visual effects.
+  - I initially used this to make test scripts for viewing unused content, in particular some silhouettes and visual effects.
 - Insert and compress an English font and a translated script into the game.
 - Insert translated menu prompts for managing files, like "start game", "delete file", "change names", etc.
 - Ten lines of text can fit on screen instead of the original game's nine.
 - Make the automatic linebreaking logic work better for English prose.
-  - The game's RAM layout let me create a much more robust English linebreaking solution than what I had to resort to for Otogirisou.
+  - The game's RAM layout let me create a proper routine for calculating when to do a linebreak, as opposed to what I had to resort to for Otogirisou.
 
 ### <ins>Name entry screen</ins>
 ![](/repo%20images/name%20entry%20grid%20original%20jp.png)
@@ -76,19 +87,21 @@ Changing this screen for an English patch was complicated enough to deserve its 
 - Independently of the graphics, changed the character encodings that get used. This was simple.
 - The Japanese game had a scrollable grid of 1160 slots for kanji. This is much too many for English, and I was able to edit the menu logic to prevent accessing it.
 - Translated the boxes on the sides, and painstakingly updated the absolute myriad of ways they get drawn to the screen.
-- *Most difficult of all*, increased the character limit for names from 6 to 10.
-  - I thought that six characters in a name was acceptable for Otogirisou, but not for Kamaitachi.
+- *Most difficult of all*, increased the character limit for names.
+  - I thought that six characters in a name was acceptable for Otogirisou, but not for Kamaitachi. You'll see why when you play the game.
   - Accommodating this feature required updating lots of the game's code.
+
+On the topic of the name entry screen, the original Japanese game had the unusual restriction that, once you obtain the pink bookmark, you can no longer rename the protagonist and his girlfriend. This restriction has been lifted.
 
 ### <ins>Graphics</ins>
 - Insert translated graphics for the stereo/mono option.
-- Translate the 終 graphic that the player sees upon reaching a bad end.
-  - Exact translated graphics are not set in stone, but easily editable.
+- Translate the 終 "end" graphic that the player sees upon reaching a bad end.
 - Restore an unused background graphic and a few unused silhouettes.
   - They were added to the PS1 release but do exist in the SFC version's data, and so I decided to incorporate them into the script.
-- Reverse engineer the format for how the [end credits](/notes/end%20credits/NOTES%20end%20credits.txt) are displayed.
-  - No major work yet on creating translated graphics for the end credits.
-- Translate the screen containing the opening credits (thanks to FCandChill for designing the translated graphic!).
+- Insert a new translated graphic for the opening credits.
+  - Thanks to FCC for designing the translated graphic!
+- Insert new graphics and data for the end credits (notes on [storage format](/notes/end%20credits/NOTES%20end%20credits.txt)).
+  - Thanks to FredArtz for designing the credits font!
 
 ### <ins>Graphics compression formats</ins>
 | Data type | Decompressor | Recompressor |
@@ -98,7 +111,7 @@ Changing this screen for an English patch was complicated enough to deserve its 
 | Name entry character grid font | Done | Done |
 | Silhouette graphics | Done | Done |
 
-As a result of doing all this recompression work, I succeeded at a self-imposed challenge to fit the English translation's data into 3 MB, the same size as the original Japanese game.
+As a result of doing all this recompression work, I succeeded at a self-imposed challenge to fit the translated game into 3 MB, the same size as the original Japanese game.
 
 #### <ins>Background tilesets</ins>
 The tileset compression format was really complicated to figure out from the decompression ASM code. I saved ~4 KB from recompressing the game's data.
@@ -126,5 +139,14 @@ A bonus to figuring out the format was that I was able to fix a silhouette that 
 ![](/repo%20images/silhouette%20gfx%20error%200x06E.png)
 
 ## "Nice to have" items
-- Translate the end credits (medium).
-- Translate other graphics like the title screen (**difficult**), or another screen that references another Chunsoft game (medium, debatably unnecessary). More details [here](/notes/gfx%20translation/README.md).
+### Graphics
+The title logo is not translated. In short, the blood splatter animation on the title screen complicates the design of a translated logo. Let me know if you would be interested!
+
+Kamaitachi has a graphic that references another Chunsoft game, specifically a recreation of its title screen. I consider translating the graphic to be debatably unnecessary.
+
+More details [here](/notes/gfx%20translation/README.md).
+
+### ASM hacks
+I had incorporated [text kerning](https://en.wikipedia.org/wiki/Kerning) into Otogirisou, and having it in Kamaitachi would be nice, too. The lack of it is most noticeable with lowercase `j` in the middle of a word, as well as with the `ï` in `naïve`.
+
+Another thing that might be nice to have: improve the text drop shadow to fully surround characters, instead of just doing three pixels right, down, and down right.
