@@ -60,11 +60,9 @@ The script is almost 100% done. Some places in the script are difficult to trans
 If I could, I'd like to reach out to the Project Kamai team and ask for permission to use their translation choices for certain parts. I had attempted to contact them through the email address in the readme for their patch. Perhaps as expected, though, sending a message to it gave me an error that the address no longer exists.
 
 ### <ins>Known issue(s)</ins>
-When playtesting the game on both the Mesen emulator and a real SFC, I found one silhouette that will sometimes make the game hang on a black screen. I have no clue about how to fix it, why it happens at all, and certainly not why it happens only sometimes.
-- It pops up after a choice, over how to reply to the question, "Nothing strange has happened, has there?"
-- The crash may or may not occur after advancing either one page of text past picking "Huh, how'd you know?" or two pages past picking "Not really, no..."
-
-Resetting the game on the black screen and resuming from your auto save usually lets you proceed as normal. I'm very sorry to say that as things stand now, your only choice as a player is to just keep resetting until it lets you through.
+[FIXED] When playtesting the game on both the Mesen emulator and a real SFC, I found one silhouette that used to *sometimes* make the game hang on a black screen. I think I've fixed it for good (short version: use different graphics control codes in the script), but here are notes on where it had happened.
+- It popped up after a choice, over whether to reply to the question "Nothing strange has happened, has there?" with "Huh, how'd you know?" or "Not really, no."
+- In the script translation, search for the text `BFB41`.
 
 ## Solved items
 ### <ins>Text</ins>
