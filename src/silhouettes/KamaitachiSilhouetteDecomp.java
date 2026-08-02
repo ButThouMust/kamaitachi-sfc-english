@@ -1,3 +1,6 @@
+
+package silhouettes;
+
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -37,6 +40,9 @@ public class KamaitachiSilhouetteDecomp {
     private static int silhBufferOffset;
 
     private static RandomAccessFile romFile;
+
+    private static final String MAIN_OUTPUT_FOLDER = "decompressed silhouettes";
+    private static final String GOLD_BOOKMARK_FOLDER = MAIN_OUTPUT_FOLDER + "/gold bookmark data";
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
@@ -138,7 +144,7 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
 
     private static void outputListOfFrameIdsForCtrlCodeInputs() throws IOException {
-        BufferedWriter table = new BufferedWriter(new FileWriter("silhouette set lists.txt"));
+        BufferedWriter table = new BufferedWriter(new FileWriter(MAIN_OUTPUT_FOLDER + "/silhouette set lists.txt"));
 
         for (int ctrlCodeInput = 0; ctrlCodeInput < NUM_SILH_CTRL_CODE_IDS; ctrlCodeInput++) {
             String line = String.format("%03X: ", ctrlCodeInput);
@@ -161,7 +167,7 @@ public class KamaitachiSilhouetteDecomp {
     }
 
     private static void outputTableOfSilhPtrs() throws IOException {
-        BufferedWriter table = new BufferedWriter(new FileWriter("silhouette pointer table.txt"));
+        BufferedWriter table = new BufferedWriter(new FileWriter(MAIN_OUTPUT_FOLDER + "/silhouette pointer table.txt"));
 
         table.write("Tables: $4BB306   $4B8000    $4BA802    $4BBA5E    $4B9CFE    $4BC340\n");
         table.write(" Frame | Input | Construct | OAM data | GFX data | X/Y grid |  Size   | 32x32?\n");
@@ -216,7 +222,7 @@ public class KamaitachiSilhouetteDecomp {
 
     private static void outputAllConstructionBinaryData() throws IOException {
         // create a text file and write the data to it
-        BufferedWriter textFile = new BufferedWriter(new FileWriter("silhouette construction data.txt"));
+        BufferedWriter textFile = new BufferedWriter(new FileWriter(MAIN_OUTPUT_FOLDER + "/silhouette construction data.txt"));
 
         String dataFormat = "%04X";
         for (int ctrlCodeInput = 0; ctrlCodeInput < silhConstrDataPtrs.length; ctrlCodeInput++) {
@@ -629,7 +635,7 @@ public class KamaitachiSilhouetteDecomp {
             convertOneSmallSpriteToTilemap(oamEntry, tileRow, tileCol, tilemap);
         } while (true);
 
-        String outputName = String.format("gold bookmark data/gold bookmark frame %d converted tilemap.bin", frameNum);
+        String outputName = String.format(GOLD_BOOKMARK_FOLDER + "/gold bookmark frame %d converted tilemap.bin", frameNum);
         writeConvertedTilemapToFile(outputName, tilemap);
     }
 
@@ -730,21 +736,24 @@ public class KamaitachiSilhouetteDecomp {
         debugLog.close();
     }
 
+    // -------------------------------------------------------------------------
+    private static boolean INTERLEAVE = true;
+
     // use for gold bookmark animation's tile data
     private static void writeSilhDataFromPtr(int gfxPtr) throws IOException {
-        String outputName = String.format("gold bookmark data/gold bookmark $%06X gfx data.2bpp", gfxPtr);
-        writeSilhGfxDataToFile(true, outputName);
+        String outputName = String.format(GOLD_BOOKMARK_FOLDER + "/gold bookmark $%06X gfx data.2bpp", gfxPtr);
+        writeSilhGfxDataToFile(INTERLEAVE, outputName);
 	
-		outputName = String.format("gold bookmark data/gold bookmark $%06X raw decompressed gfx.bin", gfxPtr);
-		writeSilhGfxDataToFile(false, outputName);
+		outputName = String.format(GOLD_BOOKMARK_FOLDER + "/gold bookmark $%06X raw decompressed gfx.bin", gfxPtr);
+		writeSilhGfxDataToFile(!INTERLEAVE, outputName);
     }
 
     private static void writeSilhGfxDataForCodeInput(int silhID, String outputFolder) throws IOException {
         String outputName = String.format(outputFolder + "/silh code input 0x%03X gfx data.2bpp", silhID);
-        writeSilhGfxDataToFile(true, outputName);
+        writeSilhGfxDataToFile(INTERLEAVE, outputName);
 		
 		outputName = String.format(outputFolder + "/silh code input 0x%03X raw decompressed gfx.bin", silhID);
-		writeSilhGfxDataToFile(false, outputName);
+		writeSilhGfxDataToFile(!INTERLEAVE, outputName);
     }
 
     private static void writeSilhGfxDataToFile(boolean interleave, String outputFilePath) throws IOException {
@@ -790,7 +799,7 @@ public class KamaitachiSilhouetteDecomp {
 
     private static void getAllDataForCtrlCodeInput(int ctrlCodeInput) throws IOException {
         // create a folder to write data files into
-        String outputFolder = String.format("output/0x%03X silh code input", ctrlCodeInput);
+        String outputFolder = String.format(MAIN_OUTPUT_FOLDER + "/0x%03X silh code input", ctrlCodeInput);
         Files.createDirectories(Paths.get(outputFolder));
 
         decompressSilhouetteGfxForCodeInput(ctrlCodeInput, outputFolder);
@@ -819,7 +828,6 @@ public class KamaitachiSilhouetteDecomp {
     private static void outputDataForSilhCtrlCodeIDs() throws IOException {
         outputAllConstructionBinaryData();
         outputTableOfSilhPtrs();
-        getAllDataForCtrlCodeInput(0x13A);
         outputListOfFrameIdsForCtrlCodeInputs();
         for (int ctrlCodeInput = 0; ctrlCodeInput < NUM_SILH_CTRL_CODE_IDS; ctrlCodeInput++) {
             getAllDataForCtrlCodeInput(ctrlCodeInput);
@@ -827,9 +835,8 @@ public class KamaitachiSilhouetteDecomp {
     }
 
     private static void outputDataForGoldBookmark() throws IOException {
-        String goldBookmarkFolder = "gold bookmark data";
-        Files.createDirectories(Paths.get(goldBookmarkFolder));
-        decompressSilhouetteGfxFromPtr(GOLD_BOOKMARK_SHINE_PTR, goldBookmarkFolder);
+        Files.createDirectories(Paths.get(GOLD_BOOKMARK_FOLDER));
+        decompressSilhouetteGfxFromPtr(GOLD_BOOKMARK_SHINE_PTR, GOLD_BOOKMARK_FOLDER);
         writeSilhDataFromPtr(GOLD_BOOKMARK_SHINE_PTR);
         for (int frameNum = 0; frameNum < GOLD_BOOKMARK_OAM_TABLE_SIZE; frameNum++) {
             convertGoldBookmarkOamToTilemap(frameNum);
@@ -837,7 +844,7 @@ public class KamaitachiSilhouetteDecomp {
     }
 
     public static void main(String args[]) throws IOException {
-        romFile = new RandomAccessFile("Kamaitachi no Yoru (Japan).sfc", "r");
+        romFile = new RandomAccessFile("rom/Kamaitachi no Yoru (Japan).sfc", "r");
         readPointerTables();
         outputDataForSilhCtrlCodeIDs();
         outputDataForGoldBookmark();

@@ -3,11 +3,11 @@ This is a tool for decompressing the silhouette data for the game. Some prerequi
 - Installation of Java
 - A ROM dump of Kamaitachi no Yoru that matches the No-Intro specification
 
-Place your game dump in this folder, open a terminal, and execute the two commands:
-- `javac KamaitachiSilhouetteDecomp.java`
-- `java KamaitachiSilhouetteDecomp`
+Place your game dump in the `rom` folder. If you are on Windows, you can simply run the batch file `DECOMPRESS jp game silhouettes.bat`. Otherwise, open a terminal in the root of your clone of the repository and run the commands:
+- `javac src/silhouettes/KamaitachiSilhouetteDecomp.java`
+- `java -classpath ./src silhouettes.KamaitachiSilhouetteDecomp`
 
-For information about the underlying systems for storing silhouettes, see [my notes](/silhouettes/kamaitachi%20silhouette%20decompression.txt) that I had taken about them.
+For information about the underlying systems for storing silhouettes, see [my notes](/notes/silhouettes/kamaitachi%20silhouette%20decompression.txt) that I had taken about them.
 
 ## How to view the silhouettes
 The tool groups together silhouette data based on control code inputs. If you want to see the silhouettes from the dumped data, download the utility [Tilemap Studio](https://github.com/Rangi42/tilemap-studio) and run it.
