@@ -1,0 +1,134 @@
+contr1_control_flow_state = $0399
+
+temp_copy_of_scratchpad_source_save_file = $03e9
+huff_script_position_in_bytes = $0408
+bank_num_of_huff_script_pos = $040a
+huff_buffer_contents = $040b
+current_save_file_num_0421 = $0421
+script_text_buffer = $0500
+block_containing_playthru_temp_flags_0B94 = $0b94
+playthru_temp_flags = $0bb1
+
+name_entry_1_indexed_encoding_val = $1010
+x_pos_to_center_char_in_entered_name = $1015
+offset_for_char_font_data_in_name_entry = $1019
+index_for_end_of_entered_name = $101B
+button_type_for_char_grid_curr_pos = $101d
+name_entry_grid_curr_position = $1020
+name_entry_grid_target_position = $1021
+char_grid_contr_input_val = $1022
+name_entry_name_length = $1024
+GRID_kanji_00_killer_01_kana_02 = $1028
+temp_copy_of_text_xy_tile_pos = $1029
+menu_type_00_tooru_mari_02_killer = $102b
+
+TextXPos = $15e6
+TextYPos = $15e7
+buffer_for_name_1656 = $001656
+buffer_for_killer_guess_1662 = $001662
+MEM_ptr_to_file_prompt_text_gfx_data = $167c
+MEM_bank_of_ptr_to_file_prompt_text_gfx_data = $167e
+
+read_prev_text_to_create_data_table_about_text_pages_009C60 = $009C60
+read_Huff_script_starting_from_prev_chapter_009C99 = $009c99
+
+DATA_num_bytes_to_fill_0x22_or_0xC_01871F = $01871F
+DATA_skip_size_0x1E_or_0x34_018723 = $018723
+DATA_end_offset_0490_or_0102_018727 = $018727
+DATA_start_offset_02D0_or_0082_01872B = $01872B
+LIST_offsets_for_018738_lists_018730 = $018730
+LIST_value_to_write_for_button_type_018738 = $018738
+LIST_start_offset_in_button_type_buffer_018753 = $018753
+LIST_skip_size_for_button_type_01876E = $01876E
+LIST_num_times_to_repeat_button_type_value_018789 = $018789
+PTR_TABLE_data_0187A4 = $0187A4
+LIST_sprite_X_positions_for_char_grid_highlight_0187F4 = $0187F4
+LIST_sprite_Y_positions_for_char_grid_highlight_0187FF = $0187FF
+LIST_sprite_positions_for_highlighted_buttons_018809 = $018809
+LIST_button_highlight_tile_nums_018837 = $018837
+LIST_tile_ID_for_name_entry_tilemap_01884E = $01884E
+LIST_num_tile_rows_of_object_018876 = $018876
+LIST_starting_offsets_in_tilemap_buffer_01889E = $01889E
+LIST_tile_ID_for_box_elements_on_name_entry_0188EE = $0188EE
+LIST_offsets_in_tilemap_buffer_for_name_entry_boxes_0188FA = $0188FA
+LIST_skip_sizes_between_entries_018910 = $018910
+LIST_repeat_count_for_tile_ID_018926 = $018926
+LIST_offsets_for_01893B_at_018931 = $018931
+LISTs_tile_IDs_for_name_entry_screen_01893B = $01893B
+LIST_offsets_for_name_entry_screen_tilemap_buffer_01895B = $01895B
+offset_0D_from_01895B_018975 = $018975
+offset_12_from_01895B_01897F = $01897F
+offset_17_from_01895B_018989 = $018989
+offset_1B_from_01895B_018991 = $018991
+LIST_offsets_to_start_writing_char_encoding_data_01899B = $01899B
+PTR_TABLE_for_indices_to_use_in_char_grid_0189B3 = $0189b3
+LIST_color_sequence_for_flashing_square_018A2B = $018A2B
+COLOR_DATA_flashing_square_018A41 = $018A41
+DATA_018A4D = $018a4d
+HDMA_table_018a5d = $018a5d
+name_entry_char_flashing_sprite_position = $018a64
+LIST_offsets_for_entered_chars_font_data_018A70 = $018a70
+LIST_text_XY_pos_for_name_entry_018A7C = $018A7C
+PTR_TABLE_to_what_branch_to_take_for_culprit_guess_018A88 = $018a88
+offsets_in_save_file_0_for_names_018B11 = $018b11
+LIST_offsets_for_table_of_offsets_in_SRAM_018B39 = $018b39
+DATA_018B3F = $018B3F
+LIST_SRAM_offsets_for_save_file_checksums_0000_018B45 = $018B45
+bits_to_set_for_SRAM_prog_flags_018B65 = $018b65
+DATA_018B67 = $018B67
+X_reg_VALUE_A0_018B6D = $018b6d
+
+magic_number_06CD_01AC69 = $01AC69
+TEXT_asterisk_01ACCD = $01accd
+mikimoto_name_options_list = $01ACFF
+
+ptr_to_kanji_row_data_due_to_loop_counter_01B0D1 = $01b0d1
+asterisk_01B12D = $01B12D
+hiragana_name_entry_data = $01b13b
+
+color_dark_gray_0x2108_01BDC3 = $01BDC3
+color_light_gray_0x3DEF_01BDCB = $01BDCB
+color_white_0x7FFF_01BDD3 = $01BDD3
+GFX_DATA_name_entry_menu_button_01BDDB = $01BDDB
+
+jsl_here_to_read_default_protag_name_01DD2A = $01DD2A
+
+write_font_data_for_char_to_7F0000_buffer_029F66 = $029f66
+
+SRAM_START_save_file_metadata_checksum = $700000
+SRAM_save_file_data_checksum = $700002
+SRAM_curr_chapter_index_to_text_block_num_list = $700006
+SRAM_max_page_block_num_reached_overall = $700007
+SRAM_data_for_curr_page_block = $700008
+SRAM_num_pages_in_curr_text_page_block = $70000f
+SRAM_progress_flags_for_playthru = $700010
+SRAM_file_progress_flags_SCRATCHPAD_ONLY = $700018
+SRAM_LIST_text_page_block_num_for_each_chapter = $700050
+SRAM_which_save_file_1_2_or_3 = $700078
+SRAM_num_playthrus = $70007a
+SRAM_copy_of_value_06CD = $7000c4
+SRAM_progress_flags_0C8 = $7000c8
+SRAM_choice_progress_flags_208 = $700208
+SRAM_data_struct_for_text_page_block_temp_flags = $7002d0
+SRAM_LIST_ptr_to_start_of_text_page_block = $7002d4
+SRAM_LIST_num_pages_to_decompress_7002D7 = $7002D7
+
+BUFFER_1bpp_char_grid_gfx_on_screen = $7f0220
+state_values_for_pos_in_name_entry_grid = $7f1220
+MEM_LIST_char_grid_highlight_positions = $7f1420
+char_grid_type_0_kanji_2_hira_4_kata = $7f1421
+name_entry_chars_on_screen = $7f1620
+MEM_LIST_char_data_for_chars_on_screen = $7f1644
+MEM_LIST_OAM_data_for_button_highlights = $7f1820
+sprite_pos_for_flashing_square_in_name = $7f1870
+char_grid_highlight_box_xy_pos = $7f1874
+MEM_LIST_button_highlights_OAM_extra_bytes = $7f1878
+BUFFER_tilemaps_for_name_entry = $7F18A0
+name_in_name_entry_screen = $7f20d0
+buffer_for_backup_of_PPU_regs_7F20E0 = $7f20e0
+ptr_to_end_of_name_entry_char_data_BBB3 = $7f20a0
+size_of_kanji_row_ptr_table = $7f20a2
+BUFFER_decompressed_name_entry_font_offset_lookup_table = $7f2200
+BUFFER_decompressed_name_entry_font_1bpp_data = $7f2d00
+font_data_buffer_for_entered_name = $7f2d40
+backup_script_buffer_7F6000 = $7f6000

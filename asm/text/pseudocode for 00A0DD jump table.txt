@@ -1,0 +1,45 @@
+X=0: typical printing logic
+- 100D WAIT: go to X=8
+- ctrl code: run it, go to X=0
+- character: check what text X pos would be after printing char
+  * text X <  0xE3: print char, go to X=0
+  * text X >= 0xE3: print char, go to X=2
+
+X=2: text X >= 0xE3
+- 100D WAIT:  go to X=4
+- 100E,19,1A: run it (LINE, SET X/Y POS), go to X=0
+- 1025 CLEAR: run it, go to X=0
+- ctrl code:  run it, go to X=2
+- character:  check if left punctuation, right punctuation, or anything else
+  * left punct:  store left punct char to $06 and go to X=6
+  * right punct: print the character and set text X pos to 0xF6
+- other char: check what text X pos would be after printing char
+  * text X <  0xF4: print char, go to X=2
+  * text X >= 0xF4: do line break, print char, go to X=0
+
+X=4: got WAIT when text X >= 0xE3 (need to print the cursor or next page icon)
+- 100D WAIT:  subroutine immediately RTSes (keep X=4)
+- 100E,19,1A: handle ctrl code, do WAIT, go to X=0
+- 1025,1026:  handle ctrl code, go to X=0
+- ctrl code:  do WAIT, handle ctrl code, go to X=2
+- character:  check if left punctuation, right punctuation, or anything else
+  * left punct:  do LINE, do WAIT, print char, go to X=0
+  * right punct: do WAIT, print char, set text X pos to 0xF6, go to X=2
+- other char: check what text X pos would be after printing char
+  * text X <  0xF4: do WAIT, print char, set text X pos to 0xF6, go to X=2
+  * text X >= 0xF4: do LINE, do WAIT, print char, go to X=0
+
+X=6: got left punctuation (char value in $06) when text X >= 0xE3
+- 1025,100D:  do LINE, print left punctuation, handle ctrl code, go to X=0
+- 100E,19,1A: print left punct, handle ctrl code, go to X=0
+- ctrl code:  handle ctrl code, go to X=6 again
+- character:  check what text X pos would be after printing both punct and char
+  * text X <  0xF4: print left punct, print char, go to X=2
+  * text X >= 0xF4: do LINE, print left punct, print char, go to X=0
+
+X=8: got WAIT on its own when text X <= 0xE3
+- 100D WAIT:  subroutine immediately RTSes (keep X=8)
+- 100E,19,1A: handle ctrl code, do WAIT, go to X=0
+- 1025,1026:  handle ctrl code, go to X=0
+- ctrl code:  do WAIT, handle ctrl code, go to X=0
+- character:  do WAIT, then do typical printing logic for character
