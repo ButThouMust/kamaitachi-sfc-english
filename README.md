@@ -1,7 +1,19 @@
 # kamaitachi-sfc-english
-In case anyone happens upon this repo, I wanted to put at the top that *I do not have a translation patch file yet*. However, I think it is reasonable to expect a patch release in August 2026.
+![](/repo%20images/title%20screen%20screenshot.png)
+![](/repo%20images/file%20select%20screen%20translated.png)
+![](/repo%20images/english%20script%20insertion.png)
+![](/repo%20images/english%20name%20entry%2010%20chars.png)
 
-For the time being, this will just be a place where I'll do project updates, but I will also eventually put my source code and patches here. [Also, I will not make the mistake of separating out the project into multiple repositories; everything related to the project will go here]
+Source code, notes, and patches for a fan translation of the Super Famicom release of Chunsoft's second sound novel, Kamaitachi no Yoru.
+
+## How to patch
+Go to the [releases page](https://github.com/ButThouMust/kamaitachi-sfc-english/releases) to download the most recent patch version. You will need a *legally obtained*, unheadered 3 MB ROM image of the game, which has this specification in the [No-Intro database](https://datomatic.no-intro.org/index.php?page=show_record&s=49&n=1301):
+```
+CRC32:		71c631aa
+MD5:		efe8a1e8fbd0c05d1f515e2227e48d11
+SHA-1:		4c8f357bd86f9ed909d6a89afb0dbe74913fb333
+SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
+```
 
 ## Project credits:
 - Translation: ButThouMust
@@ -16,11 +28,13 @@ I had created a [translation patch](https://github.com/ButThouMust/otogirisou-en
 
 If you care about how working on each compared, I would say that Otogirisou had the harder script to translate, but was relatively easy to hack. Kamaitachi was the opposite: its script was more straightforward to translate, but hacking it was much more difficult. Without that previous experience with Otogirisou, I never would've been able to crack Kamaitachi open.
 
-![](/repo%20images/title%20screen%20screenshot.png)
-![](/repo%20images/file%20select%20screen%20translated.png)
-![](/repo%20images/english%20script%20insertion.png)
-![](/repo%20images/english%20name%20entry%2010%20chars.png)
+I've put most of my project updates in [this thread](https://discord.com/channels/266412086291070988/1089409844743782440) in the RHDI Discord server. Feel free to check it out.
 
+I also have a sparsely updated thread in the RHDI forums [here](https://romhack.ing/forum/topic/m4by-ZUB5QO4GBdZ3zyn).
+
+Sample screenshots for the project are in the [`repo images` folder](repo%20images).
+
+## About the game
 Kamaitachi no Yoru (かまいたちの夜) is a murder mystery sound novel that takes place in a ski lodge during a blizzard. If you had to translate the title using only English words, it would be *The Night of the Sickle Weasel*.
 
 Some innovations over Otogirisou:
@@ -36,33 +50,30 @@ The game was originally released for the Super Famicom in 1994, and has been por
 
 Even if you've played the Rinne Saisei version before, some aspects of the original SFC release remain unique to it, and don't appear exactly one-to-one in the PS1 and GBA releases.
 
-I've put most of my project updates in [this thread](https://discord.com/channels/266412086291070988/1089409844743782440) in the RHDI Discord server. Feel free to check it out.
-
-I also have a sparsely updated thread in the RHDI forums [here](https://romhack.ing/forum/topic/m4by-ZUB5QO4GBdZ3zyn).
-
-Sample screenshots for the project are in the [`repo images` folder](repo%20images).
-
-Work is being done using a ROM dump from an original cartridge, that conforms to the specification in the [No-Intro database](https://datomatic.no-intro.org/index.php?page=show_record&s=49&n=1301):
-
-```
-CRC32:		71c631aa
-MD5:		efe8a1e8fbd0c05d1f515e2227e48d11
-SHA-1:		4c8f357bd86f9ed909d6a89afb0dbe74913fb333
-SHA-256:	3228a3b35f7d234a7bf91f8159ccc56518199222e84d258c14a153f54f9fcbc7
-```
-
-## Project priorities
-I have just about finished playtesting the patch in an emulator. I've also done some basic playtesting on a real SFC.
-
+## Possible improvements
 ### <ins>English script</ins>
-The script is almost 100% done. Some places in the script are difficult to translate. More details in the [spoiler folder's readme](/notes/spoilers/README.md).
+The script is not totally 100% perfect, but I'd like to think I did a better job here than I did with Otogirisou.
+
+Some places in the script are/were difficult to translate. More details in the [spoiler folder's readme](/notes/spoilers/README.md).
 
 If I could, I'd like to reach out to the Project Kamai team and ask for permission to use their translation choices for certain parts. I had attempted to contact them through the email address in the readme for their patch. Perhaps as expected, though, sending a message to it gave me an error that the address no longer exists.
 
 ### <ins>Known issue(s)</ins>
-[FIXED] When playtesting the game on both the Mesen emulator and a real SFC, I found one silhouette that used to *sometimes* make the game hang on a black screen. I think I've fixed it for good (short version: use different graphics control codes in the script), but here are notes on where it had happened.
+[FIXED] When playtesting the patched game on both the Mesen emulator and a real SFC, I found one silhouette that used to *sometimes* make the game hang on a black screen. I think I've fixed it for good (short version: use different graphics control codes in the script), but here are notes on where it had happened.
 - It popped up after a choice, over whether to reply to the question "Nothing strange has happened, has there?" with "Huh, how'd you know?" or "Not really, no."
 - In the script translation, search for the text `BFB41`.
+
+### ASM hacks
+I had incorporated [text kerning](https://en.wikipedia.org/wiki/Kerning) into Otogirisou, and having it in Kamaitachi would be nice, too. The lack of it is most noticeable with lowercase `j` in the middle of a word, as well as with the `ï` in `naïve`.
+
+Another thing that might be nice to have: improve the text drop shadow to fully surround characters, instead of just doing three pixels right, down, and down right.
+
+### Graphics translation
+The title logo is not translated. In short, the blood splatter animation on the title screen complicates the design of a translated logo. Let me know if you would be interested!
+
+Kamaitachi has a graphic that references another Chunsoft game, specifically a recreation of its title screen. I consider translating the graphic to be debatably unnecessary.
+
+More details [here](/notes/gfx%20translation/README.md). These are more "nice to have" items than "absolutely necessary."
 
 ## Solved items
 ### <ins>Text</ins>
@@ -135,16 +146,3 @@ No silhouettes contain any text to translate, so I initially thought I wouldn't 
 A bonus to figuring out the format was that I was able to fix a silhouette that has an apparent error with the graphics: a 16x8 pixel block missing the silhouette color.
 
 ![](/repo%20images/silhouette%20gfx%20error%200x06E.png)
-
-## "Nice to have" items
-### Graphics
-The title logo is not translated. In short, the blood splatter animation on the title screen complicates the design of a translated logo. Let me know if you would be interested!
-
-Kamaitachi has a graphic that references another Chunsoft game, specifically a recreation of its title screen. I consider translating the graphic to be debatably unnecessary.
-
-More details [here](/notes/gfx%20translation/README.md).
-
-### ASM hacks
-I had incorporated [text kerning](https://en.wikipedia.org/wiki/Kerning) into Otogirisou, and having it in Kamaitachi would be nice, too. The lack of it is most noticeable with lowercase `j` in the middle of a word, as well as with the `ï` in `naïve`.
-
-Another thing that might be nice to have: improve the text drop shadow to fully surround characters, instead of just doing three pixels right, down, and down right.
