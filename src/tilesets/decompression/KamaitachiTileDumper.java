@@ -1164,7 +1164,7 @@ public class KamaitachiTileDumper {
         // *: original ASM used $1F0B-$1F0E, but using dedicated variable here
         //    in the interest of readability
         String bitplaneList = "";
-        int flagBytes[] = new int[0x4];
+        int flagBytes[] = new int[BIT_DEPTH];
         for (int i = 0; i < flagBytes.length; i++) {
             int flag = flagsBitplanesToModify & 0x80;
             int dataByte = 0;
@@ -1244,7 +1244,7 @@ public class KamaitachiTileDumper {
 
         for (int i = 0; i < MAX_BP_METADATA_ENTRIES; i++) {
             tileMetadataOutput += "Bitplane metadata column " + i + ":\n";
-            tileMetadataOutput += TileCompConstants.getMetadataPrintout(
+            tileMetadataOutput += TileCompConstants.getBitplaneMetadataPrintout(
                 commonBitplaneSubIndexDataF6E5[i],
                 commonBitplaneSubIndexDataF6E5[i + MAX_BP_METADATA_ENTRIES],
                 commonBitplaneSubIndexDataF6E5[i + MAX_BP_METADATA_ENTRIES * 2]

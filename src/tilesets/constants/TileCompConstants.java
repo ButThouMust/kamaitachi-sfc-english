@@ -299,12 +299,12 @@ public class TileCompConstants {
         return indexList;
     }
 
-    public static String getMetadataPrintout(int metadataByte0, int metadataByte1, int metadataByte2) {
+    public static String getBitplaneMetadataPrintout(int metadataByte0, int metadataByte1, int metadataByte2) {
         int bpMetadataValue = (metadataByte0 & 0xFF) | ((metadataByte1 & 0xFF) << 8) | ((metadataByte2 & 0xFF) << 16);
-        return getMetadataPrintout(bpMetadataValue);
+        return getBitplaneMetadataPrintout(bpMetadataValue);
     }
 
-    public static String getMetadataPrintout(int bpMetadataValue) {
+    public static String getBitplaneMetadataPrintout(int bpMetadataValue) {
         String output = "";
         String lineFormat = "BP%d: %02X -> %s\n";
 
