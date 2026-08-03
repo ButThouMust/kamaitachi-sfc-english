@@ -1,0 +1,26 @@
+#VAR(Table, TABLE)
+#ADDTBL("tables/inserted font LE.tbl", Table)
+#ACTIVETBL(Table)
+
+// to be used for the TEXT lookup table, not the GRAPHICS lookup table
+
+#JMP(0)
+ABCDEFGHIJ
+KLMNOPQRST
+UVWXYZ{}~...
+abcdefghij
+klmnopqrst
+uvwxyz[]<>
+0123456789
+\!@\#$%^&*()
+\.\,':;\?+-/=
+
+ÀÁÂÃÄÅĀÆǢÇ
+ÈÉÊËĒÌÍÎÏĪ
+ÐÑÒÓÔÕÖŌŒØ
+ÙÚÛÜŪÝŸÞß 
+àáâãäåāæǣç
+èéêëēìíîïī
+ðñòóôõöōœø
+ùúûüūýÿþ♂♀          
+// quirk with Atlas: if a line solely consists of spaces, it will be ignored

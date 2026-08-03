@@ -1,0 +1,138 @@
+#VAR(Table, TABLE)
+#ADDTBL("tables/inserted font LE.tbl", Table)
+#ACTIVETBL(Table)
+
+#SMA("LOROM00")
+
+// #############################################################################
+// Replace punctuation lists for linebreaking logic
+// see $00a349 (left punctuation), $00a35d ("everything else")
+
+#JMP($BBB3)
+#W16($2349)
+#W16($235D)
+\“(\ʻ
+//¿¡
+<$FF><$FF>
+\.\,\”)'
+<$FF><$FF>
+
+// #############################################################################
+// Replace punctuation, digits, choice option letters, misc. chars
+
+// $01AC11-$01AC76 contains several uncompressed text strings, with some data
+// that can be optimized out to make room for the default names for Tooru/Mari
+
+// update encodings for punctuation ctrl codes (see $009917-$00998F, $009F3F)
+// both 105D/105F use same question mark, 105C/105E use same exclamation mark
+// quotation marks are also checked in code at $00A8C9; no repointing needed yet
+#JMP($AC11)
+\“\ʻ\”'\.\,\?\!
+
+// two more (unused?) character encodings for question/exclamation marks
+// there is also a character encoding for the Japanese ellipsis dot, only used
+// in $00A3DB for checking whether to advance the text X position by two pixels,
+// which also checks for an exclamation mark; I don't need it, but documenting
+//#W16($23DB)
+//...
+//<$FF><$FF>
+//<$FF><$FF>
+
+// set and repoint the digits 0-9 used in file select and chapter select menus
+// overwrite the unused "10" character and the unused FFFF marker
+// pointers to the '0' at $01E266, $02a3cb, $02a3e3
+//#JMP($AC29)
+#W16($E266)
+#W16($123CB)
+#W16($123E3)
+0123456789 
+
+// set and repoint the letters used for the choice options like A, B, or C
+// in normal gameplay, only A-D are used, but JP game has values for A-H
+// see $0097f2 (choices A-H), $00a5dd (A/B in fake-out), $00A65B (C in fake-out)
+// I decided to have choices use special letters that are bold and underlined
+//#JMP($AC41)
+//ABCD
+#W16($17F2)
+//#W16($25DD)
+A_bold
+B_bold
+//#W16($265B)
+C_bold
+D_bold
+
+// update char encoding values for the cursor and page icon, and repoint
+//#JMP($AC53)
+#W16($248B)
+#W16($24F0)
+//#W16($2678)
+//#W16($268D)
+#W16($2D3B)
+#W16($2D4D)
+#W16($12476)
+[CURSOR]
+
+#W16($2CB1)
+#W16($2CBF)
+[CLEAR PG]
+
+// there's a character encoding here for a filled in page rather than the one
+// you see in game that's mostly transparent, but it goes unused
+//[FILLED PG]
+
+// change the character encoding values for the file select menu's text
+// replace: と (透 と 真里), 回 (playthrough counter), 第 (ordinal # prefix)
+//#JMP($AC5B)
+#W16($DF26)
+&
+
+// NOTE: 回 was originally at CPU address $01AC5D, but printing the playthrough
+// counter for the English patch required an ASM hack for me, and I'd rather
+// set the pointer in the ASM hack than hard-code the pointer location here
+//#W16($DF88)
+// note 1: originally at CPU address $01AC5D, was 回; ASM hack moves the pointer
+//         for its replacement "#" to $01AC88
+// note 2: Atlas uses '#' for commands, so I had to escape it in the table file 
+//\#
+
+#W24($E005)
+#W16($123B0)
+[Ch.]
+
+// next char 章 is for chapters in list; unneeded, but must dummy out in ASM;
+// if you're feeling ambitious, I guess you could replace it with a colon so
+// that it shows "Ch. N:"
+//#W24($E021)
+//#W16($1240F)
+//:
+
+// then two (unused?) "characters"/magic numbers (ぜ, げ), and FFFF
+// then the magic number 06CD for save files, and FFFF
+// NOTE: not including here due to redoing bank 04's code to get space back
+//#JMP($AC69)
+//#W16($21E6A)
+//#W16($21EB4)
+//<$CD><$06>
+
+// and we now have enough space to fill in the default names for Tooru and Mari
+//#JMP($AC6D)
+//#W16($8179)
+//透
+//Tooru<$FF><$FF>
+
+//#JMP($AC71)
+//#W16($817B)
+//真理
+//Mari<$FF><$FF>
+
+// move back the FFFF-terminated '*' (for killer guess logic) that is after the
+// fake-out choice text
+// NOTE: not including here due to redoing bank 04's code to get space back
+//#JMP($ACCD)
+//#W16($21672)
+//#W16($21689)
+//_<$FF><$FF>
+
+// text after the fake choice text is reserved for the killer guess string logic
+// first is "*<FFFF>" at $01ACCD (pointers at $049672, $049689)
+// then a set of seven honorifics from $01acd1-01acfe) which I plan to dummy out

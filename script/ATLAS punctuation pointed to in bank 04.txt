@@ -1,0 +1,7 @@
+#VAR(Table, TABLE)
+#ADDTBL("tables/inserted font LE.tbl", Table)
+#ACTIVETBL(Table)
+
+#JMP(0)
+\#
+_

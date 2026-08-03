@@ -1,0 +1,287 @@
+#VAR(Table, TABLE)
+//#ADDTBL("tables/inserted font LE.tbl", Table)
+#ADDTBL("tables/inserted font one byte.tbl", Table)
+#ACTIVETBL(Table)
+
+#SMA("LOROM00")
+
+// #############################################################################
+// Character name lists for the culprit guess screens
+// #############################################################################
+
+// There are specific points in the story where the game will make you enter the
+// name, in hiragana, of who you believe to be the killer. There are lists of
+// accepted names for each character in the story besides Tooru and Mari.
+
+// Note that the first name in each list is copied into SRAM to be printed in
+// the story once the prompt is done (also used for previous text mode).
+// While the Japanese game uses kanji for the "canonical" name and won't let the
+// player's input match it, it should qualify as a match for English input here.
+
+// The order is: Mikimoto, Tanaka, Mr. Kobayashi, Mrs. Kobayashi, Mr. Kayama,
+// Mrs. Kayama, Toshio, Midori, Aki, Kanako, Keiko, [3 girls]
+
+// I think it's reasonable to have three acceptable ways for a character: proper
+// capitalization, all lowercase, and all uppercase.
+
+// Change the "start of options for character" value from 0x0039 to 0xFE.
+
+#JMP(0)
+//<$39><$00>
+<$FE>
+//美樹本さん<FFFF>
+Mr\. Mikimoto<$FF>
+//みきもと<FFFF>
+Mikimoto<$FF>
+mikimoto<$FF>
+MIKIMOTO<$FF>
+//ようすけ<FFFF>
+Yousuke<$FF>
+yousuke<$FF>
+YOUSUKE<$FF>
+//みきもとよう<FFFF>
+//かめらまん<FFFF>
+Cameraman<$FF>
+cameraman<$FF>
+CAMERAMAN<$FF>
+
+//<$39><$00>
+<$FE>
+//田中さん<FFFF>
+Mr\. Tanaka<$FF>
+//たなか<FFFF>
+Tanaka<$FF>
+tanaka<$FF>
+TANAKA<$FF>
+//いちろう<FFFF>
+Ichirou<$FF>
+ichirou<$FF>
+ICHIROU<$FF>
+//たなかいちろ<FFFF>
+
+//<$39><$00>
+<$FE>
+//小林さん<FFFF>
+// you can get this to fit in 12 bytes by squishing ". " into one character
+//Mr\. Kobayashi<$FF>
+Mr[. ]Kobayashi<$FF>
+//こばやし<FFFF>
+Kobayashi<$FF>
+kobayashi<$FF>
+KOBAYASHI<$FF>
+//じろう<FFFF>
+Jirou<$FF>
+jirou<$FF>
+JIROU<$FF>
+//こばやしじろ<FFFF>
+//おうなあ<FFFF>
+//おーなー<FFFF>
+Owner<$FF>
+owner<$FF>
+OWNER<$FF>
+//しゅじん<FFFF>
+//ますたあ<FFFF>
+//ますたー<FFFF>
+Master<$FF>
+master<$FF>
+MASTER<$FF>
+//おじさん<FFFF>
+Uncle<$FF>
+uncle<$FF>
+UNCLE<$FF>
+
+//<$39><$00>
+<$FE>
+//今日子さん<FFFF>
+// I guess you could squish "s. " into one character for this to fit in 12 bytes
+//Mrs\. Kobayashi<$FF>
+Mr[s. ]Kobayashi<$FF>
+//きょうこ<FFFF>
+Kyouko<$FF>
+kyouko<$FF>
+KYOUKO<$FF>
+//こばやしきょ<FFFF>
+//こばやしつま<FFFF>
+//こばやしづま<FFFF>
+//おばさん<FFFF>
+Aunt<$FF>
+aunt<$FF>
+AUNT<$FF>
+
+//<$39><$00>
+<$FE>
+//香山さん<FFFF>
+Mr\. Kayama<$FF>
+//かやま<FFFF>
+Kayama<$FF>
+kayama<$FF>
+KAYAMA<$FF>
+//まこと<FFFF>
+// I'm not sure why it says Makoto; his name is listed in the manual as Seiichi
+Seiichi<$FF>
+seiichi<$FF>
+SEIICHI<$FF>
+//かやままこと<FFFF>
+//しゃちょう<FFFF>
+// "company president"
+President<$FF>
+president<$FF>
+PRESIDENT<$FF>
+CEO<$FF>
+//かんさいじん<FFFF>
+Kansai<$FF>
+kansai<$FF>
+KANSAI<$FF>
+//おおさかじん<FFFF>
+Osaka<$FF>
+osaka<$FF>
+OSAKA<$FF>
+//かんさいべん<FFFF>
+// "Kansai dialect"
+//おおさかべん<FFFF>
+// "Osaka dialect"
+//しゃちょー<FFFF>
+
+//<$39><$00>
+<$FE>
+//春子さん<FFFF>
+Mrs\. Kayama<$FF>
+//はるこ<FFFF>
+Haruko<$FF>
+haruko<$FF>
+HARUKO<$FF>
+//かやまはるこ<FFFF>
+//びじん<FFFF>
+// "beautiful woman"
+//ごさい<FFFF>
+// "[Kayama's] second wife"
+//かやまふじん<FFFF>
+//かやまのつま<FFFF>
+//かやまつま<FFFF>
+//かやまづま<FFFF>
+// "Kayama's wife"
+
+//<$39><$00>
+<$FE>
+//俊夫さん<FFFF>
+Toshio<$FF>
+//としお<FFFF>
+toshio<$FF>
+TOSHIO<$FF>
+//くぼた<FFFF>
+Kubota<$FF>
+kubota<$FF>
+KUBOTA<$FF>
+//くぼたとしお<FFFF>
+//ちょんまげ<FFFF>
+//まげ<FFFF>
+// "chonmage" is a type of topknot/bun hairstyle
+Topknot<$FF>
+topknot<$FF>
+TOPKNOT<$FF>
+//のっぽ<FFFF>
+Tall guy<$FF>
+tall guy<$FF>
+TALL GUY<$FF>
+
+//<$39><$00>
+<$FE>
+//みどりさん<FFFF>
+Midori<$FF>
+//みどり<FFFF>
+midori<$FF>
+MIDORI<$FF>
+//しのざき<FFFF>
+Shinozaki<$FF>
+shinozaki<$FF>
+SHINOZAKI<$FF>
+//しのざきみど<FFFF>
+//ぽにいている<FFFF>
+//ぽにいてえる<FFFF>
+//ぽにーてーる<FFFF>
+Ponytail<$FF>
+ponytail<$FF>
+PONYTAIL<$FF>
+
+//<$39><$00>
+<$FE>
+//亜希ちゃん<FFFF>
+Aki<$FF>
+//あき<FFFF>
+aki<$FF>
+AKI<$FF>
+//かわむら<FFFF>
+Kawamura<$FF>
+kawamura<$FF>
+KAWAMURA<$FF>
+//かわむらあき<FFFF>
+
+//<$39><$00>
+<$FE>
+//可奈子ちゃん<FFFF>
+Kanako<$FF>
+//かなこ<FFFF>
+kanako<$FF>
+KANAKO<$FF>
+//わたせ<FFFF>
+Watase<$FF>
+watase<$FF>
+WATASE<$FF>
+//わたせかなこ<FFFF>
+
+//<$39><$00>
+<$FE>
+//啓子ちゃん<FFFF>
+Keiko<$FF>
+//けいこ<FFFF>
+keiko<$FF>
+KEIKO<$FF>
+//きたの<FFFF>
+Kitano<$FF>
+kitano<$FF>
+KITANO<$FF>
+//きたのけいこ<FFFF>
+
+//<$39><$00>
+<$FE>
+//OL3人組<FFFF>
+// "the group of three office ladies"
+those girls<$FF>
+//おおえる<FFFF>
+Girls<$FF>
+girls<$FF>
+GIRLS<$FF>
+3 girls<$FF>
+3 GIRLS<$FF>
+ThreeGirls<$FF>
+threegirls<$FF>
+THREEGIRLS<$FF>
+Women<$FF>
+women<$FF>
+WOMEN<$FF>
+3 women<$FF>
+3 WOMEN<$FF>
+ThreeWomen<$FF>
+threewomen<$FF>
+THREEWOMEN<$FF>
+Ladies<$FF>
+ladies<$FF>
+LADIES<$FF>
+3 ladies<$FF>
+3 LADIES<$FF>
+//ThreeLadies<$FF>
+//threeladies<$FF>
+//THREELADIES<$FF>
+//おうえる<FFFF>
+//さんにんぐみ<FFFF>
+//さんにん<FFFF>
+//あきたち<FFFF>
+//かなこたち<FFFF>
+//けいこたち<FFFF>
+//おおえるたち<FFFF>
+//おうえるたち<FFFF>
+//おーえる<FFFF>
+//おーえるたち<FFFF>
+
+// end the whole series of lists with FF instead of FE
+<$FF>

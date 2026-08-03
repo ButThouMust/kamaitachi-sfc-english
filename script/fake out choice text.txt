@@ -1,0 +1,46 @@
+#VAR(Table, TABLE)
+//#ADDTBL("tables/inserted font LE.tbl", Table)
+#ADDTBL("tables/inserted font one byte.tbl", Table)
+#ACTIVETBL(Table)
+
+// At $0B8C28-2 in the original Japanese script, there is a gag where the game
+// will fake you out with a choice. The protagonist will rapidly switch between
+// two options, ultimately refuse to pick either, then "pick" a third option for
+// you automatically. Applicable control codes: 103B inputs 0x23 (options A/B;
+// $0090EA -> $00A5BE) and 0x27 (option C; $0090EF -> $00A640).
+
+// Format for the file this outputs:
+// Bytes 0-1: 2-byte pointer to offset of option A.
+// Bytes 2-3: 2-byte pointer to offset of option C.
+// Rest of file: text data for options A/B/C, each terminated by FF.
+
+// I did an ASM hack for a one-byte encoding here, which lets you fit the text
+// into the original space provided you get rid of the honorifics that the JP
+// game used for the killer name entry (0x56+0x2E bytes). Keeping in the lines
+// lines that assume a two-byte encoding in case I need them.
+
+// Note that this translation assumes using an ASM hack to allow line breaks in
+// the text itself. This was because the original game got their options to fit
+// on one line each (and took advantage of this in the ASM code), and also since 
+// I couldn't create acceptable truncated translations that fit on 1 line each.
+
+#JMP(4)
+#W16(0)
+//指を放して首を切られるままにする。<FFFF>
+//Once I got my fingers free\, it cut<LINE 0E>my neck\.<$FF><$FF>
+Once I got my fingers free\, it cut<$FE>my neck\.<$FF>
+
+// ASM keeps reading right after the first FFFF terminator; no need to repoint
+//指を切断された後で首を切られる。<FFFF>
+//After it sliced my fingers off\, it cut<LINE 0E>my neck\.<$FF><$FF>
+After it sliced my fingers off\, it cut<$FE>my neck\.<$FF>
+
+// need to insert relative pointer from first option's text
+// e.g. in the original game, the two strings take up 0x23 characters including
+// the FFFF terminators, and the bytes at $2661 are [46 00], with 46 = 23 << 1
+// I guess, without messing around with Atlas pointer formats, you can just set
+// the CPU pointer here and change it to relative in Asar
+#W16(2)
+//どっちも嫌だ!
+//I don't want either\!<$FF><$FF>
+I don't want either\!<$FF>

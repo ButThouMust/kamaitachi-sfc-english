@@ -1,0 +1,137 @@
+#VAR(Table, TABLE)
+#ADDTBL("font/kamaitachi english font.tbl", Table)
+#ACTIVETBL(Table)
+
+// to be used for the GRAPHICS lookup table, not the TEXT lookup table
+
+#JMP(0)
+// first, set which character will signify "char slot not filled in yet" for the
+// name entry screen; JP game used an asterisk *, I'll use an underscore _
+_
+
+// then fill in the order of the characters to use for the compressed gfx data;
+ABCDEFGHIJ
+KLMNOPQRST
+UVWXYZ{}~...
+abcdefghij
+klmnopqrst
+uvwxyz[]<>
+0123456789
+\!@\#$%^&*()
+\.\,':;\?+-/=
+
+ÀÁÂÃÄÅĀÆǢÇ
+ÈÉÊËĒÌÍÎÏĪ
+ÐÑÒÓÔÕÖŌŒØ
+ÙÚÛÜŪÝŸÞß 
+àáâãäåāæǣç
+èéêëēìíîïī
+ðñòóôõöōœø
+ùúûüūýÿþ♂♀          
+// quirk with Atlas: if a line solely consists of spaces, it will be ignored
+
+// matches for grave accents:
+// two pixels right
+// ÀÒ
+// zero pixels right
+// ÈÌ
+// one pixel right, height 3
+// àèìòù
+// unique accent:
+// Ù
+
+// matches for acute accents:
+// two pixels right, height 2
+// ÁÉÚÝ
+// two pixels right, height 3
+// éóúý
+// one pixel right
+// áí
+// unique accents each:
+// Í
+// Ó
+
+// matches for circumflex accents:
+// one pixel right, width 4
+// ÊÍÛ
+// zero pixels right, width 5
+// âíû
+// one pixel right, width 5
+// êô
+// unique accents each
+// Â
+// Ô
+
+// matches for tildes:
+// one pixel right
+// ÃÑ
+// zero pixels right
+// ãñ
+
+// matches for umlauts:
+// two pixels right
+// ÄÖ
+// one pixel right
+// ËÜŸöÿ
+// zero pixels right
+// Ïäëïü
+
+// matches for macrons:
+// (note: all capitals use the full height of the unaccented letters)
+// one right, width 6
+// ĀŪ
+// zero right, width 6
+// Ēēū
+// zero right, width 5
+// Īāī
+// each unique:
+// Ǣ
+// ǣ
+// Ō
+// ō
+
+// overring on both Å and å are drawn uniquely
+// however, Å does use the full height of the normal A unlike other accented A's
+
+// both Ç and ç have unique positionings for the cedilla
+// ç reuses bottom two pixels from rows 6 and 7 of 'X'
+
+//\.:;,\?\!...
+//[]{}
+//~@#$%^&*()
+//<>/:;+-×÷=
+//0123456789
+//AÀÁÂÄĀ
+//ÃÅ
+//ÆǢ
+//B
+//bþ
+//CÇ
+//cç
+//DÐ
+//EÈÉÊËĒ
+//FGH
+//IÌÍÎÏĪ
+//JKLM
+//NÑnñ
+//OÒÓÔÖŌ
+//ÕØ
+//PQRST
+//UÙÚÛÜŪ
+//VWX
+//YÝŸ
+//Z
+//æǣ
+//aàáâäā
+//ãå
+//eèéêëē
+//fgh
+//iìíîïī
+//jklm
+//oòóôöō
+//õðø
+//pqrst
+//uùúûüū
+//vwx
+//yýÿ
+//z

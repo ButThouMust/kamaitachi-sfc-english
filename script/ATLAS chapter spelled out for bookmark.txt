@@ -1,0 +1,6 @@
+#VAR(Table, TABLE)
+#ADDTBL("tables/inserted font one byte.tbl", Table)
+#ACTIVETBL(Table)
+
+#JMP(0)
+Chapter

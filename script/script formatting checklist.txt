@@ -1,0 +1,3790 @@
+Vim regex to check for uncommented lines with Japanese text still in them
+^[^#/].*[^ A-Za-z0-9<>!'":\*_%\$\-\?\.]
+
+Search in this file for unchecked screens: "\t "
+
+If choice options are short and ultimately don't lead to anything special, they
+get listed under the screen with the choice code.
+
+// menu screen logic
+05FCE1-0	x
+05FCF6-1	x
+05FD01-5	x
+05FD19-0	x
+05FD24-5	x
+05FD35-1	x
+05FD48-3	x
+05FD4D-7	x - change ctrl flow to allow changing names if got pink bookmark
+05FD61-1	x
+05FD67-5	x
+05FD79-7	x
+05FD87-5	x
+05FD8E-6	x
+05FDA0-3	x
+05FDA5-7	x
+05FDB6-3	x
+05FDC0-3	x
+05FDCC-3	x
+05FDDB-5	x
+05FDE3-4	x
+05FDF1-3	x
+05FE01-2	x
+05FE0F-0	x
+05FE1E-5	x
+05FE29-3	x
+05FE31-1	x
+05FE62-4	x - change ptr here for easy playtesting - jump to any script pos
+05FE66-6	x
+
+// start of actual game script
+On the Ski Slopes
+05FE6B-2	x
+05FE79-7	x
+05FEE1-0	x Tooru looks like a snowman [seen at least 1 good ending]
+- 05FF2A-7	x better at falling down than skiing
+- ["put on that much weight?" see section]
+05FF73-6	x
+05FFE0-0	x
+068025-4	x
+068092-5	x
+0680FB-5	x go just one more time [seen at least 1 good ending]
+- 068111-5	x weather looks ominous
+- [give in to Mari's pleas, see section]
+06818A-7	x
+0681E3-2	x
+068264-7	x
+0682B6-0	x
+
+The Ski Lodge Spur
+06832C-5	x
+068344-2	  needs rewrite, multinational vs stateless menu
+0683E8-3	x
+068440-2	x
+06846C-6	x
+068489-1	x choice upon returning to lodge
+- 0684A0-4	x wait for dinner in the lounge
+- [wait for dinner in Tooru's room; go to section]
+- 08FE7D-0	x take a nap until dinner; skip to dinner chapter [normal]
+  08FECE-3	x
+0684C8-0	x
+068505-7	x
+068560-0	x
+0685B3-3	x
+068635-3	x
+068680-4	x
+0686F6-0	x
+068713-4	x Mari asks Tooru which girl is his favorite
+- 068723-3	x not looking at them like that
+- 08FF07-5	x let me take a closer look at the girls
+  08FF48-7	x
+  08FF59-3	x Kanako
+  08FF98-7	x Keiko
+  08FFDB-7	x Aki
+  09801B-6	x
+068773-0	x converge point, Aki asks for a photo of the three of them
+0687CB-6	x
+068815-3	x
+068863-4	x
+0688B4-3	x
+068917-4	x
+068969-7	x
+- 08A7FC-0	x "silly question, honey"; Mari joins the photo
+  08A84C-0	x
+  08A8BC-7	x
+  08A90E-4	x
+  08A97A-2	x
+  08A9E7-7	x
+  08AA55-2	x
+  08AAA6-3	x
+  08AAF2-6	x
+068972-4	x converge point, list off everyone's names
+0689DC-3	x
+068A33-6	x
+
+The Kayamas Arrive
+068AAD-0	x
+068ABA-2	x
+068B26-7	x
+068B93-1	x
+068BDB-4	x
+068C46-7	x
+068CCC-3	x
+068D2D-1	x
+068D63-5	x make a comment about Haruko or Mari's beauty
+- 068D75-5	x agree that Haruko is beautiful
+  068DD3-0	x
+- ["you're much prettier, Mari"; go to section]
+
+Time for Dinner!
+068E36-5	x
+068E40-2	x
+068EA5-6	x
+068EF7-6	x
+- 068F0C-1	x "you're gorgeous"
+- 08B52A-6	x "here's looking at you, kid"
+- 09804A-4	x "why hello there, sexy"
+  0980A2-6	x
+  0980C2-7	x
+  0980DC-4	x
+  0980E5-5	x
+- [imitate Japanese comedians, go to that section]
+068F8E-1	x
+069009-1	x
+069072-7	x speculate about Tanaka, 2 choices, 3 choices
+- 0690BD-1	x why would a yakuza come here
+- [ask Mari "is he a yakuza?" go to section]
+- [ask Tanaka himself "are you a yakuza?"; go to section]
+069131-3	x
+069191-7	x
+0691F9-7	x
+069275-4	x
+0692DE-5	x
+069338-3	x
+06939E-5	x
+06941E-4	x
+069487-0	x Mari suggests that they go out for some night skiing
+- [agree with her at first; go to section]
+- 06949D-0	x turn her down, continue
+069521-3	x
+069590-6	x
+0695F4-5	x
+069670-7	x
+0696D8-2	x
+069752-5	x
+0697A2-3	x
+06982B-4	x
+- 06983B-2	x "sure that's fine"
+  069891-0	x
+- 08BAE0-0	x "I have my own part time job"
+  08BB1E-7	x
+  08BB75-7	x
+- 098841-5	x "of course, if he lets us stay for free"
+  09889B-6	x
+  0988DF-5	x
+
+The Mysterious Message
+0698C8-5	x
+0698DC-4	x
+069922-2	x
+069985-7	x
+0699AE-3	x
+069A0E-0	x
+069A2D-7	x
+069A71-4	x
+069AE8-3	x
+069B52-7	x
+069BCE-4	x
+069C14-5	x
+069C6E-1	x
+069CC0-2	x
+069D00-4	x
+069D5B-4	x
+- 069D66-6	x "that's not funny"
+- 08BBFE-1	x "Cat's out of the bag now"
+  08BC50-1	x
+069DBF-4	x
+069E34-5	x
+069E99-5	x
+
+Today's Closing Prices
+069EEF-2	x
+069EFC-6	x
+069FA5-7	x
+06A02F-1	x
+06A088-7	x
+06A0FA-6	x
+06A13E-6	x
+06A160-6	x
+06A1D0-5	x
+
+An Invitation to a Job
+06A240-3	x
+06A254-7	x
+06A290-5	x
+06A2E3-2	x first choice
+- [let me work for you, go to section]
+- 06A32A-5	x "still debating it", continue
+06A35D-2	x
+06A3BE-4	x say no, another choice
+- [yes sir, please let me work for you, go to section]
+- 06A3C9-7	x "let me think some more", continue
+06A3ED-7	x
+06A41B-4	x
+06A4BD-6	x
+06A53D-6	x
+06A5AF-3	x
+06A62D-1	x
+- 06A663-0	x just a little for me, too
+- 08C309-5	x a whole case of beer
+- 09892C-3	x "is the beer free?"
+06A688-5	x
+06A6B0-3	x
+
+A Delayed Guest
+06A6FE-6	x
+06A70A-1	x
+06A769-3	x
+06A7D2-2	x
+06A835-2	x
+06A87A-4	x
+06A8F0-3	x
+06A95E-7	x
+06A9D4-5	x
+06AA44-2	x
+06AA7A-7	x
+06AAFC-7	x
+- 06AB4D-3	x greatest luxury in life - agree
+- 08C353-6	x greatest luxury in life - disagree
+  08C3C0-1	x
+06AB95-0	x
+06AC11-7	x
+06AC8A-6	x
+06ACF9-2	x
+06AD57-2	x
+06ADA7-6	x
+06ADE9-4	x
+06AE36-0	x
+06AEA1-4	x
+06AF0D-0	x
+06AF32-7	x
+- 06AF42-7	x say nothing in particular
+  06AF53-2	x
+- 08C11B-5	x young women these days
+- 09896C-0	x "it's your job to keep your workers in line"
+  0989C9-2	x
+06AF8A-5	x
+06AFE2-2	x
+06B037-1	x
+06B098-3	x
+
+Night of the Ringing Clock
+06B0FE-1	x
+06B108-3	x
+06B179-4	x
+06B1BA-2	x
+06B22D-0	x
+- 06B273-6	x starving to death in the blizzard
+  06B2EC-1	x
+- 08C198-4	x cockroaches in the soup
+  08C204-5	x
+  08C277-0	x
+- 098A32-6	x "no, just that threatening note"
+06B35C-4	x
+06B3C9-1	x
+06B441-4	x
+06B492-6	x
+06B50A-2	x
+06B59F-5	x
+06B605-3	x
+06B674-2	x
+06B6D3-4	x
+06B727-0	x
+06B7A4-5	x
+06B807-4	x
+06B85D-7	x
+06B8E5-3	x
+06B939-7	x
+06B9A7-0	x
+06BA0E-5	x
+06BA79-0	x
+06BACA-6	x pink bookmark choice
+- [start of treasure route, go to section]
+- 06BADC-4	x go check, urge Mr. Kobayashi on
+06BB2D-5	x
+
+Like a Mannequin
+06BB91-3	x
+06BBA3-4	x
+06BC1B-6	x
+06BC5C-7	x
+
+Kamaitachi
+06BCC7-7	x
+06BCDF-1	x
+06BD4D-4	x
+06BDAB-7	x
+06BE0D-6	x
+06BE6F-0	x
+06BED4-7	x
+06BEF6-6	x
+06BF76-3	x
+06BFE9-1	x
+06C035-3	x
+06C079-6	x
+06C101-2	x
+06C177-2	x
+06C1ED-7	x
+06C273-3	x
+06C2AB-1	x
+06C30E-1	x
+06C354-7	x
+06C3A3-7	x
+06C421-1	x
+06C45D-7	x
+06C4BA-1	x
+06C4FA-3	x
+06C57E-7	x
+06C5D7-1	x
+06C63C-2	x
+06C6A7-5	x
+06C6D5-3	x
+06C744-6	x
+06C7AD-3	x
+06C7F4-3	x
+06C876-2	x
+06C8F8-7	x
+06C97A-1	x
+06CA02-0	x
+06CA58-5	x
+06CAB3-4	x
+06CB27-2	x
+06CBB3-7	x
+06CC26-5	x
+06CC90-4	x
+06CCCC-1	x
+06CD24-4	x
+06CD54-5	x
+06CDC8-2	x
+06CE2E-6	x
+
+Is the Killer in The Spur?
+06CE72-5	x
+06CE91-3	x choice for checking upstairs or downstairs first
+- [check downstairs, go to section]
+- 06CED1-1	x check upstairs; continue
+06CF50-3	x
+06CFCF-0	x
+06D01B-3	x
+06D05A-5	x
+06D0A4-2	x
+06D114-7	x
+06D154-1	x
+06D1AA-5	x
+06D1FE-6	x
+
+Black Cat
+06D258-4	x
+06D264-0	x
+06D2B3-3	x
+06D317-3	x
+06D333-3	x
+06D378-7	x kayama boasts about judo
+- 06D3D8-2	x tease him
+- 08C8D4-5	x say nothing
+06D44A-3	x
+06D4AB-5	x
+06D4BB-0	x
+06D4CA-4	x
+06D4E4-4	x
+06D4F5-1	x
+06D505-7	x
+06D528-1	x (converge point for two paths)
+06D575-4	x
+06D5C5-6	x
+06D622-2	x
+06D677-6	x
+
+Doubts Come to a Boil
+06D6B1-4	x
+06D6C4-4	x
+06D704-2	x choice regarding first opportunity
+- [killer could have entered even earlier, see section]
+- 06D70F-4	x one of us had no alibi; continue
+06D744-3	x
+06D7A9-5	x
+06D7F9-5	x
+06D84D-2	x
+06D87F-5	  needs rewrite, 根っからの犯罪者 -> "criminal to the core"?
+06D8AB-0	x
+
+Suicide Corps
+06D8E9-2	x
+06D8F2-7	x
+06D966-0	x
+06D9C2-5	x choose to go outside or stay inside
+- [stay inside, see section]
+- 06D9CE-2	x go outside
+06DA35-6	  needs rewrite; Ikkyuu-san
+06DA96-4	x
+06DB0B-3	x
+06DB88-4	x
+06DBF4-0	x
+06DC64-0	x
+06DCC0-4	x
+06DD14-2	x choice 1, go left or right
+- 08D4DF-4	x 1: keep going left
+  08D51F-3	x
+  08D579-7	x
+- 06DD24-1	x 1: keep going right
+06DD86-0	x choice 2, go forward or back
+- 08D59E-4	x 2: keep going forward
+06DD95-7	x 2: go back; choice 3: keep going or go back after all
+- 08D5C0-4	x 3: go back after all
+  08D5F3-4	x
+  08D616-4	x
+06DDEC-4	x 3: keep going
+06DDF8-3	x
+06DE28-3	x
+06DE7F-2	x
+06DEF0-2	x
+06DF3B-5	x
+06DF8C-4	x
+06DFED-4	x
+
+The Assaulted Mr. Mikimoto
+06E025-7	x
+06E03D-0	x
+06E073-1	x
+06E09C-5	x
+06E0F6-3	x
+06E139-4	x
+06E1A4-2	x
+06E1E2-3	x
+06E245-5	x
+06E2A7-2	x
+06E2E3-4	x
+06E345-6	x
+06E398-7	x
+06E400-2	x
+06E47F-5	x
+06E4B4-2	x
+06E50B-4	x
+06E585-5	x
+06E5F0-2	x
+06E63C-0	x
+06E68E-0	x
+06E6C7-6	x
+06E726-2	x
+06E789-6	x
+06E7DA-0	x
+06E82D-3	x
+06E899-1	x
+06E8E4-3	x
+06E934-4	x
+06E978-2	x
+
+Terror Leading to Massacre (went outside)
+06E9BD-5	x
+06E9CD-3	x
+06EA35-7	x
+06EA76-6	x
+06EAD3-7	x
+06EB11-1	x
+06EB89-6	x respond to Kayama's thoughts on being killed one by one
+- 06EB95-3	x possibly agree
+- 08D671-0	x rebuke him
+06EBE6-2	x
+06EBF9-7	  needs rewrite, repetitive
+06EC6D-5	x
+06ECC7-6	x
+06ED11-7	x
+06ED66-0	x
+06EDA7-0	x
+06EE19-3	x
+06EE7B-6	x
+06EED5-1	x
+06EF44-6	x
+06EFB8-7	x
+06F009-0	x
+06F062-2	x
+06F0C9-5	x
+06F154-5	x
+06F18B-7	x
+06F1EE-1	x
+06F23F-3	x - had stayed inside
+06F285-5	x - had gone outside
+06F2C5-5	x
+06F311-0	x
+06F353-7	x
+06F39E-4	x
+06F3FF-4	x
+06F428-6	x
+06F48E-3	x
+
+Jumping at Shadows
+06F503-1	x
+06F515-2	x
+06F589-6	x
+06F5EF-4	x
+06F64D-4	x
+06F6B8-3	x
+06F732-1	x
+06F7AB-1	x how long would it take to dismember the body?
+- 06F7BA-7	x say "30 minutes" after some thought
+- 08D6A3-2	x carelessly say "10 minutes"
+- 098AB5-1	x carefully simulate it in your head
+  098AFE-5	x
+  098B5B-4	x
+06F807-1	x
+06F869-3	x
+06F8AE-7	x
+06F8C9-1	x
+06F8F2-3	x
+06F91C-3	x
+06F942-1	x
+06F971-3	x
+06F9C4-2	x
+06FA41-7	x
+06FAA6-7	x
+06FB31-1	x
+06FB8B-3	x
+06FBE5-5	x
+06FC16-7	x
+06FC9D-4	x
+06FD00-6	x
+06FD47-6	x
+06FD9F-3	x
+06FDFF-0	x
+06FE53-7	x
+06FE99-0	x
+
+The Second Murder
+06FEDE-0	x
+06FEEB-1	x
+06FF42-4	x
+06FF99-0	x
+07800A-6	x
+078084-1	x
+0780E1-2	x
+07811D-1	x
+07819C-6	x
+0781FD-3	x
+078266-5	x
+0782C5-2	x
+078337-0	x
+0783A5-1	x
+0783E6-3	x
+078445-2	x
+07848A-7	x
+0784D0-1	x
+078517-2	x
+078556-5	x
+0785BE-4	x
+078607-3	x
+078668-6	x
+0786BD-7	x
+078710-3	x
+078770-3	x
+0787DA-6	x
+078833-5	x
+07886D-0	x
+0788AD-5	x
+07890C-5	x
+078964-2	x
+0789B1-6	x
+0789FB-7	x
+078A76-0	x
+078AE3-2	x
+078B28-7	x
+078B5E-4	x
+078BA6-0	x
+078C22-0	x
+078C6B-4	x
+078CBA-3	x
+078D36-1	x
+078DA6-7	x
+078DDF-6	x
+078E43-2	x
+078E80-5	x
+078ECC-7	x
+078F30-5	x
+078F97-2	x
+079027-7	x
+0790A5-3	x
+0790FD-5	x
+079166-6	x
+0791D8-6	x
+07922A-2	x
+079277-5	x
+0792CE-2	x
+07934B-7	  needs rewrite of translation for 死界
+079396-3	x
+
+An Ugly Dispute
+0793D7-6	x
+0793EC-5	x
+079452-4	x
+0794B3-5	x
+07952F-7	x
+079599-4	x
+079601-5	x - had stayed inside
+07966E-7	x - had gone outside
+0796DD-6	x
+079746-0	x
+
+News on TV
+0797A7-3	x
+0797BA-4	x
+079828-3	x
+07987A-7	x
+0798DD-4	x
+07992C-3	x
+0799CB-0	x
+079A1A-1	x
+079A8E-7	x
+079ADB-4	x
+079B27-6	x
+079B8C-1	x
+079BEF-6	x
+079C58-0	x
+079C9B-3	x
+079CFC-5	x
+079D44-4	x
+079D81-3	x
+079DCC-7	x
+079E31-3	x
+079E70-5	x
+079EC7-1	x
+079F51-7	x
+079FBD-4	x
+07A004-7	x
+07A05F-5	x
+07A0C4-3	x
+07A109-6	x
+07A159-1	x
+07A1A9-4	x
+07A215-5	x reason the body was dismembered was...
+- 07A22C-5	x hiding their identity
+- 08D70D-6	x carrying it somewhere
+- 098BB1-5	x a grudge
+07A26F-4	x
+07A2AE-3	x
+07A316-3	x
+07A363-5	x
+07A3B8-1	x
+07A420-7	x
+07A47B-0	x
+07A4E1-5	x
+07A547-5	x
+07A596-6	x
+07A60D-1	  needs rewrite of 不思議な for describing Toshio's point
+07A67C-5	x
+07A6C3-7	x
+07A74A-2	x
+07A788-1	x
+07A7C0-4	x
+07A81D-6	x
+07A86E-4	x
+07A8C7-2	x
+07A918-6	x
+07A99C-2	x
+07AA09-6	x
+07AA5C-0	x
+
+Why Was Midori...?
+07AA9E-6	x
+07AAB8-5	x
+07AAFB-3	x
+07AB4B-3	x
+07AB9A-6	x
+07ABFE-2	x
+07AC56-6	x
+07ACB2-7	x
+07AD25-0	x
+07AD8B-1	x
+07ADCF-6	x
+07AE45-4	x
+07AE8B-5	x
+07AEF0-6	x
+07AF5E-1	x choice for who to let come with you
+- [have Toshio pick Mikimoto; go to section]
+- 07AFB3-2	x let Toshio come along; continue
+07B007-0	x
+07B046-0	x
+07B0B7-6	x
+07B123-7	x
+07B182-2	x
+07B1E1-7	x
+07B212-6	x check bathroom to see if...
+07B227-2	x - soap was used
+- 08D764-3	x see if bathtub was used
+- 098BF6-6	x check if towels are damp
+07B273-7	x
+07B2AD-6	x
+07B314-1	x
+07B36D-2	x
+07B3BB-3	x
+07B410-4	x
+07B4A0-7	x
+07B4DA-7	x - 2nd half of this is "didn't check tub"
+07B50B-6	x - did check tub, get to see option to fast-track to "deduction"
+07B51C-0	x
+07B53C-1	x
+07B554-6	x
+07B5BC-3	x
+07B5FF-4	x
+07B639-3	x
+07B686-3	x
+07B6C2-7	  rewrite Tooru's weird sneeze
+07B713-1	x
+07B76D-2	x
+07B7AA-0	x
+07B7F7-0	x
+07B86A-2	x
+07B8D6-4	x
+07B945-2	x
+07B9AA-3	x
+
+A Deduction
+07B9EC-2	x
+07B9FE-2	x
+07BA5A-4	x second opportunity for guess
+- 07BA74-3	x "I know who killed Mr. Tanaka"
+- 08D837-1	x "I know who killed Midori"
+  08D886-3	x
+  08D8E8-2	x
+  08D93F-1	x
+- ["I know the killer's identity for all the cases", go to section]
+- 09944E-7	x "I can't pin down the killer now"
+  0994AE-7	x
+  099503-6	x
+07BA85-5	x
+07BAC2-5	x
+07BACB-5	x
+07BB40-5	x
+07BB93-2	x
+07BBF0-7	x
+07BC4E-1	x
+07BCAB-7	x
+07BCF9-6	x
+07BD3A-7	x
+07BDA2-1	x
+07BE16-3	x
+07BE51-1	x
+07BEBF-0	x
+07BF12-5	x
+07BF6B-2	x
+07BFD4-0	x
+07C019-7	x
+07C079-7	x
+07C0C7-1	x
+07C136-1	x
+07C1C6-4	x
+07C243-4	x
+07C2B6-5	x
+07C32A-3	x
+
+07C377-1	x - had stayed inside
+07C384-5	x
+07C3F3-3	x
+07C455-6	x - had gone outside
+07C4C3-4	x
+
+07C51A-6	x
+07C57A-2	x
+07C606-6	x
+07C66E-0	x
+07C6CD-2	x
+07C754-3	x
+07C7AC-2	x
+07C7F7-2	  rewrite the coughing sounds, perhaps?
+07C863-2	x
+07C8BE-3	x
+07C91A-2	x
+07C98D-0	x
+07C9D9-6	x
+07CA43-6	x
+07CAB5-6	x
+07CB43-7	x
+07CBC5-6	x
+07CC30-2	x
+07CC8D-1	x
+07CCE8-6	x
+07CD40-5	x
+07CD83-6	x
+07CDD4-7	x is Tooru confident in his deduction about Kayama
+- [no, I'm not confident about what I said; see section]
+- 07CE0A-5	x yes, he is; continue
+07CE57-5	x
+07CEAC-3	x
+
+Confined in the Basement
+07CF17-4	x
+07CF2E-1	x
+07CFAE-4	x
+07D026-5	x
+07D079-5	x
+07D0DE-7	x
+07D128-3	x
+07D179-2	x (converge point for two paths)
+07D1CF-3	x
+07D21D-1	x
+07D2A2-3	x
+07D2F5-4	x
+07D33C-2	x
+07D37F-3	x
+07D3AC-0	x
+07D41A-4	x
+07D46D-5	x
+07D4D3-7	x
+07D530-4	x
+07D57E-7	x
+07D5CB-0	x
+07D647-2	x
+07D69E-3	x
+07D71F-0	x
+07D76B-5	x
+07D7D0-7	x
+07D836-7	x
+
+The Beginning of a Long Night
+07D890-4	x
+07D8A5-4	x
+07D8D8-6	x decide whether to ask Mari to stay with you for the night
+- [ask Mari to come to your room; go to section]
+- 07D8E4-1	x hesitate after all, she asks him to later; continue
+07D939-0	x
+07D999-2	x
+07D9ED-5	x
+07DA45-2	x
+07DAB5-2	x
+07DB14-5	x
+07DB43-6	x what to do when Mari's with you
+- [sit next to Mari on the bed; go to section]
+- 07DB4F-1	x grasp her hands
+07DB8D-2	x
+07DBE1-2	x
+07DC39-6	  kerning desperately needed for "naïve"
+07DC86-2	x
+07DCBA-2	x
+07DD06-5	x
+07DD57-7	x
+07DD8E-1	  possibly rewrite line about protecting Mari, and Mari alone
+07DDCC-5	x
+07DE11-1	x
+07DE61-6	x
+07DEBB-6	x
+07DF0E-0	x
+07DF47-7	x
+07DF7F-5	x
+07DFDC-0	x
+07E018-5	x
+07E062-5	x
+07E0A7-1	x
+
+Mari's Scream
+07E0FD-4	x
+07E10A-4	x
+07E17D-5	x
+07E1D4-0	x
+07E24E-4	x what to do after her scream
+- [pound on the doors for help]; go to section
+- 07E25E-2	x hurry to Mari
+07E2B6-6	x
+07E33A-4	x
+07E37A-3	x
+07E3D5-0	x
+07E441-6	x
+07E48F-0	x
+07E4CE-7	x
+07E524-2	x check on Kayama or the Kobayashis first
+- 07E54A-6	x check Kayama
+- [check Kobayashis first; go to section]
+
+Into the Basement
+07E59F-1	x
+07E5B4-6	x
+07E5E9-1	x
+07E648-0	x
+07E6D2-3	x
+07E730-4	x
+07E77B-2	x
+07E7E4-5	x
+07E832-4	x
+07E87D-0	x
+07E8D4-1	  possibly rewrite, feels kind of repetitive
+07E949-6	x
+07E9AA-3	x
+07EA0B-1	x
+07EA5C-1	x
+07EAA9-6	x
+07EAE0-7	x
+07EB4C-2	x
+07EBAB-2	x
+07EBF5-1	x
+07EC25-7	x
+07EC72-4	x
+07ECC5-7	x
+07ECF5-3	x
+07ED49-7	x
+07ED9A-1	x
+07EE01-7	x
+07EE6F-5	x
+07EEE1-1	x
+07EF40-1	x
+07EF6F-3	x
+07EFDE-7	x
+
+The Killer Must Be Toshio!
+07F05E-0	x
+07F073-1	x
+07F0DA-6	x
+07F125-7	x
+07F172-1	x react to possibly having to confront Toshio
+- 07F1CD-6	x stay strong in front of Mari
+  07F203-2	x
+- 08F76E-3	x suggest escaping from the lodge
+  08F7CE-6	x
+07F238-5	x
+07F282-6	x
+07F2D9-5	x
+07F317-3	x
+07F34E-1	x
+07F3B8-3	x
+07F40E-2	x
+07F466-5	x
+07F4DA-6	x
+07F561-4	x
+07F5EB-3	x
+
+Two Slaughtered Corpses
+07F66E-7	x
+07F67F-1	x
+07F6C3-5	x
+07F6F5-2	x
+07F752-7	x
+07F77B-6	x
+07F7C7-7	x
+07F81A-5	x
+07F82E-3	x
+07F8AC-5	x
+07F91A-1	x
+07F97D-3	x
+07F9DE-7	x decide whether to ignore bloody knob or not
+- [approach bloody knob; go to section]
+- 07F9EE-6	x ignore knob; continue down, locked into the ski pole bad ending
+07FA0F-3	x
+07FA39-0	x
+07FAB6-6	x
+07FB12-1	x
+07FB69-2	x
+07FB96-0	x
+07FBF5-6	x
+07FC78-0	x
+07FCCA-6	x
+07FD12-3	x
+07FD49-1	x
+07FD92-2	x
+07FE09-0	x
+07FE6D-3	x
+07FEC1-1	x
+07FF3E-4	x
+07FF99-7	x
+07FFE8-3	x
+088063-2	x
+0880E1-5	x
+088158-5	x
+0881C4-3	x
+088216-7	x
+08828A-7	x
+088305-6	x
+088342-3	x
+08838D-3	x
+0883D8-6	x
+08844E-7	x might need rewrite of final line?
+0884B2-7	x
+088506-4	x
+088552-5	x
+
+The Chimes...
+0885B0-2	x
+0885BD-2	x
+08861F-4	x
+088671-2	x
+088694-4	x
+0886A5-1	x
+0886B7-2	x
+08871F-4	x Kanako wants to go to the ringing front door
+- 08FA9C-0	x the chimes are not a trap
+  08FB1F-3	x
+  08FB74-3	x
+  08FBDC-4	x
+  08FC49-7	x
+  08FCA3-5	x
+  08FD10-4	x
+  08FD72-0	x
+- 088781-2	x the chimes must be a trap; continue here
+0887D8-3	x
+088843-6	x
+08889D-2	x
+08890B-0	x
+088984-7	x what to do after Kanako leaves
+- 0889AD-4	x catch up with Kanako
+- 08FDB9-5	x be afraid that Toshio would come into the girls' room
+  08FE18-1	x
+0889F5-7	x
+088A4A-1	x
+088A9E-3	x
+088AF1-4	x
+088B3C-1	  needs rewrite of translation of 他人事?
+088BAC-6	x
+088BF6-5	x
+088C60-2	x
+088CCE-0	x (converge point for trap or not)
+088D12-6	x
+088D69-4	x
+088DC4-5	x
+088E07-3	x
+088E85-7	x
+088EF9-2	x
+088F7D-4	x
+088FDA-6	x
+08904B-2	x
+0890BE-1	x
+08913C-6	x
+0891A2-2	x
+089216-4	x
+08928E-0	x
+089301-2	x
+089379-3	x
+0893DA-6	x
+089415-2	x
+089479-5	x
+0894DD-0	x
+08950E-7	x
+089566-7	x
+
+Survival Game
+0895AE-4	x
+0895C8-5	x
+089622-6	x
+08966D-1	x
+0896D3-7	x
+089722-1	x
+08977D-4	x
+0897F1-3	x
+089858-4	x
+0898BE-1	x
+089932-6	x
+089989-1	x
+0899DC-0	x
+089A4D-6	x
+089AAA-0	x
+089B0E-3	x
+089B50-4	x
+089B81-4	x
+089BD9-7	x
+089C1D-2	x
+089C4C-0	x
+089CD2-5	x
+089D40-7	x
+089D98-3	x
+089DEC-1	x
+089E40-5	x
+089EA5-1	x
+089F12-1	x
+089F82-2	x
+089FD5-1	x
+08A03C-0	x
+08A0BB-7	x
+08A124-1	x
+08A168-0	x
+08A1B1-1	x
+08A212-1	x
+08A27E-2	x
+08A2C2-2	x
+08A35F-7	x
+08A3B9-5	x
+08A414-4	x
+08A44C-5	x
+08A489-6	x
+08A507-3	x
+// ending --------------------
+
+wait for dinner in Tooru's room
+08A518-6	x
+08A587-2	x
+08A5FB-3	x
+08A64E-1	x
+08A68E-1	x
+08A6BD-7	x
+08A70B-7	x Mari's hands slide up Tooru's legs
+- 08A735-3	x "that's enough, thanks"
+  08A7A5-7	x
+- ["A Face Floating in the Window"; go to section]
+
+"you're much prettier, Mari"
+08AB37-0	x Mari thinks you're just flattering her
+- 08AB7A-6	x "oh, you noticed?'
+  08ABAE-2	x
+- 08AC06-1	x "not flattery"; continue below
+
+Time for Dinner! ("that wasn't flattery")
+08AC63-4	x
+08AC6F-5	x
+08ACCE-0	x
+08AD28-3	x Mari's hands are inviting Tooru
+- 08AD34-2	x talk about Euclidean geometry
+  08AD99-2	x
+- 08ADDA-2	x touch Mari's hands; continue below
+08AE15-5	x
+- 08AE26-1	x "Please marry me, Mari!"
+  08AE6A-7	x
+- 08AEBA-3	x "Mari's hands" are smooth
+- 08AF3B-7	x "what do you think of me?" and continue down
+08AF69-4	x
+08AFC0-2	x
+08B025-6	x
+08B071-0	x
+08B0E1-5	x
+08B153-5	x
+- 08B16F-6	x offer to go to the lounge
+- 08B1C3-7	x alternate entry point for occult route, and continue down
+08B223-2	x
+08B277-0	x
+08B2DD-4	x
+08B355-6	x
+08B3B9-0	x
+08B430-3	x
+08B47B-6	x
+08B4D9-5	x
+
+"is he a yakuza?"
+08B585-7	x
+08B5DC-7	x
+08B639-7	x
+08B69B-7	x
+08B6EB-2	x
+08B75A-4	x
+08B7B2-2	x
+08B830-2	x
+08B83C-1	x
+08B8A8-4	x
+
+call Mr. Kobayashi a moron for quitting law
+08B904-1	x
+08B96C-6	x
+08B9F8-5	x
+08BA4E-0	x
+08BA96-7	x
+
+"Let me work for you"
+08BC9D-4	x say yes, 1st choice
+08BCD6-6	x
+08BD51-1	x
+08BD5D-1	x say no after first saying yes
+08BDAD-2	x say yes after first saying no
+08BDC8-4	x say yes after first saying yes
+08BDE5-0	x
+08BE42-4	x
+08BEA7-7	x
+08BEB3-5	x ultimately say no after Kayama hears you say yes
+
+Bad ending where Tooru becomes a Kansai CEO
+08BF2B-0	x
+08BF69-6	x
+08BFDA-0	x
+08C041-6	x
+08C0C4-0	x
+// ending --------------------
+
+look for the killer starting downstairs
+08C41A-2	x
+08C439-3	x
+08C44B-0	x
+08C45A-4	x
+08C474-4	x
+08C485-1	x
+08C495-2	x
+08C4A7-3	x
+08C51E-7	x
+08C56B-2	x
+08C5DC-1	x
+08C642-3	x
+08C6B5-0	x
+08C705-5	x
+08C75F-5	x
+08C7D5-4	x
+
+Black Cat
+08C82A-1	x
+08C835-7	x
+08C862-4	x
+08C878-3	x
+
+stay inside when the others go outside
+08C8E7-5	x
+08C935-0	  needs rewrite, Ikkyuu-san
+08C999-3	x
+08CA0F-0	x
+08CA72-0	x
+08CACF-1	x
+08CB3F-0	x
+08CB8A-0	x
+08CC20-0	x
+08CC95-4	x
+08CD07-5	x
+08CD7B-3	x
+08CDBF-4	x
+08CE18-3	x
+
+Terror Leading to Massacre (stayed inside)
+08CE91-7	x
+08CEA1-5	x
+08CEEB-3	x
+08CF3E-2	x
+08CF97-4	x
+08CFD2-1	x
+08D037-5	x
+08D084-5	x
+08D0DE-0	x
+08D144-1	x
+08D199-7	x
+08D202-7	x
+08D26E-3	x
+08D2E2-4	x
+08D354-2	x
+08D3C5-3	x
+08D423-4	x
+08D471-5	x
+
+fast-track to "deduction" if you checked the bath
+08D7A0-5	x
+08D808-5	x
+08D816-5	x
+
+"no, I'm not confident about what I said"
+08D95D-5	x
+08D9A1-2	x
+08D9F6-1	x
+08DA46-5	x
+08DAA0-1	x
+08DAEF-4	x
+08DB41-7	x
+08DB92-2	x
+08DC1B-6	x
+08DC94-1	x
+08DCE3-7	x
+08DD34-4	x
+08DD6C-0	x
+08DDA6-4	x
+08DDE1-6	x
+08DE52-3	x
+08DE9F-7	x
+08DEE7-2	x
+
+ask Mari to come to your room for the night
+08DEF3-0	x
+08DF50-6	x
+08DF88-1	x
+08DFE8-3	x
+
+sit next to Mari on the bed
+08E05B-2	x she gets stiff but says nothing
+- 08E09B-1	x can't possibly make a move on her now
+- 08E0B7-2	x try to kiss her; continue here
+08E125-4	x
+08E187-2	x
+08E1DC-1	x
+08E239-3	x
+08E291-2	x
+08E2B8-1	x
+
+pound on the doors for help
+08E306-6	x
+08E36E-2	x
+08E3B6-5	x
+08E3E7-4	x who's making the creaks on the stairs
+- [had to be the killer, push them down the stairs; go to section]
+- 08E3FC-1	x had to be Mari
+08E445-4	x
+08E4B1-1	x
+08E50D-6	x
+08E55B-5	x
+08E5BF-7	x
+08E62B-3	x
+08E697-3	x
+08E703-5	x
+08E754-1	x
+
+check on the Kobayashis before Kayama
+08E77C-3	x
+08E7F4-5	x
+08E877-5	x
+
+[converge point for above two paths]
+08E8E0-1	x
+08E93D-6	x
+08E96B-5	x
+08E9B7-6	x
+08EA0A-4	x
+08EA1E-2	x
+08EA8C-0	x
+08EAF1-6	x
+08EB52-5	x
+08EBAE-6	x
+08EC12-3	x
+08EC5A-3	x
+08ECB0-2	x
+08ED3C-5	x
+08EDB6-4	x
+08EE1B-2	x
+08EE64-5	x
+08EEB6-3	x
+08EEEF-0	x but possibly rewrite, kind of repetitive in English
+08EF53-6	x
+08EFB3-1	x
+08F017-3	x
+08F06A-4	x
+08F0D1-2	x
+08F13C-5	x
+08F1A8-5	x
+08F207-7	x
+08F252-7	x
+08F2BC-2	x
+08F30E-2	x
+08F35E-4	x
+08F3CE-7	x
+08F43E-7	x
+08F4A4-0	x
+08F504-1	x
+08F538-7	x
+08F5A6-7	x
+The Killer Must Be Toshio!
+08F621-2	x
+08F630-2	x
+08F6A5-1	x
+08F6E2-0	x
+
+approach the bloody knob
+08F831-7	x
+08F898-7	x
+08F8F3-4	x react to what you see on the knob with a closer look
+- 08F902-6	x ignore it after all
+
+Bloodstains at the Back Door
+- 08F921-5	x open the door
+08F933-6	x
+08F99E-3	x
+08F9CE-4	x
+08FA2B-1	x
+08FA6F-3	x
+- [step out into blizzard after finding bloodstains; go to section]
+- 08FA7B-1	x return to Mari right now; final chance to see ski pole ending
+
+------------------------------
+
+"are you a yakuza?"
+09811D-1	x
+098165-7	x
+0981CA-3	x
+098250-3	x
+0982C9-4	x
+09833A-0	x
+0983BE-0	x
+098428-4	x
+098489-6	x
+0984D1-1	x
+09852F-4	x
+098585-7	x
+0985E3-3	x
+09862C-4	x
+09869A-7	x react to Mari's uncle being a yamabushi monk
+- 0986A6-6	x the switch must have been hard
+  0986F7-4	x
+- 098766-2	x "your uncle seems indecisive"
+  0987C1-6	x
+
+"I know the killer's identity in all the cases"
+098C2A-5	x
+098C63-4	x do you know who killed Mr. Tanaka?
+- 098C6F-3	x of course
+- 098C85-3	x no I don't
+098CE6-7	x [the killer is me, Mari, or...] #2
+- 098D00-0	x bad ending where Toshio stabs Tooru
+  098D5C-5	x
+  098DC4-0	x
+  098E0D-1	x
+  098E76-5	x
+- 098EC9-6	x "the killer is Mari" at opportunity 2
+- 098F3D-0	x "naturally the killer is..." at opportunity 2
+
+------------------------------
+
+imitate Japanese comedians
+098F57-2	x
+098F96-4	x reaction after Kei Tani
+- 098FA6-4	x give up
+  098FEF-7	x
+
+099058-4	x Hajime Hana - atto odoroku tamegoro
+0990A4-3	x Hitoshi Ueki
+0990F1-6	x
+09912B-4	x
+099177-0	x
+
+not gachon, but goose liver
+0991BD-6	x
+099221-3	x
+- 099231-3	x storm petrel nest + mosquito eyeballs
+- 09924B-0	x kusaya fish + crucian carp sushi
+  09925B-0	x [wrong answer converge point]
+- 0992AC-4	x caviar and truffles
+0992BC-0	x
+099301-5	  possibly needs rewrite for もっさり?
+09937B-5	x
+0993E5-3	x
+
+------------------------------
+
+the killer could have entered even earlier
+099557-1	x
+0995B1-7	x how killer dealt with the body
+- [banana trick, go to option]
+- [buzzsaw trap in the room, go to option]
+- 0995FD-3	x couldn't have had the time; continue
+099651-2	x
+0996C6-0	x how killer got inside
+- [underground, go to option]
+- [laser beam, go to option]
+- 0996DB-5	x front entrance, nobody saw them; continue down
+099740-4	x
+099799-2	x
+0997E0-4	x
+09982A-6	x [it was me, Mari, or...] #1
+
+it was me
+099846-4	x
+09989B-1	x
+0998E0-1	x
+099944-3	x
+099985-7	x
+0999BB-0	x
+099A03-3	x
+099A5F-7	x
+
+it was mari
+099ACE-4	x
+099ADF-7	x
+099B33-0	x
+099B84-6	x
+
+naturally, it was...
+099BCD-4	x
+
+ohhh banana
+099BE7-6	x
+099C3D-2	x
+099C56-0	x
+099C89-1	x
+099CBE-6	x
+099CF5-0	x
+099D17-0	x
+099D46-1	x
+099D68-4	x
+099D8B-7	x
+099DB6-2	x
+
+buzzsaw trap
+099DF5-0	x
+099E0B-7	x
+099E39-6	x
+099E5C-5	x
+099E81-5	x
+099EB7-0	x
+099EEA-7	x
+099F04-1	x
+099F32-6	x
+
+dig underground
+099F6B-5	x
+099FC6-6	x
+09A04C-2	x
+09A0B9-7	x
+09A0F2-4	x
+09A154-5	x
+09A183-1	x
+09A1F2-6	x
+09A241-7	x
+09A2A2-6	x
+09A31C-3	x
+09A359-7	x
+09A3C9-3	x
+09A41B-4	x
+09A45D-1	x
+09A4AA-2	x
+
+laser beam
+09A517-5	x
+09A56C-0	x
+09A5BB-5	x
+09A61D-6	x
+09A675-1	x
+09A6B3-5	x
+
+------------------------------
+
+step out into blizzard after finding bloodstains
+09A6E0-1	x
+09A73D-1	x
+09A7C3-1	x
+09A800-4	x
+09A864-1	x
+09A8C4-1	x
+09A928-5	x
+09A98B-1	x
+09A9F3-6	x
+09AA7D-3	x
+09AADA-2	x
+09AB44-7	x
+09ABB0-2	x
+09AC20-0	x either Mr. Kayama pretending to be dead, or the women teaming up
+- [women team up; go to common bad ending]
+- 09AC2B-7	x perhaps Kayama could have done it; continue
+09AC6B-3	x
+09ACB0-2	x check if Kayama was really dead?
+- 09ACBC-1	x no need to check
+- 09ACDC-7	x have to make sure; continue down
+09ACFB-4	x
+09AD67-4	x
+09ADDB-0	x
+09AE4A-5	x
+09AEAB-5	x
+09AF11-1	x
+09AF65-6	x
+final opportunity for killer guess
+09AFC6-1	x [it was me, Mari, or...]
+09AFF5-1	x
+09B000-1	x (it was Mari, or...)
+
+it was mikimoto, final guess
+09B045-4	x
+09B0B2-2	x
+09B12C-2	x
+09B192-5	x
+09B208-0	x
+09B25D-6	x
+09B2A4-6	x
+09B2F5-4	x
+09B34E-1	x
+09B3BF-0	x
+09B431-0	x
+09B4AD-2	x
+09B525-7	x
+09B594-3	x
+09B608-0	x
+09B655-5	x
+09B6A3-5	x
+09B71C-4	x
+09B796-0	x
+09B808-4	x
+09B871-2	x
+09B8EA-6	x
+09B957-1	x
+09B998-3	x
+09B9E7-3	x
+09BA58-5	x
+// ending --------------------
+
+Pinning down Mikimoto as the killer at second opportunity
+09BAA9-1	x
+09BB0C-3	x
+09BB93-3	x
+09BBE7-7	x
+09BC44-7	x
+09BCD5-3	x
+09BD18-5	x
+09BD98-1	x
+09BE01-5	x
+09BE65-4	x
+09BEDF-1	x
+09BF6A-1	x
+09BFD5-6	x
+09C031-7	x
+09C0AE-3	x
+09C139-0	x
+09C1B1-7	x
+09C200-6	x
+09C274-4	x
+09C2F9-3	x
+09C355-7	x
+09C3C8-5	x
+09C403-4	x
+09C47E-4	x
+09C4FC-7	x
+09C58D-7	x
+09C619-7	x
+09C6AD-5	x
+09C712-5	x
+09C729-5	x explanation 1 of how window shattered
+09C74C-1	x
+09C76F-2	x
+09C797-7	x
+X 09C7BA-0	x this screen's text combined into last one
+09C7D2-5	x
+09C7F3-4	x
+09C81F-2	x
+09C848-1	x
+09C878-5	x
+09C895-0	x
+09C905-2	x
+09C973-2	x
+09C9E7-7	x
+09CA3A-0	x
+09CAC7-1	x
+09CB5F-0	x
+09CBBF-7	x
+09CBFF-5	x
+09CC64-4	x
+09CCE0-4	x
+09CD58-5	x
+09CDB6-1	x
+09CE49-4	  needs rewrite on "how dare you say that"
+09CEA2-3	x
+09CF0C-3	x
+09CF7D-5	x
+09CFD9-1	x
+09D044-1	x
+09D0B1-1	x
+09D125-3	x
+09D17B-3	x
+09D212-3	x
+09D27D-3	x
+09D2F3-3	x
+09D34B-2	x
+09D3BA-7	x
+09D442-4	x
+09D4AD-2	x
+09D520-3	x
+09D5A0-2	x
+09D60B-3	x
+09D67C-1	x
+09D6CF-4	x
+09D72C-3	x
+09D76B-2	x
+09D7FB-0	x
+09D874-1	x
+09D8BA-1	x
+09D910-7	x
+09D95F-7	x
+09D9DA-0	x
+09DA2E-4	x
+09DA7E-7	x
+09DAE1-4	x
+09DB25-5	x
+09DB77-0	x
+09DBC6-3	x
+09DC26-2	x
+09DC72-2	x
+09DCB4-5	x
+09DD2F-5	x
+09DD80-6	x
+09DDDD-0	x
+09DE4D-7	x
+09DEB8-3	x
+09DED8-1	x
+09DF33-7	x
+09DF7D-3	x
+09DFE6-3	x
+09E043-2	x
+09E111-0	x
+09E17A-7	x
+09E1F7-6	x
+09E280-5	x
+09E2DC-4	x
+09E344-7	x
+09E3C2-6	x
+09E424-6	x
+09E476-4	x
+09E4B6-0	x
+09E535-4	x
+09E5A9-1	x
+09E63A-4	x
+09E692-5	x
+09E70A-4	x
+09E76E-0	x
+09E7AA-3	x
+// ending --------------------
+
+bad ending where you have Toshio pick Mikimoto to join you upstairs
+09E7C0-4	x
+09E81B-7	x
+09E87B-3	x
+09E8ED-2	x
+09E95A-6	x
+09E9B9-1	x
+09EA48-4	x
+09EAA0-3	x
+09EAFC-5	x
+09EB49-2	x
+09EB97-6	x
+09EBED-5	x
+// ending --------------------
+
+common bad ending after figuring out it wasn't Toshio
+09EC43-0	x
+09EC61-6	x
+09EC94-7	x
+09ED16-4	x
+09ED61-1	x
+09EDC4-2	x
+09EE21-2	x
+09EE79-0	x
+09EEE8-1	x
+09EF54-2	x
+09EFA6-4	x
+09F004-7	x
+09F062-6	x
+09F0B7-2	x
+09F105-0	x
+09F167-3	x
+09F1B6-7	x
+09F213-3	x
+09F26B-3	x
+09F2AB-2	x
+09F31A-5	x
+09F36D-5	x
+09F399-1	x
+09F3D7-3	x
+09F459-4	x
+09F4BB-4	x
+09F52D-4	x
+09F590-5	x
+09F5EE-6	x
+09F648-2	x
+09F687-1	x
+09F6F3-0	x
+09F73D-4	x
+09F777-4	x
+09F7DF-5	x
+09F87C-3	x
+09F8C1-2	x
+09F919-3	x
+09F97B-7	x
+09F9A9-7	x
+09FA3D-4	x
+09FA93-4	x
+09FAF8-0	x
+09FB6F-5	x
+09FBE2-7	x
+09FC24-2	x
+09FC93-4	x
+09FCEE-7	x
+09FD40-2	x
+09FDA0-2	x
+09FDF1-2	x
+09FE68-7	x
+09FEF5-4	x
+// ending --------------------
+
+bad ending where you think Mari was the killer
+09FF06-4	x
+09FF47-5	x
+09FFAB-0	x
+09FFE2-6	x
+0A8038-6	x
+0A808C-6	x
+0A80D7-6	x
+0A8155-1	x
+0A81B9-1	x
+0A8227-7	x
+0A8285-7	x
+0A82F3-3	x
+0A8344-4	x
+0A836D-1	x
+0A83C2-0	x
+0A8436-0	x
+0A8485-5	x
+0A84E0-5	x
+0A851C-2	x
+0A8577-5	x
+// ending --------------------
+
+bad ending where you think Haruko was the killer
+0A858B-0	x
+0A85EF-3	x
+0A8655-1	x
+0A86BB-5	x
+0A871A-2	x
+0A8772-7	x
+0A878E-6	x
+0A87D8-0	x
+0A880C-1	x
+0A8864-7	x
+0A88DA-7	x
+0A893E-7	x
+0A89BA-1	x
+0A8A2B-7	x
+0A8A8D-5	x
+0A8AF7-3	x
+0A8B60-4	x
+0A8BE8-6	x
+0A8C55-2	x
+0A8CAC-1	x
+0A8CF7-6	x
+0A8D5B-6	x
+0A8DCF-3	x
+0A8E36-1	x
+0A8E8A-3	x
+0A8EE7-0	x
+0A8F1D-4	x
+0A8FA3-3	x
+0A8FFB-3	x
+0A903B-4	x
+0A90A2-7	x
+0A90EF-5	x
+0A9153-5	x
+0A918C-7	x
+0A91F4-3	x
+0A924C-3	x
+0A92C9-4    x
+0A933C-1	x
+0A9393-0	x
+0A93F6-2	x
+0A9436-3	x
+0A9499-1	x
+0A94FE-3	x
+0A9569-7	x
+0A95F1-3	x
+0A965B-3	x
+0A96D6-7	x
+0A9734-7	x
+0A978A-2	x
+0A97E1-4	x
+0A9829-4	x
+0A986D-0	x
+0A98E9-1	x
+// ending --------------------
+
+bad ending where you push Mari down the stairs
+0A98FC-5	x
+0A995B-7	x
+0A99CE-7	x
+0A9A56-3	x
+0A9AA6-7	x
+0A9AF8-0	x
+0A9B59-6	x
+0A9BB7-0	x
+0A9C15-6	x
+0A9C85-1	x
+// ending --------------------
+
+good ending path with no deaths
+0A9CC5-1	x
+0A9D30-5	x
+0A9D80-4	x
+0A9DE3-5	x
+0A9E76-2	x
+0A9ED3-4	x
+0A9F3D-4	x
+0A9FAC-3	x
+0AA02E-7	x
+0AA098-1	x
+0AA0F9-0	x
+
+"it was the snow"
+0AA104-5	x
+0AA15F-0	x explanation 2 of how window shattered
+0AA181-6	x
+0AA1A4-7	x
+0AA1CD-4	x
+X 0AA1ED-2	x [screen optimized out]
+0AA209-3	x
+0AA22A-2	x
+0AA251-3	x
+0AA27E-7	x
+0AA2AF-3	x
+0AA2CB-6	x
+0AA321-1	x
+0AA3A4-3	x
+0AA416-0	x
+0AA4AB-3	x
+0AA4E3-4	x
+0AA539-7	x
+0AA5A3-0	x
+0AA606-1	x
+0AA676-5	x
+0AA6DC-1	x
+0AA748-2	x
+0AA7B0-6	x
+0AA80A-2	x
+0AA88D-4	x
+0AA8EC-3	x
+0AA95E-7	x
+0AA9C2-0	x Mikimoto threatens to break Tooru's arm
+- 0AA9E1-2	x have Toshio stand down
+  0AAA4A-7	x
+  0AAAA2-1	x
+  0AAB08-6	x
+- 0AAB5B-4	x just get Mikimoto already
+0AAB7B-4	x
+0AABC6-3	x
+0AAC35-1	x
+0AAC87-6	x
+0AACEA-7	x
+0AAD51-4	x
+0AADCD-4	x attack Mikimoto yourself, or have Mari take care of it
+
+"Good morning, Mari" ending
+0AADD9-1	x
+0AAE3B-1	x
+0AAE9B-7	x
+0AAEEB-3	x
+0AAF6E-0	x
+0AAFC4-2	x
+0AB010-5	x
+0AB06D-5	x
+0AB0C5-6	x
+0AB102-2	x
+// ending --------------------
+
+Good luck charm ending
+0AB199-0	x
+0AB22B-6	x
+0AB294-3	x
+0AB2F5-5	x
+0AB333-0	x
+0AB3A3-6	x
+0AB406-4	x
+0AB468-6	x
+0AB4CB-2	x
+0AB52B-1	x
+0AB5AA-2	x
+0AB624-3	x
+// ending --------------------
+
+"It was Jenny," Mari solves the case
+0AB6DF-5	x
+0AB759-4	x
+0AB7C2-3	x
+0AB838-6	x
+0AB86E-2	x
+0AB8DD-7	x
+0AB927-3	x
+0AB970-4	x
+0AB982-1	x explanation 3 of how window shattered
+0AB99A-1	x
+0AB9C1-1	x
+0AB9DF-4	x
+0ABA07-6	x
+0ABA2A-3	x
+0ABA43-6	x
+0ABAB7-7	x
+0ABAE5-3	x
+0ABB14-6	x
+0ABB31-1	x
+0ABB82-6	x
+0ABC19-0	x
+0ABC69-6	x
+0ABCDE-5	x
+0ABD53-5	x
+0ABD90-4	x
+0ABDE8-4	x
+0ABE52-2	x
+0ABEB5-3	x
+0ABF25-1	x
+0ABF89-2	x
+0ABFF0-7	x
+0AC05F-7	x
+0AC0BC-6	x
+0AC115-6	x
+0AC15B-0	x
+0AC196-2	x
+0AC20B-1	x
+0AC273-7	x
+0AC2DF-5	x
+0AC35F-6	x
+0AC39D-4	x
+0AC3EF-3	x
+0AC446-1	x
+0AC4BD-5	x
+0AC511-4	x
+0AC55B-6	x
+0AC59C-7	x
+0AC5DE-4	x
+0AC618-5	x 
+// ending --------------------
+
+Spy route
+0AC6D3-6	x
+0AC72F-1	x
+0AC74C-1	x
+0AC7A6-3	x Mari reacted strongly to the note but says it's nothing
+- 0BD20C-4	x "no way it's nothing"
+  0BD260-4	x
+  0BD2AC-7	x
+  0BD2E4-2	x
+  0BD348-6	x
+  0BD387-0	x
+  0BD3F2-5	x
+  0BD448-1	x
+  0BD47D-2	x
+- 0AC7D6-0	x "leave the topic at that"
+  0AC81B-4	x
+  0AC863-2	x
+  0AC8BA-5	x
+0AC8C7-6	x
+0AC919-0	x
+0AC968-2	x
+0AC9DE-4	x
+0ACA57-6	x
+0ACAA4-0	x
+0ACB0F-6	x
+0ACB74-7	x
+0ACBE1-1	x
+- 0ACC0D-6	x ask Kanako
+- 0BD4C7-4	x ask Keiko
+- 0BEB41-2	x ask Aki
+0ACC59-0	x
+0ACC8D-2	x
+0ACCE7-0	x needs rewrite, any particular difference between 隣 and 近く?
+0ACD47-5	x
+0ACDA1-2	x
+0ACE01-6	x
+
+A Delayed Guest
+0ACE4B-5	x
+0ACE57-0	x
+0ACEC4-2	x
+0ACF56-5	x
+0ACFB8-0	x
+0AD02D-4	x
+0AD0AB-5	x
+0AD140-5	  rewrite; talking about characters in a Russian show
+0AD1A2-3	x
+0AD220-4	x
+0AD273-1	x
+0AD2B3-4	x
+0AD2FD-0	x
+0AD353-6	x
+0AD3C6-3	x Mari's about to go into her room
+- 0AD3FD-7	x call out to her
+  0AD457-2	x
+  0AD4CA-7	x
+  0AD546-3	x
+- 0BD53C-2	x give up for tonight
+
+A Sweet Trap of Seduction
+0AD593-6	x
+0AD5A2-2	x
+0AD5FA-2	x
+0AD65F-5	x
+0AD6EB-2	x
+0AD752-0	x
+0AD7B0-0	x
+- 0AD806-0	x lean in close to Kanako
+  0AD85A-1	x "want to... see more?"
+- 0BD584-3	x pink bookmark content, Kanako undresses for Tooru
+  0BD5D7-3	x
+  0BD638-3	x
+  0BD6A1-4	x
+  0BD6EE-4	x
+- 0AD880-4	x "n-, no, thanks"
+- 0AD888-7	x down your glass of wine
+0AD8D7-7	x
+- 0AD8FB-4	x you do like Mari
+  0AD951-3	x
+- 0BD744-0	x don't care much for Mari
+  0BD7AB-7	x
+0AD96F-2	x
+0AD9B1-1	x
+0ADA21-2	x
+0ADA6C-6	x
+0ADABC-5	x
+0ADAF5-0	x
+0ADB55-7	x
+0ADBCE-3	x
+0ADC33-2	x
+0ADC98-7	x
+0ADD05-3	x
+
+Letters in Blood
+0ADD6F-5	x
+0ADD7F-6	x
+0ADDBF-5	x
+0ADDD6-5	x
+0ADE5A-4	x
+0ADEA2-5	x
+0ADEED-6	x
+0ADF4E-2	x
+0ADFA2-3	x
+0ADFDC-3	x
+0AE017-3	x
+0AE091-3	x
+0AE10B-3	x
+0AE199-7	x
+0AE21E-0	x
+0AE2A0-5	x
+0AE304-6	x
+0AE369-0	x
+0AE3D2-4	x
+0AE435-2	x
+0AE498-4	x
+0AE523-7	x
+0AE583-6	x
+0AE5EA-2	x
+0AE66C-6	x
+0AE6B8-4	x
+
+Legendary Spy
+0AE728-2	x
+0AE735-1	x
+0AE7AE-0	x
+0AE80E-7	x
+- 0BD7D2-3	x
+- 0AE82E-5	x
+  0AE870-0	x
+- 0BEB6F-6	x
+0AE8FE-3	x
+0AE970-2	x
+0AE9B3-0	x
+0AE9FD-3	x
+0AEA56-3	x
+0AEABC-4	x
+0AEB3B-5	x
+0AEB92-0	x
+0AEC09-5	x
+0AEC8B-5	x
+0AECF1-0	x
+0AED6E-5	x
+0AEDE1-2	x
+0AEE61-2	x
+0AEED9-5	x
+0AEF37-6	x
+0AEF94-1	x
+0AEFF7-7	x
+0AF04B-6	x
+0AF0C2-0	x
+
+A Night with a Dead Body
+0AF151-4	x
+0AF162-6	x
+0AF1C7-3	x
+- 0AF1DC-2	x count sheep
+  0AF248-0	x
+  0AF2B0-7	x
+  0AF304-3	  confirm "it was already 6 AM" is correct
+- 0BD8F9-0	x magazines
+- 0BD86E-1	x paperback book
+0AF349-1	x
+0AF3C8-4	x
+0AF42D-0	x
+0AF497-5	x
+0AF521-5	x
+0AF579-4	x
+0AF5C1-3	x
+0AF62B-3	x "have you seen Kanako this morning?"
+- 0AF68F-0	x "no, I haven't"
+- 0AF6B6-5	x "I did last night, but..."
+  0AF708-2	x
+  0AF772-1	x
+0AF7DC-2	x
+0AF834-6	x
+0AF8A1-6	x
+0AF92A-0	x
+0AF99C-5	x
+0AFA25-0	x
+0AFA6D-4	x
+0AFAE1-7	x
+0AFB3B-3	x
+0AFBA4-2	x
+0AFC08-5	x
+0AFC6E-6	x
+0AFCD0-3	x
+0AFD21-5	x
+0AFD68-0	x
+0AFDE0-6	x
+0AFE34-2	x
+0AFEBD-1	x
+0AFF36-6	x
+
+Perilously Amateurish Espionage
+0AFFBF-4	x
+0AFFCF-1	x
+0B805E-6	x Mikimoto asks Tooru, "Who the hell are you?"
+- 0B8082-0	x "who the hell are YOU?"
+  0B80F7-5	x
+  0B818B-0	x
+  0B81F2-7	x
+  0B8226-0	x
+  0B826D-4	x
+- 0BD97E-6	x "I'm no spy, just a college student"
+  0BD9FD-4	x
+  0BDA45-2	x
+  0BDAC4-7	x
+  0BDB38-1	x
+- 0BEC07-6	x "what do you mean, who am I?"
+  0BEC60-5	x
+  0BECBB-5	x
+0B8271-4	x
+0B82A6-1	x
+0B830E-0	x
+0B8374-0	x "aren't you worried about a girl going alone?"
+- 0B83A8-2	x "no, I"m not"
+  0B8411-6	x
+  0B8469-3	x
+  0B84AD-3	x
+- 0B84B1-5	x "yeah, I am"
+0B8515-6	x
+0B858D-7	x
+0B861C-7	x
+0B8688-0	x
+0B8705-3	x
+0B8780-7	x
+0B87E7-6	x
+0B8856-6	x
+0B888E-3	x
+0B88DA-6	x
+0B8949-0	x
+0B89AD-4	x
+
+Assassins in the Bathroom
+0B8A34-7	x
+0B8A43-5	x
+0B8AC1-0	x
+0B8B27-3	x
+- 0B8B37-5	x try to do a full nelson on Aki
+  0B8B9B-0	x
+  0B8BAA-4	x
+- 0BDB3F-7	x kick at the ice pick
+  0BDBB0-1	x
+  0BDC26-3	x
+  0BDC97-4	x
+- 0BED28-3	x try to talk it out
+  0BED69-0	x
+0B8C28-2	x go here to test the fake-out choice
+0B8C79-5	x
+0B8CE9-1	x
+0B8D50-6	x
+0B8DAB-6	x
+0B8E23-5	x
+0B8E9D-3	x
+0B8F0F-0	x
+0B8F89-3	x
+0B8FE4-3	x
+0B9053-7	x accompany Mari or stay in your room
+- [accompany Mari and Midori, go to section]
+- 0B9086-2	x stay in your room, continue
+0B90BA-3	x
+0B9130-7	x
+
+Derringer
+0B9190-3	x
+0B91A3-6	x
+0B9214-0	x
+0B927E-2	x
+0B92D2-7	x
+0B933D-2	x
+0B9398-3	x
+0B9418-2	x
+0B9470-5	x
+0B94E0-4	x
+0B9546-6	x choice regarding Haruko's gun
+- 0BE197-4	x jump at her gun
+  0BE20C-4	x
+  0BE25E-5	x
+  0BE2A5-2	x
+  0BE31B-5	x
+// ending --------------------
+- 0B9552-4	x don't take the chance
+0B95A3-3	x
+0B9601-1	x
+0B9680-4	x
+0B96DD-0	x
+0B975B-6	x
+0B97AA-2	x
+0B97FC-4	x
+0B9827-1	x
+0B9890-7	x
+0B98E4-2	x
+0B9934-4	x
+0B999B-7	x
+0B9A11-1	x
+0B9A86-1	x
+
+Catch Kamaitachi!
+0B9AF7-6	x
+0B9B0D-7	x
+0B9B73-6	x
+0B9BD3-2	x
+0B9C66-0	x
+0B9CE4-0	x
+0B9D48-3	x
+0B9DA9-6	x
+0B9E0A-0	x
+0B9E66-5	x
+0B9EDB-0	x
+0B9F54-3	x
+0B9FC1-0	  needs rewrite; purposefully have an Uzi to pretend they're Israeli
+0BA052-0	x
+0BA0CF-5	x
+0BA10E-7	x
+0BA18D-3	x
+0BA213-2	x
+0BA28F-0	x
+0BA2E1-4	x
+0BA360-3	x
+0BA3C3-3	x
+0BA41F-3	x
+0BA48C-6	x
+0BA514-0	x
+0BA587-4	x
+0BA608-5	x
+- 0BE321-7	x order Tanaka to go with you
+- 0BA64D-4	x awkwardly ask Tanaka to go with you
+  0BA6B4-0	x
+0BA6EB-2	x
+0BA77D-4	x
+0BA808-4	x
+0BA84B-6	x
+0BA8C2-0	x
+0BA92E-5	x
+0BA992-0	x
+0BA9D9-7	x
+0BAA4D-6	x
+0BAA88-5	x
+0BAAEA-1	x
+- 0BAB53-5	x why was Toshio leaving out the back door?
+  0BAB9D-6	x
+- 0BE38B-0	x why were Toshio's clothes so light?
+  0BE3DB-7	x
+0BABF4-3	x
+0BAC52-3	x
+0BACA5-7	x
+0BACE1-4	x
+0BAD44-3	x
+0BAD8C-1	x
+0BAE01-3	x
+0BAE8B-4	x
+0BAEDD-6	x
+0BAF45-2	x
+0BAFB4-6	x
+0BB032-4	x
+0BB074-3	x
+0BB0D5-4	x
+0BB144-5	x
+0BB1A9-7	x
+0BB1F0-4	x
+
+Midori's Betrayal
+0BB220-3	x
+0BB22E-2	x
+0BB28D-2	x
+0BB2F5-6	x choice for how to approach Toshio (bad end or continue)
+- 0BE440-6	x bad ending: run up to Toshio, then Midori shoots Tooru
+  0BE4BF-1	x
+  0BE50F-7	x
+  0BE583-6	x
+  0BE5EC-2	x
+  0BE65E-1	x
+- 0BB33B-4	x slowly approach Toshio, continue
+0BB3A2-7	x
+0BB3F2-3	x
+0BB456-7	x
+0BB4C2-5	x
+0BB533-6	x
+0BB59C-6	x
+0BB5F4-0	x
+0BB657-7	x respond to Mari asking Tooru for help after Toshio dies
+- 0BB699-0	x do what you can
+- 0BE664-3	x "sorry, but I don't want to die yet"
+  0BE6AE-4	x
+  0BE72B-6	x
+  0BE775-4	x
+  0BE7E3-3	x
+  0BE875-0	x
+  0BE902-2	x
+ *bad ending
+- 0BED9C-4	x Tooru can die, if it's for Mari
+  0BEE02-7	x
+0BB6E1-3	x
+0BB73F-7	x
+0BB7D5-2	x
+0BB844-7	x
+0BB89A-2	x
+
+Pursuit in the Snow
+0BB8F8-1	x
+0BB914-7	x
+0BB991-6	x
+0BB9FD-0	x
+- 0BBA41-1	x cling to Mari's chest on snowmobile
+- 0BE908-4	x cling to Mari's waist on snowmobile
+0BBAAF-1	x
+0BBB0D-3	x
+0BBB6E-3	x
+0BBBE7-5	x
+0BBC67-1	x
+0BBCA4-7	x
+0BBCFF-0	x
+0BBD4D-4	x
+0BBDB6-2	x
+0BBE2D-2	x
+0BBE9D-3	x
+- 0BBEA9-1	x just had to do it
+- 0BE96B-6	x impossible, "got any better ideas, then?"
+0BBEB9-2	x
+0BBF3F-4	x
+0BBFA1-3	x
+0BC006-2	x
+0BC07A-6	x
+0BC0F0-6	x
+0BC16F-0	x
+0BC1D5-0	x
+0BC240-4	x
+0BC2AE-3	x
+0BC30C-6	x Midori is likely going to shoot Tooru
+- 0BC33F-3	x stall for time with questions
+  0BC3A2-5	x
+  0BC3FB-2	x
+  0BC43B-3	x
+  0BC47A-6	x
+  0BC4EB-6	x
+- 0BE9B3-7	x propose a deal
+  0BEA1E-3	x
+  0BEA77-4	x
+  0BEAB4-3	x
+  0BEAFD-0	x
+0BC563-7	x
+0BC585-7	x
+0BC5F2-7	x
+0BC65F-2	x
+0BC6E8-7	x
+0BC774-5	x
+0BC7FB-6	x
+0BC86F-0	x
+0BC8FC-5	x
+
+The Identity of Kamaitachi
+0BC965-7	x
+0BC97C-1	x
+0BC9F7-1	x
+0BCA63-2	x
+0BCAAB-0	x
+0BCB29-5	x
+0BCBA1-7	x
+0BCC37-6	x
+0BCCD5-1	x
+0BCD43-0	x
+0BCDC4-6	x
+0BCE35-3	x
+0BCEC7-7	x
+0BCF3B-4	x
+0BCFA0-3	x
+0BCFDD-6	x
+0BD061-2	x
+0BD0B8-5	x
+0BD127-0	x
+// ending --------------------
+
+Set up demo play for preview of spy route
+0BD1FA-4	x
+
+0BDCF0-5	x accompany Mari and Midori
+0BDD49-7	x
+0BDDB4-2	x
+Chapter: Hold-Up
+0BDE23-7	x
+0BDE34-7	x
+0BDE8C-1	x
+0BDF0A-4	x
+0BDF60-0	x
+0BDFBD-0	x
+0BE03E-0	x
+0BE0A4-6	x
+0BE0F6-0	x
+0BE163-0	x
+
+------------------------------
+
+A Face Floating in the Window
+0BEE43-6	x
+0BEE55-4	x
+0BEEAE-6	x
+0BEEF4-1	x
+0BEF46-2	x
+0BEFB0-4	x
+0BF014-6	x
+- 0BF029-1	x a ghost
+- 0BF08F-6	x a spy
+0BF0E1-4	x 
+- 0BF101-5	x yeah, let's go down
+- 0CBEDD-0	x try to convince Mari to stay a little longer
+  0CBF43-6	x
+  0CBF97-6	x
+
+------------------------------
+
+occult route
+
+Someone Through the Window...
+0BF178-5	x
+0BF184-6	x
+0BF1CD-5	x
+0BF245-4	x
+0BF2B7-2	x
+
+0BF303-5	x
+0BF36B-1	x
+0BF3F3-5	x
+0BF451-5	x
+0BF4AA-4	x
+0BF50D-1	x
+0BF568-2	x
+0BF5D4-6	x
+0BF63D-4	x
+0BF6AA-4	x
+0BF721-0	x
+0BF78E-0	x ghost in the middle of winter
+- 0BF7A3-6	x yuki-onna
+- 0CBFC7-1	x man killed in an accident
+0BF7BD-1	x
+0BF802-7	x
+0BF851-6	x
+
+A Delayed Guest
+0BF8A0-4	x
+0BF8B7-3	x
+0BF936-2	x
+0BF9AB-6	x
+0BFA20-7	x
+0BFA82-5	x
+0BFABC-1	x Mikimoto asks if anything strange has happened
+- 0BFAC8-2	x yes, how'd he know?
+- 0CBFDE-6	x not really, no
+  0CC012-0	x
+0BFB21-2	x
+(FIXED: game sometimes hangs when it reaches 0BFB41-4? related to silhouette)
+0BFB41-4	x
+0BFBCB-0	x
+0BFC5A-1	x
+0BFCD1-5	x
+0BFD5A-3	x
+0BFDD6-0	x
+0BFE63-3	x
+0BFEDF-2	x
+0BFF71-2	x
+0BFFE7-6	x
+0C8068-7	x
+0C80D3-3	x
+0C815C-5	x
+0C81CF-4	x
+0C8243-4	x
+0C82CD-0	x
+0C8325-1	x
+0C8355-7	x
+0C83E5-5	x
+
+The Tragedy from 20 Years Ago
+0C8433-7	x
+0C844C-1	x
+0C84D6-1	x
+0C8549-4	x listen to Mikimoto, or not
+- 0CC04C-2	x listen to the whole thing
+  0CC09A-2	x
+- 0C8575-1	x don't listen for now
+0C85C7-1	x
+0C8646-3	x
+0C86A3-2	x
+0C8717-6	x possibly rewrite, literally "lowered the tone of his voice"
+0C875B-7	x
+0C87B9-4	x
+0C8839-3	x
+0C889E-7	x
+0C88E5-7	x
+0C8963-6	x
+0C89ED-7	x
+0C8A6D-3	x
+0C8AD4-4	x
+0C8B16-6	x
+0C8B95-3	x
+0C8C03-0	x
+0C8C75-7	x
+0C8CB9-5	x
+0C8D5F-0	x
+0C8DFF-7	x
+0C8E79-7	x
+0C8EED-7	x
+0C8F6E-7	x leave Mari alone, or try to talk her into coming out
+- 0C8F91-7	x leave her alone
+  0C8FDD-3	x
+- 0CC0C7-7	x try to talk her into coming out
+  0CC123-2	x
+0C9005-4	x
+
+The First Victim
+0C903A-3	x
+0C904A-6	x
+0C90B9-0	x
+0C9117-0	x
+0C914E-1	x
+0C91B3-7	x
+0C9226-5	x
+0C9287-0	x
+0C92EC-3	x
+0C9346-7	x
+0C93D1-1	x
+0C9446-1	x
+0C94E8-6	x
+0C955F-1	x
+0C95CF-1	x
+0C9638-2	x
+0C96B9-6	x
+0C9708-0	x
+0C9764-3	x
+0C97E0-0	x
+0C981B-5	x
+0C9874-0	x
+0C98A7-5	x
+0C9927-2	x
+0C998D-4	x
+0C99DC-7	x talking to Mari after she took a shower
+- 0CC185-0	x explain what happened, looking away from her chest
+- 0C9A11-3	x more interested in what her towel was hiding
+  0C9A71-7	x
+0C9AC1-2	x
+0C9B35-2	x
+0C9BB3-0	x
+0C9C3B-1	x
+0C9CB2-2	x
+
+From Beyond the Phone Line
+0C9D5D-2	x
+0C9D79-3	x
+0C9DCB-3	x
+0C9E44-1	x
+0C9EAE-6	x
+0C9F04-3	x how to enter the Kayamas' room?
+- 0CC1E2-5	x carefully approach it first and listen closely
+- 0C9F55-2	x jump at the door
+0C9F79-5	x
+0C9FA1-2	x
+0C9FE8-6	x
+0CA032-5	x
+0CA07B-3	x
+0CA0E3-0	x
+0CA145-2	x
+0CA1A8-7	x
+0CA1F4-3	x
+0CA267-3	x
+0CA2BC-5	x
+0CA31A-2	x
+0CA35B-1	x
+0CA3B9-7	x
+0CA41A-2	x
+- 0CA48C-6	x if you jumped at the door to the Kayamas' room
+  0CA507-1	x
+- 0CC260-1	x if you first quietly listened through the door
+  0CC2C7-0	x
+0CA54A-7	x
+0CA586-3	x Mikimoto asks, "Are you her boyfriend?"
+- ["no, she isn't my girlfriend", go to section]
+- 0CA5B6-7	x yes, I am; continue down
+0CA5D8-0	x
+0CA631-4	x
+0CA6AC-2	x
+0CA725-6	x
+0CA78B-4	x
+0CA7B5-3	x (converge for last opportunity to say yes)
+0CA81D-7	x
+
+Mari's Assault
+0CA890-1	x
+0CA89F-4	x
+0CA92D-7	x
+0CA9C6-1	x
+0CAA59-2	x
+0CAAD6-6	x
+0CAB5E-4	  needs rewrite on third sentence from Mr. Kobayashi
+0CABE6-6	x
+0CAC61-2	x
+0CACD8-4	x
+0CAD36-0	x
+0CADD0-7	x
+0CAE57-2	x
+0CAEAF-2	x
+0CAF0A-0	x
+0CAF77-0	x
+- 0CAF83-2	x throw charm at Mari
+- 0CB00F-0	x throw cross at Mari
+  0CB068-0	x
+0CB09B-7	x
+0CB0D8-3	x
+0CB143-2	x
+0CB1A7-0	x
+0CB204-4	x
+0CB25E-5	x
+0CB2F8-6	x
+0CB344-5	x
+0CB3C7-4	x
+0CB45D-7	x
+0CB4D4-4	x
+0CB523-7	x
+0CB5A2-1	x
+0CB5E2-7	x
+0CB66C-3	x
+0CB70F-4	x
+0CB79E-1	x
+0CB813-6	  needs rewrite, "name most important to her"
+0CB86F-6	x
+0CB8F0-7	x
+0CB95A-3	x
+0CB9D2-0	x
+0CBA4F-1	x
+0CBA95-6	x
+0CBAF6-6	x
+0CBB55-2	x
+0CBBE6-6	x
+0CBC50-4	x
+0CBC9C-3	x
+0CBCD9-2	x
+0CBD33-2	x
+0CBD9F-6	x
+0CBE08-1	x
+0CBE46-3	x
+// ending --------------------
+
+"no, she isn't my girlfriend"
+0CC2FA-3	x
+0CC338-0	x
+- 0CC344-4	x "yes, I like her"
+- 0CC358-2	x "she's not my type"; continue
+0CC3D6-5	x
+0CC413-4	x
+0CC477-5	x
+0CC4EA-6	x "it's dangerous, you should leave"
+- 0CC50E-6	x "no, I'll protect her"
+  0CC575-6	x
+  0CC5C7-7	x
+  0CC621-5	x
+  0CC6A2-3	x
+leave Mari's room - now locked into this ending route
+- 0CC6CE-1	x
+
+A Room Like a Field Hospital
+0CC74F-0	x
+0CC768-3	x
+0CC7D5-3	x
+0CC813-5	x
+0CC87F-7	x
+0CC8F7-2	x
+0CC966-0	x
+0CC9D5-4	x
+0CCA52-5	x
+0CCAA9-3	x
+0CCB17-0	x
+0CCB94-1	x
+0CCC03-0	x what to do about Mari being outside
+- 0CCC0F-2	x go outside and search for Mari
+  0CCC6A-5	x
+  0CCCD2-2	x
+  0CCD3D-5	x
+- 0CCD8C-3	x run to get everyone together in one place
+  0CCE01-1	x
+0CCE54-0	x
+
+Fight to the Death in the Lounge
+0CCEF1-2	x
+0CCF02-6	x
+0CCF7C-1	x
+0CCFF7-0	x
+0CD063-5	x
+0CD0A8-7	x
+0CD103-0	x
+0CD17B-0	x
+0CD1E1-7	x
+0CD279-0	x
+0CD2F7-4	x
+0CD360-7	x
+0CD3E3-5	x
+0CD467-7	x
+0CD4A8-2	x
+0CD4FD-0	x
+0CD53E-6	x
+0CD57D-5	x
+0CD621-3	x
+0CD685-2	x
+0CD70D-0	x
+0CD781-2	x
+0CD7D7-5	x
+0CD84A-2	x
+0CD8E2-3	x
+0CD989-2	x
+0CDA0B-3	x
+0CDA5E-7	x
+0CDAD7-2	x
+0CDB60-4	x
+0CDBEC-1	x
+0CDC7A-6	x
+0CDCE7-2	  needs rewrite "the name most important to her"
+0CDD4B-2	x
+0CDDC4-4	x
+0CDE30-0	x
+0CDEA7-3	x
+0CDF2C-3	x
+0CDF6A-1	x
+0CDF96-3	x
+0CDFFB-2	x
+0CE084-3	x
+0CE0EE-1	x
+0CE137-6	x
+0CE174-5	x
+0CE1CB-2	x
+0CE234-3	x
+0CE294-5	x
+0CE2E0-2	x
+// ending --------------------
+
+Start of the snowy maze route
+0CE390-2	x give in to Mari's pleas
+0CE3DA-2	x
+0CE436-4	x
+0CE47C-2	x
+- 0CE488-4	x let Mari go on her own
+  0CE4DE-2	x
+  0CE564-2	x
+- 0CE5C3-2	x join Mari on the lifts and sprain your ankle; locked in
+0CE626-2	x
+0CE661-2	x
+0CE698-3	x
+0CE6F3-1	x
+0CE72F-3	x
+0CE799-0	x
+0CE7EA-4	x
+0CE823-4	x
+0CE861-1	x
+0CE8AA-7	x
+0CE8F1-3	x
+0CE95D-0	x
+0CE9DA-1	x
+0CEA1F-5	x entry point from pink bookmark content
+0CEA87-5	x
+0CEAD9-4	x
+0CEB2D-0	x
+0CEB7D-1	x
+
+The Car's Not Moving! - from Mari driving
+0CEBF9-3	x
+0CEC02-3	x
+0CEC71-1	x
+0CECA1-7	x
+0CECEB-0	x
+0CED3E-6	x
+0CED87-3	x
+0CEDEC-1	x
+0CEE30-2	x
+0CEEB7-4	x
+[go to converge point]
+
+0CEF00-7	x agree with Mari at first to go do some night skiing
+0CEF69-7	x
+0CEFE5-0	x
+- 0CF016-0	x stop after all
+  0CF065-3	x
+0CF098-5	x persist in going
+0CF118-3	x
+
+The Car's Not Moving! - from Tooru driving after night skiing
+0CF1A5-4	x
+0CF1B1-3	x
+0CF21E-2	  needs rewrite; what crashed into what in the "head-on collision"?
+0CF271-5	x
+0CF2E7-7	x
+0CF328-1	x
+0CF363-1	x
+0CF3CF-3	x
+0CF414-0	x
+0CF464-7	x
+0CF4E2-0	x
+
+0CF529-7	x (converge point for two entry points)
+0CF582-5	x
+
+------------------------------
+
+bad end after exiting the maze
+0CF606-4	x
+0CF661-4	x
+0CF6C8-2	x
+0CF714-4	x
+
+Returning to The Spur
+0CF757-1	x
+0CF777-2	x
+0CF7BA-7	x
+0CF817-4	x
+0CF859-1	x
+0CF8C1-2	x
+0CF92A-2	x
+0CF985-2	x
+0CF9F3-0	x
+0CFA48-4	x
+0CFA84-1	x
+0CFAD5-1	x
+0CFB2C-0	x
+0CFB7D-6	x
+0CFBC8-7	x
+0CFC1C-2	x
+0CFC71-4	x
+0CFCDE-5	x
+0CFD3E-1	x
+0CFD8B-5	x
+0CFDFE-7	x
+0CFE54-5	x
+0CFE8E-4	x
+0CFEBA-1	x
+0CFF00-1	x
+0CFF6D-3	x
+0CFFBF-3	x
+0D8014-4	x
+0D8071-7	x
+0D80D2-6	x
+0D811F-6	x
+0D8180-5	x
+0D81E4-1	x
+0D823C-0	x
+0D82AB-3	x
+0D834C-3	x
+0D838D-2	x
+0D83FD-0	x
+0D8467-2	x
+0D84F6-0	x
+// ending --------------------
+
+Maze layout:
+11 - x   7 - 8
+ |       |   |
+10   v   6 - 9
+ |   |   |    
+ 3 - 1   5   v
+     |   |   |
+ > - s - 2 - 4
+
+The Snowy Maze
+0D850A-3	x
+0D8520-0	x
+0D8579-5	x
+0D85D7-0	x
+0D8647-2	x 
+
+0D86B3-3	x choice at S
+
+0D86D0-2	x go west from S, first visit
+0D8741-0	x
+0D874C-7	x go west from S, subsequent visits
+0D879C-1	x
+
+0D87A5-5	x go north from S to 1
+0D881F-0	x choice at 1, first visit
+
+0D884E-6	x go back south from 1 to S on first visit to 1
+            x also used for going back west from 2 to S, on first visit to 2
+
+0D8884-4	x choice for repeat visits to 1
+
+0D88C5-2	x go south from 1 to S on repeat visits to 1
+
+0D890E-4	x go east from S to 2
+0D897D-6	x
+0D89CD-3	x choice at 2, first visit
+0D89EE-4	x choice at 2, repeat visits
+
+0D8A5E-6	x go west from 2 to S, repeat visits
+
+0D8A74-0	x go west from 1 to 3, first visit
+0D8AE2-1	x
+0D8B40-5	x choice at 3, first visit
+0D8B83-7	x go north from 3 to 10, first visit
+0D8B95-3	x go east from 3 to 1, on first visit to 3
+
+0D8BAA-5	x choice at 3, repeat visits
+0D8BDE-1	x go north from 3 to 10, repeat visits
+0D8BEC-3	x go east from 3 to 1, repeat visits
+
+0D8C52-7	x go east from 2 to 4
+0D8CE8-2	x choice at 4, first visit
+
+0D8CF9-0	x go west from 4 to 2 on first visit to 4
+
+0D8D0C-6	x choice at 4, repeat visits
+
+0D8D4A-4	x go west from 4 to 2, repeat visits
+0D8D54-5	x (converge point for going from 4 to 2)
+
+0D8A4C-3	x go north from 2 to 5 (note: this was moved down in script)
+0D8D8F-5	x (first visit to 5)
+X 0D8D8F-5  (this screen can be optimized out)
+0D8E15-4	x choice at 5, repeat visits
+
+0D8E3C-2	x go south from 5 to 2 (also 5R to 2)
+
+0D8E9C-3	x go north from 4 to dead end, first visit
+0D8F2B-1	x
+
+0D8F65-6	x go north from 4 to dead end, repeat visits
+
+0D8FBC-1	x go north from 5 to 6, first visit
+0D9048-1	x
+
+0D906D-7	x go south from 6 to 5, first visit to 6
+
+0D9092-2	x choice at 6, repeat visits
+
+0D90EE-7	x go north from 6 to 7 (setup)
+
+0D90FD-2	x go east from 6 to 9 (setup)
+
+0D910B-1	x go south from 6 to 5, on repeat visits to 6
+
+0D9137-1	x go north from 1 to dead end, first visit
+0D91BD-4	x
+0D9220-4	x
+0D927C-0	x
+
+0D9297-5	x go north from 1 to dead end, repeat visits
+0D92F7-4	x
+
+0D92FE-1	x go north from 6 to 7; all visits to 7
+0D9356-7	x choice at 7
+
+0D9399-7	x go south from 7 to 6 (setup)
+
+0D938C-0	x go east from 7 to 8 (setup)
+0D93A7-5	x choice at 8
+
+0D93FB-6	x go west from 8 to 7 (setup)
+
+0D9409-5	x go south from 8 to 9 (setup)
+0D9413-2	x choice at 9
+
+0D9468-0	x go west from 9 to 6 (setup)
+
+0D9475-7	x go north from 9 to 8 (setup)
+
+0D9484-2	x go north to 10 from 3 and 3R
+0D94F4-3	x
+0D9544-4	x choice at 10
+0D9589-5	x go north from 10 to 11
+0D959D-6	x go south from 10 to 3
+
+0D955F-4	x choice at 10, repeat visits
+
+0D95C3-2	x go south from 10 to 3, repeat visits
+
+0D95B1-5	x go north from 10 to 11, repeat visits
+
+0D95D4-2	x come to 11
+0D9643-2	x
+0D969F-4	x choice at 11
+
+0D96CB-5	x keep going at 11 to maze's exit
+
+0D96E5-2	x go back to maze's start from 11
+0D973F-0	x
+0D9782-7	x
+
+------------------------------
+
+Start of Kamai-tachi route "Have I put on that much weight?"
+0D97CC-2	x
+0D982F-6	x
+0D9875-3	x
+0D98BA-7	x
+0D9928-0	x
+0D9990-5	x pink bookmark choice: ski once more, or all through the night
+- [go to start of pink bookmark content]
+- 0D99A2-7	x go one more time
+0D9A1A-6	x
+0D9A6F-5	x
+0D9AB5-6	x
+
+The Ski Lodge "Spur"
+0D9B39-5	x
+0D9B51-3	x
+0D9BB0-4	x
+0D9C1E-2	x
+0D9C9F-5	x
+0D9D18-0	x
+0D9D59-5	x
+0D9DA4-5	x
+0D9DE4-0	x
+0D9E24-2	x
+0D9E65-4	x
+0D9EBC-4	x
+0D9EEA-7	x pink bookmark choice: Mari asks Tooru who's his favorite
+- 0D9F16-7	x deny her
+- 0D9F53-2	x flatter her
+0D9FAF-7	x choice for finding SFC
+0DA011-0	x resist playing it, gaze at Mari
+0DA06D-4	x
+0DA0A8-5	x [go to Comedy of O route]
+
+0D9FE7-6	x notice the SFC
+0DA0FC-6	x choose to play the SFC
+0DA146-1	x
+0DA1B5-6	x play which game
+- 0DA1C0-4	x Otogirisou, then Kamaitachi
+  0DA236-0	x
+  0DA293-2	x
+  0DA300-2	x
+- 0DA310-4	x Kamaitachi
+0DA38D-5	x
+
+TODO make sure all text on a "TV screen" in each loop looks correct with the
+widest names possible
+
+first loop
+0DA3F9-5	x
+0DA485-6	x
+0DA4EB-3	x
+0DA512-3	x
+0DA55B-0	x
+0DA5CD-5	x
+0DA63B-1	x
+0DA69A-4	x
+0DA6E2-4	x
+
+second loop
+0DA723-2	x
+0DA7A9-6	x
+0DA80F-3	x
+0DA836-3	x
+0DA87F-0	x
+0DA8EE-3	x
+0DA961-0	x
+0DA9CB-3	x
+0DAA2A-6	x
+0DAA72-6	x
+0DAAB0-0	x
+
+third loop
+0DAAD9-2	x
+0DAB5F-6	x
+0DABC5-3	x
+0DABEC-3	x
+0DAC30-5	x
+0DACA0-4	x
+0DAD0D-4	x
+0DAD8B-5	x
+0DADFE-2	x
+0DAE68-5	x
+0DAEA2-2	x
+0DAF01-5	x
+0DAF45-5	x
+0DAF82-7	x
+0DAFAC-1	x
+
+abbreviated fourth loop, then Kamais appear
+0DAFC4-6	x
+0DB049-1	x
+0DB0D9-7	x
+0DB11E-3	x
+0DB13C-4	x
+0DB18E-7	x
+0DB212-1	x
+0DB273-3	  needs rewrite on spelling for Norwegian name
+0DB2E5-3	  needs rewrite on how to translate pun for Kamai-tachi
+0DB32B-1	x
+0DB36F-1	x
+0DB3AB-0	x
+0DB3E8-6	x
+0DB467-7	x
+0DB4D1-2	x
+// ending --------------------
+
+// start of pink bookmark content
+0DB4E5-5	  rewrite name of skiing course
+0DB571-0	x
+0DB5CE-4	x
+0DB632-6	x
+0DB687-6	x
+0DB6E3-0	x
+0DB737-1	x
+0DB798-1	x
+0DB7F8-6	x
+0DB83C-6	x
+0DB886-5	x
+0DB8EB-4	x Mari wants to drive
+- 0DB934-6	x let her drive, you go to snowy maze scenario
+  0DB953-1	x
+- 0DB984-3	x insist on driving yourself; continue here
+0DB9FD-1	x
+0DBA6F-2	x
+0DBAC1-6	x Mari has beaten Ultimate Racer in the arcades
+- 0DBAF8-0	x insist again on driving yourself
+  0DBB5B-5	x
+- 0DBBA0-0	x let her go ahead; continue here
+0DBBEC-1	x
+0DBC70-5	x
+0DBCD1-1	x
+0DBD1C-1	x
+0DBD87-1	x
+0DBDC1-3	x
+0DBE24-3	x
+0DBEAE-3	x
+0DBF12-6	x
+0DBF92-4	x
+0DBFF8-6	x
+0DC01D-4	x
+0DC065-7	x choice to access Mystery Pension if conspiracy route viewed
+- 0DC072-0	x give up on going inside
+- 0DC108-0	x go look for treasure
+* [truly go into Mystery Pension, go to section]
+* 0DC142-5	x box of cold sweats
+* 0DC17E-0	x box of strange diseases
+0DC1C7-7	x
+0DC224-6	x
+0DC286-0	x
+0DC2DC-0	x talk to Haruko about having married Kayama
+- 0DC32E-4	x wonder why she'd marry him; go to opportunity with SFC
+- 0DC369-2	x offer chance to escape the world with Tooru
+0DC3E3-3	x
+0DC440-2	x
+0DC492-6	x
+0DC4E0-4	x
+0DC514-2	x
+0DC56E-4	x try to hit on the three girls
+- 0DC584-0	x Kanako
+- 0DC5C7-3	x Keiko
+- 0DC60F-4	x Aki
+- 0DC65F-1	x orgy with all three
+0DC6A0-5	x
+0DC71B-2	x
+0DC790-5	x
+0DC7EB-1	x
+
+Time for Dinner! - Comedy of O route
+0DC84E-0	x
+0DC859-5	x
+0DC8E1-6	x comment on the okama
+- 0DC915-0	x more age appropriate clothes
+- 0DC92D-7	x uncoordinated clothes and make-up
+- 0DC948-4	x Tooru has prettier legs
+0DC95E-2	x
+0DC9C7-1	x
+0DCA52-5	x
+0DCA9D-3	x
+0DCB26-2	x
+0DCB99-1	x
+0DCBEB-5	x
+0DCC53-7	x
+0DCCC1-0	x
+0DCD34-7	x
+0DCD7C-3	x Midori was acting strange about the meat for dinner
+- 0DCDD7-2	x don't worry about it
+  0DCE29-2	x
+  0DCE87-3	x
+  0DCEB7-5	x Kayama's theme in karaoke
+  0DCF13-1	x
+  0DCF3A-6	x
+  0DCF67-0	x
+  0DCFA5-1	x
+  0DCFD9-3	x
+  0DD00C-3	x
+  0DD034-2	x
+  0DD050-4	x final screen of karaoke
+  0DD06F-5	x
+  0DD0B8-2	x
+- 0DD0E3-2	x figure out what the meat is at all costs
+  0DD12A-2	x
+  0DD19B-7	x
+  0DD1DB-0	x
+  0DD238-7	x
+  0DD260-7	x
+  0DD2B9-5	x
+  0DD30E-5	x
+  0DD3A9-0	x
+  0DD42C-7	x
+  0DD497-4	x
+  0DD513-7	x
+  0DD540-6	x
+0DD56E-1	x
+0DD5B3-3	x
+0DD5FD-6	x
+0DD673-2	x
+0DD6F0-4	x
+0DD771-7	x
+0DD7EF-7	x
+0DD867-0	x
+0DD8C9-1	x
+0DD93E-2	x
+0DD9CE-6	x
+0DDA79-1	  possibly needs rewrite, JP text says "her" in quotation marks
+0DDAF8-3	  check reformat
+0DDB64-2	x
+0DDBC5-6	x I tried my best with getting across the Japanese "pun" :/
+0DDC3D-3	x
+0DDC9C-2	x
+0DDD29-3	x
+0DDD73-5	x
+0DDDCF-5	x
+0DDE5E-4	x
+0DDEE5-2	x
+0DDF67-3	x
+0DDFD7-6	x
+0DE060-2	x
+0DE0A3-3	x
+0DE11B-3	x
+0DE186-0	x
+0DE1DE-3	x
+0DE276-0	x
+0DE2F8-6	x
+0DE353-0	x
+0DE3D0-1	x
+0DE446-3	x
+0DE4C2-2	x
+0DE520-4	x
+0DE580-0	x
+0DE5F5-6	x
+0DE668-3	x
+0DE6D7-4	x
+0DE73E-4	x
+0DE78A-4	x
+0DE80B-4	x
+0DE87F-3	x
+0DE908-7	x
+0DE982-1	x
+0DE9DD-5	x
+0DEA47-0	x
+0DEACF-2	x
+0DEB12-3	x
+0DEB78-2	x
+0DEBF7-1	x
+0DEC61-3	x
+0DECB6-3	x
+// ending --------------------
+
+Start of the treasure route
+0DEE30-6	x
+0DEE93-3	x
+
+The Bloodstained Message
+0DEEFD-0	x
+0DEF0C-5	x message #1
+0DEF82-0	x
+0DEFF1-4	x
+0DF03B-5	x
+0DF0A8-4	x
+0DF12A-4	x
+0DF18E-1	x
+0DF21F-2	x
+0DF26B-6	x
+0DF2D5-2	x
+0DF337-5	x
+0DF383-4	x
+0DF3EE-2	x
+0DF455-7	x
+0DF4A7-7	x Kayamas went upstairs to look for the treasure
+- 0DF4B7-0	x follow them
+0DF540-0	x
+0DF58C-5	x
+0DF5FB-4	x check your room after you and Kayamas find nothing?
+- 0DF64D-0	x yes, check your room
+  0DF6CC-4	x
+- 0DF702-0	x no, check the closet
+  0DF775-2	x
+  0DF7D9-7	x
+  0DF825-6	x
+  0DF889-4	x
+
+0DF8BF-7	x don't follow the Kayamas upstairs
+0DF922-1	x
+0DF973-2	x
+0DF9C3-5	x decide where to go after Kayamas go off on their own
+- [calm down and look at the memo; skip down]
+- 0DF9D3-6	x go upstairs now
+  0DFA17-7	x
+  0DFA90-1	x
+  0DFB0D-2	x
+  0DFB76-1	x [skip to "riddle reading" chapter]
+
+- 0DFBDA-6	x check the basement
+  0DFC32-3	x
+  0DFCCD-5	x
+  0DFD49-2	x
+  0DFDAB-0	x
+  0DFE0C-1	x
+  0DFE63-3	x
+  0DFEA7-5	x
+  0DFEE0-0	x
+  0DFF21-6	x
+  0DFF6D-4	x [skip to "solution" chapter]
+
+Riddle Reading Comprehension
+0DFFE1-4	x
+0DFFEC-7	x
+- 0E8002-1	x calm down, and look at the memo
+0E805B-0	x
+0E80CA-2	x
+0E8126-4	x
+0E8190-5	x
+0E8205-4	x
+0E8272-5	x
+0E82D0-3	x
+0E8344-1	x
+0E8398-3	x
+0E83ED-1	x
+0E8456-3	x
+0E84EB-1	x
+0E8547-5	x
+0E85A2-2	x
+0E85FE-4	x
+0E8673-3	x
+0E86EA-5	x
+0E8729-6	x
+0E8772-1	x
+0E87DC-3	x
+
+Solution
+0E8850-7	x
+0E8862-5	x message #2
+0E88DB-0	x check the memo again, or declare you know the answer
+- 0E890C-5	x check again
+- 0E893A-5	x got the answer
+0E89A5-5	x announce where the treasure is, broadly speaking
+- 0E89E1-0	x outside the building
+  0E8A54-4	x
+  0E8AA8-7	x
+  0E8B2A-3	x
+  0E8BAB-5	x
+- 0E8C0A-2	x in the dining room
+  0E8C57-2	x
+  0E8CBA-2	x
+  0E8D02-3	x
+  0E8D7B-4	x
+  0E8DE3-2	x
+  0E8E41-3	x
+0E8E9E-2	x
+0E8EE5-3	x
+// ending --------------------
+
+- 0E8F66-6	x in the lounge
+0E8FCA-1	x where in the lounge is it?
+- 0E8FDA-4	x under the floor
+  0E903A-0	x
+- 0E907A-6	x under the sofas
+  0E90BE-1	x
+- 0E9110-5	x above our heads; got good ending
+0E9181-1	x
+0E91E4-3	x
+0E9250-6	x
+0E92A8-4	x
+0E92E0-3	x
+0E936F-5	x
+0E93DB-6	x message #3
+0E9449-2	x
+0E947C-1	x "help me!"
+0E9519-5	x "reset now"
+0E95E8-2	x
+0E9633-5	x
+0E96A4-1	x
+0E9711-6	x
+0E978A-7	x
+0E97F6-0	x
+0E987C-3	x
+0E98DB-4	x
+0E993B-5	x
+0E99C2-7	x
+0E9A19-4	x
+0E9A8C-6	x
+0E9AE9-4	x
+0E9B34-5	x
+// ending --------------------
+
+Chunsoft Party conspiracy
+0E9BC9-1	x
+0E9C2F-1	x
+0E9C70-3	x
+0E9CD0-0	x
+0E9D43-4	x
+0E9DBE-6	x
+0E9E2A-2	x
+0E9EB3-4	x
+0E9F28-3	x
+0E9FBE-1	x
+0EA00F-1	x
+0EA08C-4	x
+0EA0C6-5	x
+0EA150-4	x
+0EA1CA-7	x
+0EA25F-5	x
+0EA2DC-1	x
+0EA3A2-2	x
+0EA3F6-6	x
+0EA477-2	x
+0EA4F2-7	x
+0EA519-6	x
+0EA58A-4	x
+0EA5F7-6	x
+0EA690-3	x
+0EA6EE-1	x
+0EA764-5	x
+// ending --------------------
+
+Mystery Pension
+0EA7B0-2	x
+0EA7BD-5	x
+0EA7F8-1	x
+0EA827-5	x
+0EA847-7	x
+0EA8AD-4	x
+0EA8F1-1	x first turn against goblin
+- 0EA921-0	x a deadly punch
+  0EA9BF-7	x
+- 0EAAAD-2	x a dropkick
+  0EAB47-4	  needs rewrite on "only the area behind him"
+0EAA06-6	x defeated goblin, move on
+0EAA24-7	x
+
+- 0EAB8C-5	x "look, a UFO!"
+0EABFD-7	x
+0EAC44-7	x Mari shouts, "it's Nessie!"
+- 0EB751-6	x bad ending: believe Nessie is here
+  0EB7BA-2	x
+  0EB821-6	x
+  0EB85A-1	x
+  0EB89A-1	x
+
+- 0EAC51-2	x attack the goblin while it's looking for Nessie
+0EACCB-2	x goblin wants us to help him
+- [tell us where the Box is, go to section]
+- 0EAE14-3	x demand 10,000 yen
+0EAE8F-0	x
+0EAF0B-1	x
+0EAF67-1	x
+0EAFD6-6	x
+0EB03C-5	x elevator to floor 5
+- 0EB70D-1	x no, don't take elevator; go to floor 2
+- 0EB049-0	x yes, take elevator; continue
+0EB0A2-6	x
+0EB0E6-1	x
+0EB141-5	x
+0EB188-7	x follow neon signs to Mysterious Fountain?
+- 0EB6C0-0	x no, don't approach fountain
+- 0EB1A8-1	x yes, approach it; continue
+0EB201-1	x
+0EB251-6	x
+0EB2A7-6	x
+0EB30B-3	x
+0EB37F-7	x
+0EB3E2-0	x
+0EB456-1	x
+0EB496-6	x
+0EB4FF-4	x cup of "water" choice 1
+- 0EC6D4-0	x cup of "water" choice #2 (don't drink it, #1)
+- 0EC703-0	x don't drink it, #2
+  0EC752-2	x cup of "water" choice #3
+- 0EC763-0	x don't drink it, #3
+0EB523-3	x eventually drink it
+0EB5C6-6	x
+0EB64D-6	x
+
+0EB8A1-2	x demand a strong weapon from the goblin
+0EB920-2	x
+0EB999-0	x
+0EBA13-6	x
+0EBA84-3	x
+0EBAE6-1	x
+0EBB41-5	x goblin really doesn't want Tooru to take the Muramasa
+- 0EBB79-5	x bad ending: take Halcyon
+  0EBBF5-2	x
+  0EBC29-3	x
+  0EBC66-2	x
+  0EBC88-4	x
+  0EBCD6-7	x
+  0EBD69-3	x
+  0EBDEA-6	x
+  0EBE4B-3	x
+- 0EBE84-6	x bad ending: take Muramasa
+  0EBEEB-2	x
+  0EBF7B-0	x
+  0EC008-1	x
+  0EC089-3	x
+  0EC0CF-2	x
+  0EC122-0	x
+  0EC170-3	x
+  0EC1CE-2	x
+  0EC21D-6	x
+  0EC245-0	x
+  0EC28C-3	x
+  0EC2C3-1	x
+  0EC31F-2	x
+  0EC397-4	x
+  0EC3EE-4	x
+  0EC427-6	x
+  0EC49D-7	x
+  0EC51E-7	x
+  0EC590-3	x
+  0EC5D8-6	x
+  0EC640-2	x
+  0EC6A4-6	x
+
+- 0EACDC-2	x tell us where the Box is
+  0EAD3E-5	x
+  0EADAE-3	x
+0EC7BA-4	x [come here after you defeated the goblin]
+0EC7EB-2	x [floor 2]
+0EC80D-4	x
+0EC85C-5	x
+0EC8EF-1	x encounter flame demon
+- 0EC8FF-6	x bad ending: try to attack it
+- 0EC987-0	x run away from it
+0EC9E0-5	x go left or right at T junction
+- 0ECA45-0	x bad ending: go left
+  0ECAA6-7	x
+  0ECAFC-5	x
+  0ECB54-3	x
+- 0ECB5B-3	x go right
+0ECBC3-2	x [level 3]
+0ECBE8-1	x
+0ECC5F-0	x
+0ECCEC-5	x
+0ECD59-2	x
+0ECDE1-0	x
+0ECE2D-7	x
+0ECE6A-2	x
+0ECEDE-2	x
+
+0ECF2D-7	x pick which set of doors
+- 0ECF48-2	x north 4 2 #
+  0ECF7D-5	x
+- 0ECF8E-4	x pick 4
+  0ED016-3	x
+  0ED07D-3	x
+- 0ED084-6	x pick 2
+  0ED0EA-3	x
+  0ED115-7	x
+- 0ED11F-6	x pick #
+  0ED196-3	x
+
+- 0ED19D-5	x east 6 9 3
+  0ED1D3-1	x
+- 0ED1E4-0	x pick 6
+  0ED25C-0	x
+  0ED2AB-1	x
+- 0ED2B5-0	x pick 9
+  0ED30A-7	x
+- 0ED312-1	x pick 3
+  0ED385-6	x
+
+- 0ED38F-2	x west 1 * 7
+  0ED3C4-4	x
+- 0ED3D5-3	x pick 1
+  0ED461-0	x
+- 0ED468-3	x pick *
+  0ED4D6-0	x
+
+- 0ED588-0	x south 5 0 8
+  0ED5BD-1	x
+- 0ED5CE-1	x pick 5
+  0ED63B-4	x
+  0ED6D5-1	x
+- 0ED6DF-1	x pick 0
+  0ED756-3	x
+- 0ED760-3	x pick 8
+  0ED7CF-1	x
+  0ED808-6	x
+
+- 0ED4DD-3	x pick 7 [moved down to get rid of a jump/pointer]
+0ED537-5	x
+0ED583-6	x
+0ED812-7	x
+0ED838-1	x
+0ED8A5-3	x
+0ED92D-5	x
+0ED997-3	x
+0ED9FC-1	x
+0EDA3E-1	x
+0EDAB3-3	x
+0EDB21-3	x
+0EDB9C-3	x
+0EDBEA-4	x
+0EDC46-3	  needs rewrite, Tooru talked in the Kansai dialect
+0EDCDF-0	x
+0EDD2E-7	x
+0EDDA6-5	x
+0EDDF3-7	x
+0EDE68-3	x
+0EDEE6-4	x
+0EDF47-2	x
+0EDFD2-1	x
+0EE046-2	x
+0EE0C8-4	x
+0EE136-6	x pick the left or right chest
+- 0EE18B-5	x good ending: chest on the right
+  0EE1E4-0	x
+  0EE25D-1	x
+  0EE2D4-2	x
+  0EE34F-6	x
+  0EE3DB-5	x
+  0EE455-4	x
+  0EE48B-3	x
+  0EE510-6	x
+- 0EE5A0-4	x bad ending: chest on the left
+  0EE5F4-4	x
+  0EE63E-4	x
+  0EE686-3	x
+  0EE69F-1	x
+  0EE6A2-1	x
+
+------------------------------
+
+Killer guess opportunity 1
+0EE6C9-2	x [choice for checking input]
+0EE6F3-7	x Mikimoto
+0EE753-1	x
+0EE7C3-1	x Mari comes to his defense
+- 0EE800-7	x could have dismembered the body if arrived earlier
+  0EE865-1	x
+  0EE8C4-1	x
+  0EE928-5	x
+  0EE99F-4	x
+- 0EE9EC-0	x couldn't have dismembered the body; continue
+
+- 0EEA35-7	x could have killed Tanaka
+  0EEA4D-6	x
+  0EEABB-7	x
+  0EEB31-3	x
+  0EEB98-4	x
+  0EEBFA-1	x
+- 0EED66-5	x couldn't have killed Tanaka, but could have killed "Suzuki"
+  0EEDA9-6	x
+  0EEE16-0	x
+0EEC41-5	x converge for wrong answer
+0EEC94-3	x
+0EECEC-5	x
+0EED38-1	x
+
+0EEE98-3	x Tanaka
+0EEF0B-4	x
+0EEF57-0	x
+0EEFB9-5	x
+0EEFF8-7	x Toshio
+0EF07A-6	x Jirou, Kyouko, Kayama, Haruko, Midori, Aki, Kanako, Keiko, girls
+0EF0E2-4	x
+0EF136-6	x
+0EF188-2	x no match
+0EF1DE-2	x
+
+------------------------------
+
+Killer guess opportunity 2
+0EF23E-0	x [choice for checking input]
+0EF262-5	x Mikimoto
+0EF268-1	x Tanaka
+0EF2CF-7	x Kayama
+0EF305-0	x Midori
+0EF352-1	x
+0EF3BB-0	x
+0EF437-1	x
+0EF482-4	x
+0EF4E4-7	x (second level choice)
+0EF4F2-3	x Jirou, Kyouko, Haruko, Toshio, Aki, Kanako, Keiko, three girls
+0EF553-3	x [all paths tested to work]
+0EF581-7	x
+0EF5E4-2	x no match
+0EF62F-3	x
+0EF67A-0	x
+
+------------------------------
+
+Killer guess opportunity 3
+0EF67E-2	x [choice for checking input]
+0EF6B2-1	x Mikimoto
+0EF6B7-5	x Kanako or Keiko or Aki
+0EF715-1	x three girls
+0EF760-2	x Haruko
+0EF765-6	x (second level choice)
+0EF773-3	x Tanaka, Jirou, Kyouko, Kayama, Toshio, Midori
+0EF7CE-1	x no match
+0EF834-0	x
