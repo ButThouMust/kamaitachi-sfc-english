@@ -1,0 +1,24 @@
+Kamaitachi's system for punctuation is kinda weird. There are, of course, your
+normal encoding values for the typical punctuation characters: period, comma,
+left/right quotes, left/right inner quotes, question mark, and exclamation mark.
+
+However, the main text script uses special control codes that not only print the
+raw punctuation values to a buffer, but check and set various runtime flags (in
+dialogue, auto advance), and possibly write WAIT and/or LINE control codes
+depending on these flags.
+
+Because I'll be looking at the script significantly more, I decided to use the
+notation of having the raw punctuation characters be prefixed with a backslash
+(e.g. when updating the encodings in the ASM), and having the control codes for
+punctuation be represented with just the character on its own. For example:
+
+0001=\.		1058=.
+0002=\”     1059=”
+0003=\ʼ     105A=ʼ
+0004=\,     105B=,
+0005=\!     105C=!
+0006=\?     105D=?
+       		105E=<! 5E>
+       		105F=<? 5F>
+0007=\“     1060=“
+0008=\ʻ     1061=ʻ
