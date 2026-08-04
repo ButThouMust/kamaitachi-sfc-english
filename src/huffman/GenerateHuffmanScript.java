@@ -8,6 +8,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +22,8 @@ import static header_files.HelperMethods.*;
 import static header_files.TextConstants.*;
 
 public class GenerateHuffmanScript {
+
+    private static final String ANALYSIS_FOLDER = "script/analysis";
 
     private static RandomAccessFile romFile;
 
@@ -322,7 +326,7 @@ public class GenerateHuffmanScript {
             romName = romPath.substring(lastSlashIndex + 1);
         }
 
-        String charCountsFile = "script/analysis/char counts for '" + romName + "'.txt";
+        String charCountsFile = ANALYSIS_FOLDER + "/char counts for '" + romName + "'.txt";
         BufferedWriter charCountsOutput = new BufferedWriter(new FileWriter(charCountsFile));
 
         String tableHeader = "       | number | number |        |\n" +
@@ -348,7 +352,7 @@ public class GenerateHuffmanScript {
     // compressed pointers; keep if you need to change something and want to debug
     /*
     private static void outputUncompPtrs() throws IOException {
-        BufferedWriter pointerInfo = new BufferedWriter(new FileWriter("script/analysis/uncomp pointer info.txt"));
+        BufferedWriter pointerInfo = new BufferedWriter(new FileWriter(ANALYSIS_FOLDER + "/uncomp pointer info.txt"));
 
         for (Integer ptrLoc : ptrLocations) {
             Integer ptrVal = ptrValues.get(ptrLoc);
@@ -652,7 +656,7 @@ public class GenerateHuffmanScript {
         collectHuffmanCodeStrings(root, "");
         collectHuffmanCodeBits(root, 0x0, 0);
 
-        BufferedWriter huffmanWriter = new BufferedWriter(new FileWriter("script/analysis/huffman output.txt"));
+        BufferedWriter huffmanWriter = new BufferedWriter(new FileWriter(ANALYSIS_FOLDER + "/huffman output.txt"));
         huffmanWriter.write("  #   | count  | Huffman code (size and bits)  | encoding\n");
         huffmanWriter.write("------+--------+-------------------------------+------------\n");
         String lineFormat = " %04X | %6d | %2d bits: %-20s | \"%s\"\n";
@@ -1051,7 +1055,7 @@ public class GenerateHuffmanScript {
      * are converted into pointers in the Huffman compressed script.
      */
     private static void outputPointerInfo() throws IOException {
-        BufferedWriter pointerInfo = new BufferedWriter(new FileWriter("script/analysis/pointer info.txt"));
+        BufferedWriter pointerInfo = new BufferedWriter(new FileWriter(ANALYSIS_FOLDER + "/pointer info.txt"));
         for (Integer ptrLoc : ptrLocations) {
             Integer ptrVal = ptrValues.get(ptrLoc);
             Integer huffPtrLoc = huffPtrLocations.get(ptrLoc);
@@ -1069,7 +1073,7 @@ public class GenerateHuffmanScript {
      * the script into Huffman format.
      */
     private static void analyzeCompression() throws IOException {
-        BufferedWriter compressionFile = new BufferedWriter(new FileWriter("script/analysis/compression analysis.txt"));
+        BufferedWriter compressionFile = new BufferedWriter(new FileWriter(ANALYSIS_FOLDER + "/compression analysis.txt"));
 
         int uncompressedSize = scriptEnd - scriptStart + 1;
         String format0 = "Uncompressed script: %d bits = 0x%X bytes";
@@ -1150,6 +1154,8 @@ public class GenerateHuffmanScript {
 		// - count occurrences for each character
 		// - get data for all the pointers in the script itself
 		countCharacters();
+
+        Files.createDirectories(Paths.get(ANALYSIS_FOLDER));
 		outputCountsToTextFile(romFilename);
 		// outputUncompPtrs();
 
