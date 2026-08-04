@@ -1,0 +1,450 @@
+Kamaitachi makes fairly extensive use of both the COP and BRK interrupts
+throughout its code. Here is a writeup about using both.
+
+--------------------------------------------------------------------------------
+
+Let's start with COP, since that one is easier to explain. (ASM at $008149)
+Simply put, it decreases the direct page value by some amount, and places a
+certain number of bytes after the COP operand, into the new direct page address.
+
+The COP's operand ("N") indicates N+1 bytes of data after the operand.
+
+For example, at $01E175, there is a COP #$0A. 0xB bytes of data follow the [0A].
+[58 00 7C 00 08 01 00 38 7F 80 | 09]
+
+The last byte, in this case [09], indicates how much to decrease the direct page
+register's value. You decrease it by (the byte + 1). So in this case, you
+would decrease it by 0xA, and fill the 0xA bytes with the data.
+
+Note: the distance does not necessarily have to match the COP operand's value.
+For example, $01E20E has a COP #$00 with the data [ | 01]
+Here, you would decrease the direct page value by 2, but place no data on it.
+
+--------------------------------------------------------------------------------
+
+BRK interrupt @ $008185 ultimately makes it so it will run a certain subroutine
+(uses the unused byte "operand" that comes right after the 00 opcode).
+
+The list of subroutines to run is at $0182DF - $018338. Note that when the ASM
+does an RTL to "exit" the BRK subroutine, it will go to the instruction in the
+byte RIGHT AFTER where the pointer is (PC <- ptr_on_stack + 1). So even though
+the pointer itself is, for example, $0081B4, the code will start at $0081B5.
+
+Index |  Value  | Subroutine        Index |  Value  | Subroutine
+------+---------+------------       ------+---------+------------
+  00  | $0081B4 |  $0081B5            10  | $008976 |  $008977
+  01  | $0081B4 |  $0081B5            11  | $0089C0 |  $0089C1
+  02  | $0081B4 |  $0081B5            12  | $0088CE |  $0088CF
+  03  | $008752 |  $008753            13  | $00897F |  $008980
+  04  | $00809F |  $0080A0            14  | $0089C9 |  $0089CA
+  05  | $00872F |  $008730            15  | $008904 |  $008905
+  06  | $00882E |  $00882F            16  | $008786 |  $008787
+  07  | $008951 |  $008952            17  | $00E9CD |  $00E9CE
+  08  | $008988 |  $008989            18  | $00E9F5 |  $00E9F6
+  09  | $00883E |  $00883F            19  | $008D7D |  $008D7E
+  0A  | $008951 |  $008952            1A  | $008D86 |  $008D87
+  0B  | $008988 |  $008989            1B  | $008D8F |  $008D90
+  0C  | $00886E |  $00886F            1C  | $049827 |  $049828
+  0D  | $008951 |  $008952            1D  | $0087BA |  $0087BB
+  0E  | $008988 |  $008989
+  0F  | $008898 |  $008899
+
+There are duplicates in the list for:
+[00,01,02]: $0081B5
+[07,0A,0D]: $008952
+[08,0B,0E]: $008989
+
+--------------------
+
+BRK #$00: two bytes of input
+Use the 1-byte index present at $0300 to store the input to a table at $0322.
+Clear bits 0 and 1 of the corresponding entry in the table at $0332.
+
+BRK #$01 and BRK #$02 each take one byte of input.
+(BRK #$02 is not used in the JP game)
+The input byte after the [01] consists of a 3-bit value and a 5-bit* value:
+- Bits 0-2: Let X = table index in units of two bytes from $0332.
+- Bits 3-7: Let Y = this 5-bit value. Obtain the bitmask (1 << Y).
+*: Effective size of 4 bits? Bitmask is only 16 bits wide, not 32.
+Go to byte offset X from $0332. Set the bit (BRK #$01), or clear it (BRK #$02).
+
+For all three:
+If table index at $0300 is non-negative
+    write the current stack pointer to a table at $0312.
+Else
+    add 0xD to the stack pointer.
+Start at entry 7 (byte offset 0xE) in table at $0322.
+
+Hypothesis: These bit flags in the list indicate what things the game engine
+has to do, like decompressing text or drawing the next frame? BRK #$01 inputs
+4A and 4B apparently have to do with decompressing text for either current text
+(4A) or previous text (4B). See subroutine at $00A967.
+
+--------------------
+
+BRK #$03 takes two bytes of input that are used as a bitmask for controller
+input (e.g. ignore pressing Right but acknowledge pressing Up/Down) for a
+specific controller port.
+
+Encoded data:
+Bits 4-F: Top 12 bits follow Nintendo's standard for HW regs JOY1L/JOY1H.
+          Set bit = allow input through. Clear bit = do not acknowledge.
+Bits 2-3: Encode controller port number (1 <= N <= 4) as 2-bit value (0-3).
+          Typically just binary 00 to represent player 1.
+Bits 0-1: ???
+
+Relevant memory addresses:
+$0391: previous frame's input value for controller
+$0399: "control flow state" for controller
+$03A1: related to controller's input value
+$03A9: input mask for controller (the encoded 12 bits)
+$03B1: ???
+
+As a reminder, the bit-to-button mapping is:
+F E  D    C     B   A    9     8     7 6 5 4
+B Y Sel Start | Up Down Left Right | A X L R
+
+There are three sets of these addresses for controllers 2, 3, and 4.
+Is it possible to repurpose these addresses for other things?
+
+On the topic of controllers, controller 2 is used for an "Easter egg" of sorts
+on the title screen. If you input the following sequence of buttons there, you
+will hear a sound effect of a man screaming, and all save data will be cleared.
+Right Down Left Up L R A B Y X
+
+--------------------
+
+BRK #$04: 1 input byte in A (range 0 to 7)
+Initializes data at an offset in memory using direct page. ("--" = value of 00)
+Uses four blocks of data at $01829F, $0182AF, $0182BF, $0182CF.
+
+[$9F]          [$AF]                   [$CF] [$BF]
+offset:  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D
+
+$0CA7:  [?? 01 B5 0B -- -- -- -- -- -- 04 03 8C 00]
+$0DA7:  [?? 01 35 0D -- -- -- -- -- -- 04 FB 8B 00]
+$0E27:  [?? 01 B5 0D -- -- -- -- -- -- 04 DE 8B 00]
+$1327:  [?? 01 B5 12 -- -- -- -- -- -- 04 65 8B 00]
+$1227:  [?? 01 35 10 -- -- -- -- -- -- 04 76 8B 00]
+$13A7:  [?? 01 35 13 -- -- -- -- -- -- 04 61 8B 00]
+$14A7:  [?? 01 35 14 -- -- -- -- -- -- 04 7D 8A 00]
+$15A7:  [?? 01 B5 14 -- -- -- -- -- -- 04 75 8A 00] 
+
+It will also clear entry A's data present in the tables at $0322, $0332, $0342.
+
+Upon boot, the game does this for all eight "slots", minus clearing bytes 04-09
+and tables at $0322, $0332, and $0342 (since WRAM was initialized with all 00s).
+See $008077.
+
+--------------------
+
+BRK #$05: Multiply the value in A with the byte at DP,X.
+
+Inputs: a 2-byte value in A, and a direct page offset in X.
+The two-byte product is stored at DP,X (occupies DP,X and DP,X+1).
+
+--------------------
+
+BRK #$06: unused?
+
+BRK #$06, #$09, #$0C, #$0F, #$12, #$15 all run a common subroutine at $0089D3.
+This subroutine seemingly depends on having 0xE or 0xF bytes on the direct page.
+
+Subroutine is relevant to setting up VRAM DMAs? It copies the magic number of
+either 0x18 or 0x19 ($2118 and $2119 are HW regs for writing data to VRAM) into
+memory at $000E plus some offset in Y. See $008A21.
+
+Each BRK index will fill in the data differently. However, #$06 assumes that the
+data is already pre-filled in, and it will go directly to the common subroutine.
+
+Structure bytes' explanations:
+$00-$01 contains a pointer to a subroutine to be executed in NMI.
+- #$09: $0082C6 = set HW registers related to display (see below)
+- #$0C: $00841D = set up DMA to VRAM (difference between this and below?)
+     or $0083EA = set up DMA to VRAM
+- #$0F: $00847D = set up DMA to CGRAM
+- #$12: $0084AB = set up DMA to OAM
+- #$15: $0084D9 = set up DMA from bank 7F to VRAM (gfx data for text?)
+
+---
+
+$02-$03 contains... something depending on which BRK is being done
+- #$0F: $02 <- 0x5B + $07 = transfer size + 0x5B
+
+---
+
+$04 contains flags for the BRK. Don't know the details.
+- #$09: Let b0, b1, b2, ..., b7 represent the eight bits of $04 from LS to MS.
+        $02 <- 0x83 + b0*0x11 + b1*0x1A + b2*0x6F + b3*0x31 +
+                      b4*0x11 + b5*0x11 + b6*0x1F + b7*0x53
+        What is the purpose for this?
+
+- #$0C: Bit 7 set   -> use $0083EA; (2-byte arith) $02 <- 0x67 + $07
+        Bit 7 clear -> use $00841D; $02 <- 0x00C1
+
+- #$0F: Bit 5 clear -> get color data from bank 00 at $0100 + ($05 << 1)
+        Bit 5 set   -> use existing data in $0A for pointer to source color data
+
+- #$12: Bit 5 clear -> get OAM data from bank 00 at $0974 + ($05 << 1)
+        Bit 5 set   -> use existing data in $0A for pointer to source OAM data
+
+---
+
+#$09:
+$05 has bit flags for what HW display registers to update (1 = update, 0 = no):
+- bit 0: INIDISP and BGMODE
+- bit 1: BG sizes and bases (BGnSC, BG12NBA)
+- bit 2: BG scroll (BGnHOFS, BGnVOFS)
+- bit 3: M7SEL, W12SEL, W34SEL, WH0/1, WH2/3, WBGLOG
+- bit 4: TM, TS, TMW, TSW
+- bit 5: CGWSEL, CGADSUB, COLDATA, SETINI
+- bit 6: NMITIMEN, HTIMEL, VTIMEL, HDMAEN
+- bit 7: Mode 7 regs (A, B, C, D, X, Y)
+
+#$0C:
+$05 = target VRAM address (VMADDL/H)
+$07 = DMA transfer size (DASxL/H)
+$09 = DMA parameters (DMAPx) - note that bit 5 (unused by DMA itself) encodes
+      using bus $2118 (bit clear) or $2119 (bit set) i.e. VRAM low or high byte
+$0A = 24-bit pointer for source data
+$0D = VRAM address increment mode (VMAIN)
+$0E = DMA bus $21xx
+
+#$0F:
+$05 = target CGRAM address
+$07 = # bytes to transfer
+$09 = DMA parameters
+$0A = 24-bit pointer for source data
+
+#$12:
+$05 = priority flag and OAM address (OAMADDL)
+$07 = # bytes to transfer
+$09 = DMA parameters
+$0A = 24-bit pointer for source data
+
+#$15:
+Input in X will be either 0x00 or 0x02, which indicates to use $0C or $0E below.
+$07 = 16-bit bank offset for source data (bank 7F)
+$09 = # bytes to transfer
+$
+$0C = text X/Y pixel position
+$0E = text X/Y tile position
+
+--------------------
+
+BRK #$07, #$0A, #$0D, #$10, #$13: unused, but reuse code?
+
+Modify a 0xF byte structure for DMAs -- index in A when called for 7,A,D.
+Use index 0x0C for #$10 and index 0xD for #$13.
+
+Check which structure (N).
+If N >= 0xC or N <= 0x4, go ahead.
+    Clear bit 7 of byte $03 for the structure.
+Otherwise (0x5 <= N <= 0xB), 
+
+--------------------
+
+BRK #$08, #$0B, #$0E, #$11, #$14: unused, but reuse code?
+
+Modify a 0xF byte structure for DMAs -- index in A when called for 8,B,E.
+Use index 0x0C for #$11 and index 0xD for #$14.
+
+Set bit 7 of byte $03 for the structure.
+If modifying DMA structure 0x0-0x3 or 0xC-0xF, we are done.
+
+Otherwise (0x4 <= N <= 0xB), clear flags for the DMA structure.
+    Also copy pointer $851B into $00-$01, and the value 0x002D into $02-$03.
+
+--------------------
+
+BRK #$16: Generally speaking, checks if value in A is the "table file value" for
+a control code.
+
+Return value is encoded in the N and V flags of the processor status flags reg:
+N set = control code; V set = choice code; both clear = not control code
+
+--------------------
+
+BRK #$17 and #$18 play two specific sound effects for the file select screen:
+#$17: the "confirm menu" sound effect when choosing a bookmark
+      same as for selecting a character in the name entry character grid
+#$18: the sound effect when moving from one bookmark to another
+      same as for deleting a character for the name entry screen
+
+They both check the [80] byte at $00FFF1, see the 0x40 bit position is clear,
+and play the sound effect. If you change the [80] to [40], they won't play.
+
+--------------------
+
+BRK #$19, #$1A, and #$1B are similar
+Only #$1B seems to be used in the game (see $0489AE, when showing the "please
+enter the name of the [protagonist/his girlfriend" box on the name entry screen;
+also see $00922F, when doing title screen)
+
+I found empirically that at a high-level, BRK #$1B does "set carry if input
+detected, clear carry otherwise." It is quite a bit harder to elucidate its
+purpose from the details I gathered below. :P
+
+X <- the two-byte value in $0300
+Let N be the result of LDA ($0342,X)
+Calculate N & [value depending on BRK value]:
+- #$19: use 0x0001
+- #$1A: use 0x0008
+- #$1B: use 0x0002
+If result is not zero, set carry
+If result is     zero, clear carry
+
+--------------------
+
+BRK #$1D: Gets run when the game is doing demo play and has to simulate doing
+input for a choice. I think its purpose is to generate a random value? It uses
+the values in $03D7 (frame counter) and $03DB (0x1021 gets XORed into it
+based on the bits in ($03D7 ^ $03DB)) to generate a value.
+
+Sometimes, the cursor will go down one or two options before making a choice.
+
+--------------------
+
+BRK #$1C takes one byte of input that can range from 00 to 2D, with the MSB
+either set or clear. I don't know what the MSB's purpose is, but just know that,
+for example, an input of 94 will be similar to using 14 as an input. Related to
+memory address $03C1.
+
+Using the input, run a subroutine from a list of 16-bit pointers at $018AB5.
+To search for these inputs, search for the byte sequence [00 1C xx], where "xx"
+can possibly have its MSB set.
+
+Many of them involve reading from or writing to the save files.
+Here are the inputs for which I know what they do.
+
+00 @ 04985B: validate SRAM checksums, delete/reinit any that have bad checksums,
+             but also restore most recently played save file if just its proper
+             save file was corrupted (but not its scratchpad copy)
+01 @ 0498CD: copy a save file (1-3) into the scratchpad
+02 @ 0498D3: copy just the first 0x78 bytes of a save file (1-3) into scratchpad
+03 @ 0498D9: depending on value in $03C3:
+             - zero: calculate checksum for scratchpad save's metadata
+             - else: calculate checksum for whole scratchpad save
+             in both cases, copy the covered save file's data into sourced file
+04 @ 0498F0: delete and reinit a save file (1-3)
+
+05 @ 0498F7: does something with backing up the script text buffer at $0500,
+             0x30 bytes from $0B94, and SRAM progress flags to WRAM
+06 @ 04992C: opposite of BRK #$1C(05): restore all that data to the right places
+
+07 @ 04995E: gets run at a new chapter? copies current progress flags to list in
+             source save file in SRAM; inc pg block number for chapter lookup;
+             write current text pg block data to SRAM and init new text pg block
+08 @ 04998A: read chapter # from save file & increment it for showing on screen;
+             see $008F3A (continuing file at chapter), $00EB18, $00EB5B, $02A1A3
+09 @ 04997E: copy first 0x78 bytes from proper save file into the scratchpad,
+             then run BRK #$1C(08)
+
+0A @ 049991: Copy 0x30 bytes of playthrough flags to SRAM 020. If # pages in
+             current text page block is 0xA or 0x80-0xFF, write its data to list
+             at SRAM 2D0, and initialize the next block. Regardless of check for
+             # pages, increment # pages if allowed to view prev text, copy curr
+             text page block's data to SRAM, and recalc save file checksum.
+             - Used in $00ACDB for clear code when loading transparent pg icon.
+               Also see $00A4AE, $00B462 (new chapter code).
+0B @ 0499C6: Copy 0x30 bytes of playthrough flags to SRAM 020. Copy current text
+             page block's data to SRAM, but without incrementing the # pages
+             like in BRK #$1C(0A) above. Used at $00A4B1.
+
+0C @ 0499DA: takes an input in A; see these offsets:
+             - $008B01 when setting up to show secret message ending;
+                     - copy 0x30 bytes of flags to SRAM 020
+             - $008F6B when continuing file from a chapter
+             - $008FA4 when continuing file from last saved position
+               for both, use the given index for the text block num list to set
+               up the 8 byte struct for the current position, and call $049A9D.
+             All three: set playthrough's temp flags and starting script pos in
+             RAM from data in SRAM, set that player has not reached an ending.
+
+0D @ 049A49: Set up to read starting at chapter 1. See $008F40 (pick chapter 1
+             in list after seeing ending) and $008FD0 (start story on new file).
+             Set chapter num to 0; reset page block counters; set script pos to
+             clear temp flags 0-F; clear all SRAM progress flags; set that
+             player has not reached an ending; allow reading prev text.
+
+Leaving note here since nearby in ROM: what is the purpose for SRAM byte 0B8?
+
+0E @ 049B6C: takes input in A; A<0, read prev text from before curr pos; else
+             read prev text from chapter; return pass/fail result in C flag
+             only used at $01CDA0
+0F @ 049BA8: read prev text starting from current position
+10 @ 049BBA: read prev text starting from chapter in list
+11 @ 049BCC: Read the text for the title of the latest chapter reached into a
+             buffer at $1235. If somehow the player has not reached the start of
+             a chapter, don't try to read it, and return with C=1. Else, C=0.
+12 @ 049BEA: Read the text for the title of chapter "A" into the script buffer.
+13 @ 049C22: Copy the name from RAM ($1656) into slot Y for scratchpad file.
+14 @ 049C44: Copy name Y from scratchpad save file into RAM ($1656). Used in:
+             - $0098D9, copying name to script buffer
+             - $02A843, getting name's width in pixels
+15 @ 049C39: Copy a particular name from scratchpad save file into RAM.
+             Used in $009F61 and $009F63 for "print name" control codes.
+             Input is Y (rel. ptr to which name to use)
+16 @ 049C58: Set the source save file's number into the scratchpad save file.
+17 @ 049C66: get 2 bytes in save file at position 0x078 (save file #, 1-3)
+18 @ 049C77: increment # playthroughs; set that player has reached an ending;
+             update progress flags based on which endings have been viewed (e.g.
+             grant pink bookmark, access to more routes); check if player got
+             the gold bookmark
+19 @ 049C90: limits displayed playthrough counter to 999 at most
+
+These next three use byte $005 in a save file (scratchpad or proper).
+- Bit 0 indicates stereo (0) or mono (1).
+- Bit 1 indicates whether player has pink bookmark (1) or not (0).
+- Bit 2 indicates whether player has gold bookmark (1) or not (0). (educ. guess)
+- Bit 3 indicates whether player can (0) or cannot (1) view previous text.
+
+1A @ 049CA5: given 8-bit input, SET appropriate bits in scratchpad $005
+1B @ 049CB5: given 8-bit input, CLEAR appropriate bits in scratchpad $005
+1C @ 049CC7: get save file N's byte $005
+
+1D @ 049CD7: clear bit 0 of $005 in scratchpad = use mono audio
+1E @ 049CFC: set bit 0 of $005 in scratchpad = use stereo audio
+For both 1D and 1E, update scratchpad metadata checksum, copy scratchpad
+metadata to save file 1.
+
+$018B67 has bitmasks for bit positions 1-5, shifted left (08, 10, 20, 40, 80).
+1F @ 049D21: SETS bits in choice's progress flag, using bitmasks from $018B67
+             and $018B3F. Inputs in A ($018B67 bitmask index), X ($018B3F
+             bitmask index), Y (index for which choice). See $00A49F.
+22 @ 049D40: CLEARS bits in choice's progress flag, using $018B67. Inputs in A
+             (bitmask flag index) and X (index for which choice). Used at:
+             $049B30 (if prog flag 2D clear), $049B41 (if prog flag 2C clear).
+For flag 2D, A=3 X=3. For flag 2C, A=3 X=7.
+The X inputs match with the choice ID values in the script.
+The A input corresponds to a bitmask of [20] at 0x8B6A.
+
+20 @ 049D63: Get bits 0-2 of choice progress flag X in scratchpad. See $009F0C
+21 @ 049D56: Get bits 0-2 of choice progress flag X in save file N.
+             Used in $009DE5 for choice codes (009D39 and 009d99 lists).
+
+23 @ 049D6D: Sets a progress flag for control code 20.
+24 @ 049D7C: Clears a progress flag for control code 21.
+25 @ 049D8E: Check a progress flag and return its status in carry flag.
+
+26 @ 049DA0: Sets a temp progress flag for control code 22.
+27 @ 049DAD: Clears a temp progress flag for control code 23 (unused).
+28 @ 049DBD: Check a temp progress flag and return its status in carry flag.
+
+29 @ 049DDC: Main ASM for control code 1017. Input in A. Has to do with three
+             points in the script where picking certain choices will eventually
+             bring them back to the same choice; effect is that text from the
+             looping path won't be viewable once back at the choice.
+
+2A @ 049E18: Disables viewing previous text with X button and in the current
+             chapter. Gets run when entering snowy maze chapter (103B[29]).
+2B @ 049E1F: Reenables viewing previous text with X button and in the current
+             chapter. Gets run after escaping snowy maze (103B[28]).
+             Also note that it sets the number of pages in the current text
+             block as negative, to prevent looking back into the maze's text.
+
+2C @ 049E31: Clears progress flag 7E, sets progress flag 7F. Overwrite most
+             recent progress flags in source save file. Recalc checksums.
+             Essentially, set up for viewing game's secret message.
+
+2D @ 049E4E: Update save file checksums for file # in accumulator.

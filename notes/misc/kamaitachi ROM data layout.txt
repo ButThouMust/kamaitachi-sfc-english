@@ -1,0 +1,454 @@
+
+At a very high level:
+Banks 00-04: all the code for the game to run, plus various data.
+Banks 05-5F: all the data for music, graphics, etc.
+
+- The script is compressed using Huffman coding, almost just like Otogirisou.
+- The variable-width and -height font is compressed in the same "bit-packing"
+  format as Otogirisou but has its metadata (dimensions, pointers, group sizes)
+  split up into discrete tables.
+- The background graphics are compressed in this really complicated scheme that
+  I'm amazed I was able to replicate in a dedicated dumper tool.
+- The tilemaps for background graphics are also compressed but in a much easier
+  to understand compression scheme.
+- LZSS compression is used for several pieces of data in the ROM.
+- The silhouettes have compression for the graphics data itself, as well as a
+  whole lot of logic for how to correctly generate the OAM data to display them.
+
+Empty spaces in the ROM (full of FF bytes) for placing your edits:
+    range     | size (hex,dec) | can use for what?
+--------------+----------------+--------------------------
+00EB7E-00FFAF | 0x1432 =  5170 | code edits in bank 00
+01fc9e-01ffff | 0x 362 =   866 | code edits in bank 01
+02c31f-02d7ec | 0x14ce =  5326 | code edits in bank 02
+02ffe9-02ffff | 0x  17 =    23 | ? not much space
+03e8a2-03ffff | 0x175e =  5982 | new font (no edits needed for VFX code?)
+
+04eadf-04ffff | 0x1521 =  5409 | make English script start here
+058000-05fce0 | 0x7ce1 = 31969 | originally for font; use for script instead
+0ef88e-0fc20c | 0xc97f = 51583 | more space for script
+0fc217-0fffff | 0x3de9 = 15849 | more space for script
+24f2c8-24ffff | 0x d38 =  3384 | move music data back to make room for script
+So some simple repointing allows script to occupy 0x26ADF-0x80D38 in the ROM.
+Limit of 0x5A259 (369,241) bytes. JP script is $05FCE1-$0EF88D = 0x47BAD bytes.
+
+48d082-48d1a2 | 0x 121 =   289 | 
+48fff1-48ffff | 0x   f =    15 | 
+4bffda-4bffff | 0x  26 =    38 | 
+5dffa9-5dffff | 0x  57 =    87 | 
+5ef003-5effff | 0x ffd =  4093 | end credits gfx data
+5fea5c-5fec1b | 0x 1c0 =   448 | 
+5FF31C-5FF41B | 0x 100 =   256 | (full of 00 bytes)
+5ffa1c-5fffff | 0x 5e4 =  1508 | 
+
+--------------------------------------------------------------------------------
+
+Bank 00: Generally speaking, this contains a lot of code for DMAs, interrupts,
+SPC initialization and interaction, script control codes, script parsing, name
+checking, *FILL IN MORE*.
+
+$008B09: Subroutine that constructs the pointer to the start of the script,
+         as the value 2FE708 ($05FCE1-0). Changing it seems to not affect
+         anything in the base game, though?
+
+$008B1E: Subroutine that picks a start point to read from if you leave the game
+         alone on the title screen for about 20-25 seconds.
+         There are five, at $018359.
+
+$00BA3F-$00DE16 contains the SPC driver code?
+
+$00DE18 is a data table related to the sound data. 0xC5 different entries, of
+which only the first 0xC3 are supposed to be accessible. Format: each entry has
+a two byte header: byte 0 is # bytes after byte 1, and byte 1 is unknown.
+It is worth noting that the non-header bytes are in the range 0x00-0x9A.
+
+--------------------------------------------------------------------------------
+
+Bank 01: This contains lots of miscellaneous data for various subroutines and
+code between banks 00-04. Some highlights:
+
+Huffman trees for the script are located at:
+Left  trees: $018B6E - $019951
+Right trees: $019952 - $01A735
+You can likely save a lot of space here with the translated script, by using
+only as much data as necessary, repointing the two blocks, and updating the size
+of the block. This gets you a large contiguous block you can do whatever in.
+
+While the font itself is encoded in the same format as Otogirisou, the metadata
+for character dimensions, character group sizes, and ROM offsets are split off
+into multiple tables. Each table has 53 entries.
+$01A736: Sizes of character groups (two byte values).
+$01A7A0: Table of two byte values:
+         - low byte packs dimensions HW
+         - high byte encodes the product W*H
+$01A80A: Table of 24-bit pointers to the start of each character group.
+
+$01A901: Table of four byte values about each control code.
+
+$01AC11: Lots of uncompressed text for special characters: punctuation, digits,
+         choice letters, hard-coded names for characters in the story, etc.
+
+$01B0AD: List of 16-bit pointers for each line of 10 characters in the name
+         entry screen's character values. Goes until $01B12A.
+
+$01B12B: Character data for some special characters, plus the name entry screen.
+- $01B12B-$01B13A: space, asterisk, A-F
+- $01B13B-$01B1EE: hiragana characters (90)
+- $01B1EF-$01B2A2: katakana characters (90)
+- $01B2A3-$01BBB2: kanji characters    (488)
+
+$01BBCB: Data table related to music and sfx. 0xFA two byte entries, of which
+         there are 0xC5 unique values (only 0xC3 actually used in the game).
+         00C3 and 00C4 exist at the end but cannot be addressed
+
+$01BDDB: Uncompressed graphics for the name entry screens. It is used for naming
+         the protagonist and his girlfriend, but also for when the game makes
+         you enter the name of who you believe the killer to be.
+         Perhaps note that the characters are hard-coded in and do not use the
+         game's normal font printing system.
+         View in YY-CHR with format "2BPP GB". See subroutine at $048721.
+
+$01CCEB-$01E6DF contains code and some associated data. Some of its purposes:
+Rendering the end credits, taking care of the attract mode (leave game on title
+screen for ~25 seconds), and rendering text for the bookmarks on the file select
+screen.
+
+$01E87A: Uncompressed graphics for the Stereo/Mono option on file select screen.
+         View in YY-CHR with presets "4BPP SNES" and "32x32(B)". 0x200 bytes.
+
+----------
+
+$01EABA: Pointer table for ten frames' worth of OAM data for an animation.
+$01EAD8-$01F0BF: The OAM data in question.
+$01F0C0: Compressed sprite gfx data that gets loaded into VRAM when the player
+         goes to the file select screen. This is for the shining animation you
+         see on a gold bookmark, if you fulfill the ridiculous requirements to
+         get it, or cheat by changing [04 08] at $018167 to [0C 0C].
+
+----------
+
+($01FC9E - $01FFFF: Empty block of FF bytes, total of 0x362 = 866 bytes)
+
+--------------------------------------------------------------------------------
+
+Bank 02: Code for decompressing data for silhouette tilesets and OAM data,
+background tilesets and tilemaps.
+
+$028D47: Code for decompressing tile and tilemap data for a specified graphics
+         identifier value. Making heads and tails of the assembly code to make a
+         graphics dumper was a big pain in the butt.
+$028DAA: Code for decompressing background graphics' tilesets.
+$029A87: Code for decompressing background graphics' tilemaps.
+$029EFC: Code for loading background graphics' palettes.
+
+$029F66: Code for reading font data from bank 05.
+
+$02A812-$02C31E: Contains blocks of compressed X/Y coordinate data for the
+silhouettes, specifically sets 000-0DB and 32E-3AB.
+
+($02C31F-$02D7EC: Empty space filled with FF bytes)
+
+Related to the "Chunsoft Presents" screen. It appears to be compressed in the
+same format as in Otogirisou.
+    $02D8C0: Code for loading all the graphics data and such.
+    $02E291-$02E38B: Compressed block for the screen's tilemap.
+    $02E38C-$02EFD8: Compressed block for the LOW  bytes of the 8bpp graphics.
+    $02EFD9-$02F908: Compressed block for the HIGH bytes of the 8bpp graphics.
+    $02F909-$02FF48: 0x640 bytes for the logo swirl pattern. DMA'd in, $02DAE5.
+
+($02FFE9-$02FFFF: Empty space filled with FF bytes)
+
+--------------------------------------------------------------------------------
+
+Bank 03: Primarily code and data for doing visual effects.
+
+$03A9D8: 0x63 bytes of machine code used for decompressing data that is stored
+using a flavor of LZSS compression.
+
+$03BB53: pointer table of subroutines that correspond to inputs for the VFX
+         control code 103A
+
+There are a handful of unused visual effects in the game, with subroutines that
+have no dedicated JSR/JSL into them. However, you can edit the VFX code pointers
+to force the game to execute them anyway if you set things up right.
+
+--------------------------------------------------------------------------------
+
+Bank 04:
+- Code for logic behind the name entry screen
+- Code for the BRK #$1C interrupt and all its inputs
+
+----------
+
+$04A718: 0x10C bytes related to the tilemaps for the below section.
+         I didn't find a neat pointer table to this, but don't need to know?
+         Data in multiple groups of 8 bytes, with [00 80] marking end of data.
+         Code related to reading it at: $038445
+
+Based on the data present in the ROM, the data format seems to be:
+Byte  00:    Y tile position for line of text.
+Byte  01:    X pixel position for line of text. (Note: pixel, not tile)
+Bytes 02-03: Pointer to start of graphics data for line of text.
+Bytes 04-05: Pointer to end   of graphics data for line of text.
+Bytes 06-07: Size of graphics data block. Width in tiles is this value, >> 4.
+
+Perhaps note that this first section has two pointers to save on space.
+One starts with the "delete bookmark" line (resuming existing file).
+The other starts with the "Welcome to the lodge 'Spur'" (new file).
+
+----------
+
+$04A824: 0x16E0 bytes for the various text prompts used in the file management
+         menus. Note that these exist independently of the font (only parts that
+         use the font proper are printing Touru and Mari's names) and have a
+         font shadow that goes around the whole character, not just down and to
+         the right. Uncompressed 2bpp graphics data.
+Range is from $04A824 to $04BF03.
+
+----------
+
+$04BF04: 0x100 bytes for the 終 graphic for bad endings. Uncompressed tiles.
+         View in YY-CHR with presets "2bpp GB" and "32x32(B)". 0x100 bytes.
+On screen, it "dissolves" in at 6 tiles up and 6 tiles left from the bottom
+right corner of the screen. With original linebreaking, it allows about 7 lines'
+worth of text on screen.
+
+----------
+
+$04C004-$04DD72: LZSS block for the tileSET of the flapping curtain.
+$04DD73-$04DF06: LZSS block for the tileMAP of the flapping curtain.
+
+----------
+
+$04DF07-$04DF86: data block
+
+----------
+
+$04DF87 - $04EADE: 0xB58 byte block for silhouette OAM data (frames 392-3AB).
+
+----------
+
+($04EADF - $04FFFF: empty space filled with FF bytes)
+
+--------------------------------------------------------------------------------
+
+Font data is from $058000 - $05FCE0.
+
+Main script is from $05FCE1 - $0EF88D.
+Size: 7788D - 2FCE1 + 1 = 47BAD = ~287 KB
+Huffman compressed, with pointers scattered throughout.
+
+The rest of the 0.5 MB ($0EF88E - $0FFFFF) is full of FF bytes, except for ten
+bytes at $0FC20D.
+
+--------------------------------------------------------------------------------
+
+Banks 10-24: data for the game's music
+
+$108000 - $2382EB (0x 80000 - 0x1182EB, size 0x982EC = 623,340 bytes):
+    Contains 0x9B blocks of audio data. Related to values in $00DE18 table?
+    Ptr constructed in $00E839: low 2 bytes @ $00E83B, bank num byte @ $00E841.
+
+$2382EC - $24F2C7 (0x1182EC - 0x1272C7, size 0x EFDC =  61,404 bytes):
+    Another 0xC3 blocks of audio data. Possibly related to $01BBCB table.
+    Ptr constructed in $00E846: low 2 bytes @ $00E848, bank num byte @ $00E84E.
+
+Unknown: Is it important that this data is consecutive?
+If yes, both blocks would need to be moved around as a single group.
+That being said, both are very large
+
+($24F2C8 - $24FFFF: empty block with only FF bytes, size 0xD38)
+
+--------------------------------------------------------------------------------
+
+Banks 25-48: data for the background graphics
+
+$258000 - $258491 contains 0x82 groups of three 24-bit pointers each. They are
+for graphics, in the order palette, tileset, and tilemap.
+$258492 - $48D081 contains all the data for background graphics.
+
+($48D082-$48D1A2: empty block with only FF bytes)
+
+--------------------------------------------------------------------------------
+
+Banks 48-5D: Silhouette data; summary of block from $48D1A3-$5DFFA8 is below
+
+$48D1A3-$48FFF0: X/Y grid data block 2 (sets 0DC-32D)
+[0x F bytes of FF]
+$498000-$49FF89: OAM data block 1 (sets 000-12C)
+[0x76 bytes of FF]
+$4A8000-$4AFFF9: OAM data block 1 (sets 12D-26D)
+[0x 6 bytes of FF]
+$4B8000-$4B88E1: Pointer table for silhouette construction
+$4B88E2-$4B9CFD: Silhouette construction data block
+$4B9CFE-$4BA801: Pointer table for X/Y grid data
+$4BA802-$4BB305: Pointer table for OAM data
+$4BB306-$4BBA5D: Lookup table for control code input value from silh set ID
+$4BBA5E-$4BC33F: Pointer table for graphics data
+$4BC340-$4BC92B: Lookup table for "data size"
+$4BC92C-$4BFFD9: OAM data block 2 (sets 26E-2FE)
+[0x26 bytes of FF]
+$4C8000-$5DC40E: Graphics data block
+$5DC40F-$5DFFA8: OAM data block 3 (sets 2FF-391)
+
+($5DFFA9-$5DFFFF: empty block of only FF bytes)
+
+--------------------------------------------------------------------------------
+
+$5E8000-$5EC49B: LZSS compressed data for the "tilemap lookup table" and tileset
+data for the characters present in the grid on the name entry screen. Both are
+stored in the same "file," so to speak.
+
+----------
+
+Next data block is for the end credits.
+
+$5EC49C-$5EC4E1: List of ID numbers for what lines of credits to draw.
+$5EC4E2-$5EC546: List of 0x33 relative pointers into the next section, given an
+                 ID number from the $5EC49C data block.
+$5EC547-$5EC82A: 0x33 lists of ID values for end credits characters. You can
+                 make a table file out of the values present here.
+$5EC82B-$5EC9C2: Pointer table for gfx data for the 0x88 different characters
+                 you can see in the credits.
+$5EC9C3-$5EF002: Raw gfx data for the characters in the end credits. Each char
+                 is 0x48 bytes (3x3 tiles, 24x24 pixels).
+
+($5EF003-$5EFFFF: empty block of only FF bytes)
+
+--------------------------------------------------------------------------------
+
+The final bank $5F has LZSS compressed data, plus some other things.
+
+$5F8000-$5FA33B: LZSS block for tileset of graphics used in VFX input 0E
+$5FA33C-$5FA34B: color data for the same VFX input
+$5FA34C-$5FAF6A: 0xE LZSS blocks of tilemaps for the same VFX input
+
+$5FAF6B-$5FC991: assorted data blocks
+
+$5FC992-$5FC9A1: table of two 8 byte entries: each entry has two 24-bit pointers
+                 and a 16-bit data size
+$5FC9A2-$5FCE56: LZSS block for tileset for VFX input 0B
+$5FCE57-$5FD15A: LZSS block for tilemap for VFX input 0B
+
+$5FD15B-$5FD563: LZSS block for tileset for VFX input 37
+$5FD564-$5FD7E6: LZSS block for tilemap for VFX input 37
+
+$5FD7E7-$5FD999: LZSS block for tileset for VFX input 3B
+
+$5FD99A-$5FEA5B: more assorted data blocks
+
+$5FEA5C-$5FEC1B: empty space FF, 0x1c0 = 448
+
+$5FEC1C-$5FF21B: 2bpp data for an 8x8 English font - the 0-9 and A-F are used in
+                 an unused block of VFX code for testing something with Mode 7
+$5FF21C-$5FF31B: empty space 00, except 4 bytes (weird font shadowing)
+$5FF31C-$5FF41B: empty space 00, truly
+$5FE41C-$5FF81B: 2bpp data for an 8x8 Japanese font
+$5FF81C-$5FFA1B: empty space 00, except 14 bytes (similar)
+$5ffa1c-$5fffff: empty space (1st 0x100 are 00, rest are FF), 0x5e4 = 1508
+
+--------------------------------------------------------------------------------
+
+Moving stuff around to make room for the script
+
+As a self-imposed challenge, I want to see if I can fit everything within the
+game's original 3 MB. However, I will expand it to 4 MB if necessary.
+
+I will assume that the Huffman script engine for Kamaitachi is also limited to
+having a script in the first MB of the ROM like in Otogirisou.
+
+Here is a summary of ROM data blocks from $04A2F7 (last byte of code) until bank
+$25. The "ptrs" column is for how many pointers in the ROM point to within the
+indicated range.
+
+    range    | size (hex,dec) | ptrs | original purpose
+-------------+----------------+------+------------
+04a2f8-04a717| 0x 420     1056| 0?   | [00 02], color table, unused graphics
+-------------+----------------+------+------------
+04a718-04a71f| 0x 10c      268|$38046| prompt: existing file
+04a720-04a749| for all blocks |$38067| prompt: new file
+04a74a-04a773| of file prompt |$38082| prompt: pink bookmark file
+04a774-04a77d| structures     |$380ef| prompt: sama
+04a77e-04a787|                |$38102| prompt: sama desu ne
+04a788-04a791| 16-bit ptrs    |$3808b| prompt: cursor high
+04a792-04a79b| bank num 04 is |$38091| prompt: cursor middle
+04a79c-04a7a5| at $038451     |$3804c| prompt: cursor low
+04a7a6-04a7bf| DONE           |$3816b| prompt: resume or restart
+04a7c0-04a7d9|                |$38183| prompt: chapter or restart
+04a7da-04a7e3|                |$38189| prompt: cursor top
+04a7e4-04a7ed|                |$3818f| prompt: cursor bottom
+04a7ee-04a80f|                |$381bf| prompt: delete or cancel
+04a810-04a819|                |$381c5| prompt: cursor top
+04a81a-04a823|                |$381cb| prompt: cursor bottom
+-------------+----------------+------+------------
+04a824-04bf03| 0x 16e0    5856| DONE | file select prompts' gfx data
+04bf04-04c003| 0x  100     256| 4    | "bad end" gfx data; 24-bit ptrs in ASM
+             | $03851B, $038526, $038531, $03853C point to each 0x40 byte chunk
+-------------+----------------+------+------------
+04c004-04dd72| 0x 1d6f    7535|$3a8e6| flapping curtain tileSET (LZSS)
+04dd73-04df06|     194     404| 1    | flapping curtain tileMAP (LZSS)
+             |         DONE   |      | bank offset @ $03d334, bank num @ $03d33a
+04df07-04df86| 0x   80     128| 1    | flapping curtain palette data
+             |                |      | bank offset @ $03d36a, bank num @ $03d370
+-------------+----------------+------+------------
+04df87-04eade| 0x  b58    2904| 0x1a | silh frame 392-3ab (2e0-2f5) OAM blocks
+             |                | DONE | 24-bit ptrs in block at $4BB2B8-$4BB305
+-------------+----------------+------+------------
+04eadf-04ffff| 0x 1521    5408| 0    | empty block, all 0xFF bytes
+-------------+----------------+------+------------
+058000-05fce0| 0x 7ce1   31969| DONE | text font (ptrs taken care of)
+05fce1-0ef88d| 0x47bad  293805| DONE | game script (ptrs taken care of)
+0ef88e-0fc20c| 0x c97f   51583| 0    | empty block, all 0xFF bytes
+0fc20d-0fc216| 0x    a        | 0?   | 0xA random bytes between two FF blocks
+0fc217-0fffff| 0x 3de9   15849| 0    | empty block, all 0xFF bytes
+-------------+----------------+------+------------
+108000-2382eb| see above      | 1    | music data block 1
+2382ec-24f2c7| see above      | 1    | music data block 2
+24f2c8-24ffff|                | 0    | empty block, all 0xFF bytes
+             |                |      | 
+
+"DONE" in the pointer column means that you have already successfully accounted
+for them all within a particular block and repointed their data with Atlas or
+Asar.
+
+--------------------
+
+Going backwards from the script in the original game:
+
+Font:
+- New font for English translation should be much smaller and can be repointed
+  somewhere else. Free up nearly 1 ROM bank.
+
+Empty block bank 04: Simple, free up 0x1521 bytes.
+
+Silhouette OAM data block:
+- Most intensive change in terms of repointing, with 0x1A pointers to update.
+- All the pointers are in one block. Can probably set up a loop to move stuff
+  into an unused data block in the ROM.
+
+Flapping curtain VFX's data:
+- Palette data is small and easy to move around.
+- Tilemap data is also fairly small and easy to move around.
+- Tileset data is pretty big and doesn't fit into any existing empty block.
+- Your LZSS recompressor can shrink both the tilemap and tileset by a combined
+  256 (0x100) bytes (6/23/2025). Not the best gains, but take what you can get.
+
+"Bad end" graphic:
+- Move into empty space at $5FF31C-$5FF41B.
+
+It should be safe to fit the new English gfx data for the file prompts' text in
+the free space in bank 03.
+
+Moving around the structures for the file select prompts is relatively simple
+but doesn't have the greatest returns. Do as a last resort if you NEED the extra
+1 KB from the unused data block for the script to fit.
+
+If you wanted to move the script somewhere to maximize how much contiguous space
+you get with as little repointing as possible, do these changes:
+
+- Move the new English font somewhere else. It will probably be small, so look
+  for a block of FF bytes where it will fit. Keep the metadata tables in place
+  and update the font group pointers as needed. Frees up most of bank 05.
+- You can then insert the new script at $04EADF, which originally has FF bytes.
+- Move the two music blocks so that the second one ends precisely on $24FFFF.
+  Update the two pointers.
