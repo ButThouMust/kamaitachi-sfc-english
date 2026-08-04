@@ -2,7 +2,7 @@
 ![](/repo%20images/title%20screen%20screenshot.png)
 ![](/repo%20images/file%20select%20screen%20translated.png)
 ![](/repo%20images/english%20script%20insertion.png)
-![](/repo%20images/english%20name%20entry%2010%20chars.png)
+![](/repo%20images/english%20name%20entry%207%20chars.png)
 
 Source code, notes, and patches for a fan translation of the Super Famicom release of Chunsoft's second sound novel, Kamaitachi no Yoru.
 
@@ -33,6 +33,8 @@ I've put most of my project updates in [this thread](https://discord.com/channel
 I also have a sparsely updated thread in the RHDI forums [here](https://romhack.ing/forum/topic/m4by-ZUB5QO4GBdZ3zyn).
 
 Sample screenshots for the project are in the [`repo images` folder](repo%20images).
+
+[Instructions](/notes/patch%20building%20instructions.md) are available for building the patch yourself if you'd like.
 
 ## About the game
 Kamaitachi no Yoru (かまいたちの夜) is a murder mystery sound novel that takes place in a ski lodge during a blizzard. If you had to translate the title using only English words, it would be *The Night of the Sickle Weasel*.
