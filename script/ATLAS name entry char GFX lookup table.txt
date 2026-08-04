@@ -1,5 +1,5 @@
 #VAR(Table, TABLE)
-#ADDTBL("font/kamaitachi english font.tbl", Table)
+#ADDTBL("font/kamaitachi english font - for name entry chars.tbl", Table)
 #ACTIVETBL(Table)
 
 // to be used for the GRAPHICS lookup table, not the TEXT lookup table
