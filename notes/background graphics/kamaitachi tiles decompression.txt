@@ -1,0 +1,263 @@
+$028DD2:
+First, create a 4bpp tile of all 0x00 bytes.
+
+$028DDB:
+Read 0x1B bytes from pointer in $04-$06 into $7xF6E5-$7xF6FF. (bank 7E or 7F)
+The rough format in memory is:
+        00  01  02  03  04  05  06  07  08  09  0A  0B  0C  0D  0E  0F
+F690 ||                                        [F69A bitmasks (group 0)
+F6A0 ||       ][F6A2 bitmasks (group 1)       ][F6AA bitmasks (group 2)
+F6B0 ||       ][F6B2 bitmasks (~group 0)      ][F6BA bitmasks (~group 1)
+F6C0 ||       ][F6C2 bitmasks (~group 2)      ][F6CA bitmasks - directly edit
+F6D0 || tiles ][F6D2 list of '1' bit positions  FF][F6DB bitmask data (read from
+F6E0 || ROM here) ][ F6E3 ][00  01  02  03][04  05  06  07][08  09  0A
+F6F0 || 0B][0C  0D  0E  0F  10  11  12  13  14  15  16  17  18  19  1A]
+
+$0B: [00 01 02 03]  Each column represents a 3 byte value that gets interpretted
+$0C: [04 05 06 07]  at $0293D4. It gets stored to $0B-$0D. Data for commonly
+$0D: [08 09 0A 0B]  used sets of bitplane combination subroutine indices.
+
+The 0xF bytes from $F6F1-$F6FF are data for commonly used ways to generate the
+list of '1' bits at $F6D2.
+
+F6CA contains 8 bitmasks for directly modifying tile data. See $029218.
+One place for generating the bitmasks is in the loops at $0291C5 and $0291E3,
+where they are constructed from arrays at F69A, F6A2, F6AA, F6B2, F6BA, F6C2.
+
+F6DB is for reading data for creating bitmask data from a list of indices and
+a list of either bytes or nibbles.
+
+--------------------------------------------------------------------------------
+
+$028DFD: main loop; read a byte from pointer in $04-$06
+This byte tells the decompressor what kind of data needs to be read from the
+pointer and/or written to the decompression buffer.
+Its binary representation consists of bits 76543210.
+
+Note: I found the assembly code's control flow to be really complicated to look
+at, so I will instead just specify the specific bit patterns, the associated
+assembly code locations, and a description of what to do.
+
+$028E06:
+1___ ____ -> Go to $028E77 -> jmp to $029396
+- check bit 6
+- 11__ ____ ($029396): $0B <- type byte; $0C <- next byte from pointer
+  - check bit 2 of byte in $0C
+    - if 0, $0D <- 0x08; if 1, $0D <- 0x0A
+  - accumulator <- 0x00 (top) and $0C (bottom)
+  - branch to $0293DE
+- 10__ ____ ($0293BC): $0B <- this byte, $0C-$0D <- next two bytes from ptr
+  - accumulator <- 0x00 (top) and $0C (bottom)
+  $0293D4: given the three bytes in $0B-$0D, manipulate them here
+  - shift $0D left once, rotate the shifted bit into A, and bitwise AND w/ 0x0F
+  - so create an index for below as: ([MSB of $0D] << 3) | (3 LSBs of $0C)
+  - fall through to below at $0293DE
+
+$0293DE:
+- $0B-$0D encodes 4 indices to subroutine list (series of 4 functions).
+  Each index fills in a different bitplane of the 4bpp graphics.
+  (Left shift the index once to get pointer from subroutine list at $029422)
+  - 1st index: whatever value is in A.            For bitplane 0 ($00)
+  - 2nd index: bits 7-3 of $0C.  76543---, 00-1F  For bitplane 1 ($01)
+  - 3rd index: bits 6-1 of $0B.  -654321-, 00-3F  For bitplane 2 ($10)
+  - 4th index: bits 7-1 of $0D.  7654321-, 00-7F  For bitplane 3 ($11)
+  So if you look above, the value of $0D being 0x08 or 0x0A means encoding a
+  fourth subroutine index of 04 (bitplane all 00) or 05 (bitplane all FF).
+- 0x47 options in list (pointers from $0294B0 to $029A69). See bottom of file.
+
+--------------------------------------------------------------------------------
+
+$028E0A:
+01__ ____ -> Go to $028E7A -> $028EFD
+High level: Reuse an existing tile, and modify its bitplanes into a new tile.
+- Bit format: 01bb bbnn [NNNN NNNN]
+  * Bits 2-5: Flags for which bitplanes to alter (e.g. bit 5 = bp0, bit 2 = bp3)
+  * Bits 0-1: 0x100s place of the tile number to use
+  * Next byte in ROM: low byte of the tile number to use
+- Read a byte for each bitplane to be altered; flags for which bytes to change
+
+- $00 <- byte; $01 <- byte << 2 (shift out the top "01" bits)
+- X <- ([(byte & 0x3) << 8] | [next byte]) << 5 + offset from $8000 in bank 7E/7F
+- address is for whole tile to be copied in
+- clear $0B-$0E; use bits of $01 from above to selectively read bytes into them
+- then using the bits of $0B-$0E, read in bytes from pointer
+
+--------------------------------------------------------------------------------
+
+$028E0E:
+00__ ____ -> Check bits 210.
+00__ _000 -> 028e2b
+- check bits 43 to know where to go next
+  - 00_0 0000 -> 028E3C
+    - Bit 5 clear (0x00)? End of data
+    - Bit 5 set   (0x20)? go to $028E5D
+      - Copy 0x20 bytes directly from pointer into space at $7?8000
+      - Then read next byte from pointer and repeat process
+
+  (Next three cases reuse a lot of code)
+  High level: Get 8 bytes (exact method up to specific case), and generate four
+  bitplanes with them, each of which is either all 00, the 8 bytes themselves,
+  the 8 bytes all inverted, or all FF
+  - 00_0 1000 -> 029021
+    - read a byte containing bit flags for later
+    - 0000 1000: call $02925E with X=0000 and then run $029075
+    - 0010 1000: call $029277, and then run $029075
+  - 00_1 0000 -> 02903B
+    - read a byte containing bit flags for later
+    - 0001 0000: call $02925E with X=0000 and then run $029075
+    - 0011 0000: call $0292A8, and then run $029075
+  - 00_1 1000 -> 029055
+    - read a byte containing bit flags for later
+    - 0001 1000: call $02925E with X=0000 and then run $029075
+    - 0011 1000: call $029305, and then run $029075
+
+  $02925E: read 8 bytes from the pointer
+  $029277: get 8 bytes with pseudo-RLE format
+  $0292A8: use 8 2-bit indices to get an 8-byte seq. from 3 or 4 unique BYTES
+  $029305: use 16 2-bit indices to get an 8-byte sequence from 4 unique NIBBLES
+
+  - $029075  use bit flags byte to write one of [00], ~byte, byte, or [FF]
+
+--------------------------------------------------------------------------------
+
+00__ _001 -> 028e42
+- Check bit 3.
+  - 00__ 0001? Use bits 4-5 to index data at $7?F6E5, E9, ED.
+    Construct a three byte value in $0B-$0D. Interpret it @ $0293D4, i.e. this
+    sets up doing four subroutines to fill in each bitplane.
+  - 00__ 1001? Go to $028E7D. Use an existing tile as a basis, and change data
+    one tile row (all 4 bitplanes of a row) at a time.
+    Tile number constructed from bits 4-5 (0x100s place) and next byte from ROM.
+
+--------------------------------------------------------------------------------
+
+00__ _010 -> 029114 - use 9276
+00__ _100 -> 029119 - use 92A7
+00__ _110 -> 02911e - use 9304
+- $029121: store the value into $7xF6E3
+- $0B <- byte << 2 (shift out the top "00")
+- read two bytes from pointer directly into $00 and $01
+- go to $02913E
+
+00__ _011 -> 0290d8 - use 9276
+00__ _101 -> 0290dd - use 92A7
+00__ _111 -> 0290e2 - use 9304
+- $0290E5: store the value into $7xF6E3
+- $0B <- byte << 2 (shift out the top "00")
+- read a byte from pointer into $01
+  - get the four high bits of the byte (right shift by 4)
+    - if result is 0, store to $00
+    - otherwise, use as index to data @ $7xF6F0, and write that byte to $00
+  - do the same with the four low bits of the byte, but write result to $01
+  - note: data at $7xF6F0-F6FF is initialized with the 0x1B bytes from $028DDB
+- go to $02913E
+
+$02913E:
+- fill 0x20 bytes with all [00] bytes
+- write a list of the bit positions in the $00-$01 buffer with a 1 in them
+  (counting up from MSB to LSB), then a [FF] terminator, to a buffer at $7xF6D2
+  - e.g. for 0x1A40 (0001 1010 0100 0000), write [03 04 06 09 FF]
+- $0C <- 0x02, $0D <- list size
+- run this next loop twice if $0D < 5, or three times if $0D >= 5
+LOOP {
+  - take value in $0B (type byte << 2), and shift out the MSB
+    - if 1, run subroutine pointed to in $7xF6E3 ($029276, $0292A7, $029304)
+      note that this is accomplished with: PEA $9183 ; LDY.W $F6E3 ; PHY ; RTS
+      so the actual subroutines are at ($029277, $0292A8, $029305)
+    - if 0, run $02925E
+}
+- if $0D < 5
+  - $00 <- 0
+  - get a bit position for a 1 bit (if FF, done; get next type byte)
+    2 LSBs |    result        - store the result from at left to list at $7xF6CA
+    -------+----------------- - then with the full list, run $029218 to modify
+      00   | ~$--A2 & ~$--9A    tile data with data at $7xF6CA
+      01   | ~$--A2 &  $--9A  - repeat this for all 8 bytes in list
+      10   |  $--A2 & ~$--9A
+      11   |  $--A2 &  $--9A
+
+- if $0D >= 5
+  - do mostly the same thing, but also check a 3rd LSB to know whether to
+    bitwise AND the result from above with $F6AA or $F6C2
+  3 LSBs |        result
+  -------+--------------------------
+    000  | ~$--AA & ~$--A2 & ~$--9A
+    001  | ~$--AA & ~$--A2 &  $--9A
+    010  | ~$--AA &  $--A2 & ~$--9A
+    011  | ~$--AA &  $--A2 &  $--9A
+    100  |  $--AA & ~$--A2 & ~$--9A
+    101  |  $--AA & ~$--A2 &  $--9A
+    110  |  $--AA &  $--A2 & ~$--9A
+    111  |  $--AA &  $--A2 &  $--9A
+
+################################################################################
+################################################################################
+################################################################################
+
+The subroutine list at $029422 deserves its own section with how large it is.
+
+Thankfully, there is a decent amount of overlap in how the 71 subroutines work.
+
+Starting at $02992F, there are 33 subroutines that basically do "call sub N,
+then run $029A37." Almost cuts down the apparent coding work by half.
+$029A37 takes the output from the last subroutine, and spot changes bytes.
+
+Plus, many of the subroutines use bitwise manipulations on combinations of
+previous bitplanes, with the option (as separate subroutine IDs) to invert the
+results of these manipulations. See below.
+
+Notation:
+main ID (associated 029A37 ID): description
+
+00 (--): read 8 raw bytes
+03 (--): "pseudo-RLE" with chunks of the same byte like 00 00 xx xx xx yy yy zz
+
+04 (01): fill bitplane with 00
+05 (02): fill bitplane with FF
+06 (09): fill bitplane with next byte from ROM
+
+07 (0A): read 2 bytes B0, B1; fill bitplane with:  B0 B1 B0 B1 / B0 B1 B0 B1
+08 (--): read 4 bytes B0, B1, B2, B3; bitplane is: B0 B1 B2 B3 / B0 B1 B2 B3
+
+0B (--): Use 8 2-bit indices and 3 or 4 BYTES to construct the bitplane data
+	Constraint: the 8 bytes' data consist of at most 4 unique bytes
+
+0C (--): Use 16 2-bit indices and four NIBBLES to construct the bitplane data
+	Constraint: the 8 bytes' data consist of at most 4 unique hex digits
+	Example: Raw data at 0x128739:
+	9E E2 AA 84 -- 86 0E (nibble list [8 6 0 E])
+
+	Index data
+	84: 10 00 01 00 -> 2 0 1 0 --reverse--> 0 1 0 2 --get nibbles--> 86 80
+	AA: 10 10 10 10 -> 2 2 2 2 --reverse--> 2 2 2 2 --get nibbles--> 00 00
+	E2: 11 10 00 10 -> 3 2 0 2 --reverse--> 2 0 2 3 --get nibbles--> 08 0E
+	9E: 10 01 11 10 -> 2 1 3 2 --reverse--> 2 3 1 2 --get nibbles--> 0E 60
+
+	final bitplane: 86 80 00 00 08 0E 0E 60
+
+0D (0E): copy a bitplane from another tile, in either forward or reverse order
+	read two bytes and interpret them in this format:
+	- byte 0, bit 7: flag for copying data in either reverse or forward order
+    - byte 0, bits 6-4: unused
+    - byte 0, bits 3-2: bitplane number, 0-3
+    - byte 0, bits 1-0: top 2 bits of tile number to copy from
+	- byte 1, bits 7-0: low 8 bits of tile number to copy from
+
+0F (10): curr. bp <-   bp0              17 (18): curr. bp <-   bp0 | bp1
+11 (12): curr. bp <- ~ bp0              19 (1A): curr. bp <-   bp0 & bp1
+13 (14): curr. bp <-   bp1              1B (1C): curr. bp <-   bp0 ^ bp1
+15 (16): curr. bp <- ~ bp1              1D (1E): curr. bp <- ~(bp0 | bp1)
+23 (24): curr. bp <-   bp2              1F (20): curr. bp <- ~(bp0 & bp1)
+25 (26): curr. bp <- ~ bp2              21 (22): curr. bp <- ~(bp0 ^ bp1)
+
+27 (28): curr. bp <-   bp0 | bp2        33 (34): curr. bp <-   bp1 | bp2
+29 (2A): curr. bp <-   bp0 & bp2        35 (36): curr. bp <-   bp1 & bp2
+2B (2C): curr. bp <-   bp0 ^ bp2        37 (38): curr. bp <-   bp1 ^ bp2
+2D (2E): curr. bp <- ~(bp0 | bp2)       39 (3A): curr. bp <- ~(bp1 | bp2)
+2F (30): curr. bp <- ~(bp0 & bp2)       3B (3C): curr. bp <- ~(bp1 & bp2)
+31 (32): curr. bp <- ~(bp0 ^ bp2)       3D (3E): curr. bp <- ~(bp1 ^ bp2)
+
+3F (40): curr. bp <-   bp0 | bp1 | bp2
+41 (42): curr. bp <-   bp0 & bp1 & bp2
+43 (44): curr. bp <- ~(bp0 | bp1 | bp2)
+45 (46): curr. bp <- ~(bp0 & bp1 & bp2)

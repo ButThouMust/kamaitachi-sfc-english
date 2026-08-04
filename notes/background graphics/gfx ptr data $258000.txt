@@ -1,0 +1,246 @@
+Pointer data from $258000-$258491
+Each ID consists of a structure of 9 bytes, three 24-bit pointers to data.
+For example, ID 0 consists of the data [92 84 25 55 D2 25 B1 84 25].
+
+For some reason, each ID's pointers are in the order [palette, tilemap, tiles],
+but the order for the data itself in the ROM is [palette, tiles, tilemap].
+
+Tilemaps are all assumed to be 0x20 tiles wide and 0x1C tiles tall.
+Tilesets are all assumed to be in 4bpp SNES format once decompressed.
+
+ ID | palette | tilemap | tiles  | description
+----+---------+---------+--------+----------------------------------------------
+ 00 | 258492  | 25D255  | 2584B1 | title screen's background with bloodstain
+ 01 | 25D2BC  | 2690D0  | 25D335 | two people on ski slope (starting new file)
+ 02 | 26922E  | 26DC2E  | 2692E3 | the ski lodge, after choosing a file
+ 03 | 26DD60  | 26E77A  | 26DDBB | driving in dark; center-right of screen, big
+ 04 | 26E831  | 26EB89  | 26E8AA | driving in dark; left side of screen, small
+ 05 | 26EBE7  | 26F3AE  | 26EC42 | The Spur off in the distance in the dark
+ 06 | 26F41B  | 27A1B2  | 26F4EE | view of reception and stairs from lounge
+ 07 | 27A345  | 27D98A  | 27A3FA | view reception & dining room door from lounge
+ 08 | 27DAD7  | 2892F4  | 27DBAA | close up of phone at "FRONT"
+ 09 | 2894A8  | 28CC5E  | 28953F | couches and table in lounge
+ 0A | 28CD4A  | 29867C  | 28CDFF | overhead view of the lounge
+ 0B | 29883E  | 29BCFF  | 2988F3 | view of front entrance from lounge
+ 0C | 29BE65  | 29ECFA  | 29BEFC | looking up at the stairs
+ 0D | 29EE66  | 2A9E6C  | 29EF39 | looking up at top of the stairs from middle
+ 0E | 2A9F8A  | 2ACDB5  | 2AA021 | looking down the stairs from upstairs
+ 0F | 2ACF06  | 2AF935  | 2ACFD9 | view of lounge and reception from front door
+ 10 | 2AFAF8  | 2BA6A5  | 2AFB53 | low shot from lounge of stairs, reception
+ 11 | 2BA84E  | 2BD2A9  | 2BA921 | looking out lounge window when Kayamas arrive
+ 12 | 2BD408  | 2C9883  | 2BD4DB | drying room
+ 13 | 2C997C  | 2CDDB8  | 2C9A31 | looking down stairs to the basement
+ 14 | 2CDF11  | 2DA50E  | 2CDFC6 | basement; looking towards stairs
+ 15 | 2DA676  | 2DEF18  | 2DA72B | basement; looking at shelves of wine
+ 16 | 2DF0CF  | 2E9D9C  | 2DF1A2 | at dining table with Mari
+ 17 | 2E9F1E  | 2EDFC0  | 2E9FF1 | slightly overhead view of dining room
+ 18 | 2EE0CE  | 2F8A00  | 2EE1A1 | looking at Tanaka in corner of dining room
+ 19 | 2F8B8F  | 2FAD14  | 2F8C44 | hallway downstairs
+ 1A | 2FAF56  | 2FEA95  | 2FB00B | thin wood hallway, door to Kobayashis' room
+ 1B | 2FEBD0  | 30A541  | 2FEC85 | Toshio and Midori's room
+ 1C | 30A633  | 30DDEA  | 30A706 | The Kobayashis' room
+ 1D | 30DFC9  | 318433  | 30E006 | looking into hallway from Kobayashis' room
+ 1E | 31852D  | 31C6A5  | 318600 | looking down at back door to lodge
+ 1F | 31C799  | 31F019  | 31C84E | long, low shot of the upstairs hallway
+ 20 | 31F147  | 32A03C  | 31F21A | at right of stairs, looking left down hallway 
+ 21 | 32A15D  | 32CCCC  | 32A1D6 | looking right at top of stairs
+ 22 | 32CE14  | 338BD0  | 32CEE7 | broom closet
+ 23 | 338C9A  | 33BA70  | 338CB9 | looking down at door to broom closet
+ 24 | 33BAF5  | 33F9F2  | 33BB50 | looking down at doorknob
+ 25 | 33FB87  | 34A939  | 33FC5A | looking into a room from right outside it
+ 26 | 34AA81  | 34D21C  | 34AADC | open doorway
+ 27 | 34D396  | 34FA34  | 34D42D | a wall in a room with heater, phone, door
+ 28 | 34FB85  | 35B74E  | 34FC3A | view of a guest room from back left
+ 29 | 35B8BE  | 35E97A  | 35B991 | view of a guest room from back right
+ 2A | 35EB01  | 3695FA  | 35EBD4 | guest room wide shot near door; curtains open
+ 2B | 369768  | 36C17D  | 36983B | guest room wide shot near door; curtains shut
+ 2C | 36C310  | 36F61D  | 36C3E3 | view of guest room at door
+ 2D | 36F742  | 37A626  | 36F7F7 | low shot of guest room with flapping curtains
+ 2E | 37A7BB  | 37CDBE  | 37A88E | view of open doorway from inside guest room
+ 2F | 37CECD  | 388351  | 37CFA0 | bed covers, usually for Mikimoto
+ 30 | 388498  | 38D37A  | 38854D | curtains for Tanaka's closet
+ 31 | 38D49E  | 39982A  | 38D553 | Tanaka's closet, with ski bag "SNOWGEAR"
+ 32 | 39996E  | 39C01C  | 399A23 | view of bathroom door
+ 33 | 39C11B  | 39F221  | 39C1D0 | view of bathroom sink and tub from outside it
+ 34 | 39F328  | 3AA701  | 39F383 | inside a bathroom
+ 35 | 3AA7FC  | 3AD941  | 3AA8B1 | looking down at wall of guest room
+ 36 | 3ADA66  | 3B8E9B  | 3ADAA3 | looking out a window at the lodge's roof
+ 37 | 3B8FB9  | 3BC90C  | 3B9050 | looking at lodge's porch at front entrance
+ 38 | 3BCAB4  | 3C9D7C  | 3BCAD3 | snowy forest
+ 39 | 3C9DDB  | 3CF01A  | 3C9E18 | another snowy forest
+ 3A | 3CF0D4  | 3DAE98  | 3CF111 | snowy forest viewed from inside a car
+ 3B | 3DAFCB  | 3DD526  | 3DB026 | inside a car - overlay
+ 3C | 3DD62A  | 3E86D1  | 3DD667 | low, wide shot of snowy field and forest
+ 3D | 3E87EA  | 3EB03C  | 3E88BD | Mari on a snowmobile (silh baked into gfx)
+ 3E | 3EB219  | 3EDD18  | 3EB2EC | snowmobile flying in the air
+ 3F | 3EDEEF  | 3F8CFC  | 3EDFA4 | two snowmobiles in a snowy field - side view
+ 40 | 3F8E87  | 3FC0A6  | 3F8F5A | at the wheel for a snowmobile - YAMAHA brand
+ 41 | 3FC20F  | 3FFD1B  | 3FC2E2 | snowmobile wheel at an angle
+ 42 | 3FFEE2  | 40A59A  | 3FFFB5 | two snowmobiles in a snowy field - back view
+ 43 | 40A6F5  | 40EC1D  | 40A7AA | snowy forest in daytime with back of car
+ 44 | 40ED5B  | 41A54D  | 40EE10 | Kyoko's bloodstained arm
+ 45 | 41A6E2  | 41D9FE  | 41A797 | Kobayashi's body
+ 46 | 41DB6C  | 428804  | 41DC21 | Kayama's body
+ 47 | 428947  | 42BB76  | 4289FC | Toshio's bloody hand in some broken glass
+ 48 | 42BCFD  | 43901E  | 42BDB2 | Tanaka's body
+ 49 | 43918F  | 43C7E5  | 4391EA | Midori's bloody hair in the closet
+ 4A | 43C96F  | 43F188  | 43CA06 | ski lift with clouds hanging overhead
+ 4B | 43F3FF  | 4494C7  | 43F41E | JP TEXT, Otogirisou's title screen
+    |         |         |        | - romanize the furigana if you want
+ 4C | 44968D  | 44B3B9  | 4496AC | scene in Osaka - JP TEXT, not needed for plot
+    |         |         |        | []に遊楽 -- 王将 -- 目立OAシステ
+ 4D | 44B470  | 44B4BD  | 44B48F | go left at split in road in labyrinth
+ 4E | 44B60F  | 44B65F  | 44B62E | start of floor 27 in labyrinth
+ 4F | 44B7C7  | 44B817  | 44B7E6 | UNUSED labyrinth pathway - T section going
+    |         |         |        | straight & right; ahead is corner to the left
+    |         |         |        | however, this just mirrors ID 4E horizontally
+ 50 | 44B990  | 44B9E6  | 44B9AF | start of floor 2 of labyrinth
+ 51 | 44BB6A  | 44BBBA  | 44BB89 | facing T section to left/right in labyrinth
+ 52 | 44BCED  | 44BE26  | 44BD0C | viewing fountain from hallway in labyrinth
+ 53 | 44BFA3  | 44C011  | 44BFC2 | start of floor 1 of labyrinth
+ 54 | 44C163  | 44C1CC  | 44C182 | end of floor 1 with hole to floor 2
+ 55 | 44C322  | 44C3D0  | 44C341 | start of floor 3 of labyrinth
+ 56 | 44C542  | 44C7C0  | 44C561 | fountain on floor 5 of labyrinth
+ 57 | 44C8CC  | 44CB18  | 44C8EB | "welcome to mysterious fountain" sign
+ 58 | 44CC7E  | 44E347  | 44CC9D | door "*" for labyrinth
+ 59 | 44E426  | 44EEA3  | 44E445 | door 6 for labyrinth
+ 5A | 44EF10  | 44FDFC  | 44EF2F | - 2nd picture for door 6
+ 5B | 44FEA9  | 4593F2  | 44FEC8 | door 8 for labyrinth
+ 5C | 4594E9  | 45A1F2  | 459526 | door 3 for labyrinth
+ 5D | 45A28C  | 45B53B  | 45A2AB | door 1 for labyrinth
+ 5E | 45B604  | 45C320  | 45B623 | door 9 for labyrinth
+ 5F | 45C3A2  | 45CD16  | 45C3C1 | door "#" in labyrinth
+ 60 | 45CDF0  | 45DC85  | 45CE0F | goblin in labyrinth
+ 61 | 45DD45  | 45DFA6  | 45DD64 | two treasure chests in labyrinth
+ 62 | 45E01A  | 45EC55  | 45E039 | door 2 in labyrinth
+ 63 | 45ECFD  | 46960A  | 45ED1C | fire demon in labyrinth
+ 64 | 469713  | 46A1B2  | 469732 | door 5 for labyrinth
+ 65 | 46A267  | 46B129  | 46A286 | door 4 in labyrinth
+ 66 | 46B1D3  | 4640AF*	| 46B288 | bookmark on file select - note special case
+    |         | 46C1B8  |        | with having two tilemaps
+ 67 | 46C4E1  | 46E220  | 46C500 | title logo "かま いたち の夜" in 3 columns
+    |         |         |        | suggestion: "The Night of the Kamaitachi"
+ 68 | 46E349  | 46E80B  | 46E368 | a banana (no, I'm not making this up)
+ 69 | 46E95B  | 46F1B4  | 46E97A | peeled banana with segments cut up
+ 6A | 46F32A  | 46F961  | 46F349 | wrapping a string around a banana and pulling
+ 6B | 46FAD2  | 478187  | 46FAF1 | wrapping a string around Tanaka's limbs
+    |         |         |        | his body has 田中 "Tanaka" written on it
+ 6C | 47831D  | 478CFF  | 47833C | a truck pulling the string/rope tight
+ 6D | 478E25  | 47942F  | 478E44 | Tanaka dismembered by piano wire (not gory)
+    |         |         |        | similar, 田中 "Tanaka" written on his body
+ 6E | 4795EE  | 47A7BC  | 47960D | "BOMB", bad idea
+ 6F | 47A96E  | 47B4C2  | 47A98D | person chained to bed, with buzzsaw - frame 1
+ 70 | 47B5E7  | 47C165  | 47B606 | person chained to bed, with buzzsaw - frame 2
+ 71 | 47C289  | 47C611  | 47C2A8 | a laser
+ 72 | 47C685  | 47C9CE  | 47C6A4 | laser firing animation - frame 1
+ 73 | 47CA41  | 47CD51  | 47CA60 | laser firing animation - frame 2
+ 74 | 47CDBB  | 47D06D  | 47CDDA | laser firing animation - frame 3
+ 75 | 47D0D5  | 47D3B9  | 47D0F4 | laser firing animation - frame 4
+ 76 | 47D425  | 47D7BB  | 47D444 | laser firing animation - frame 5
+ 77 | 47D82F  | 47DD89  | 47D84E | laser firing animation - frame 6
+ 78 | 47DE1C  | 47E679  | 47DE3B | laser firing animation - frame 7
+ 79 | 47E7D1  | 47F675  | 47E7F0 | SPOILER how the window shattered - part 1
+ 7A | 47F7D7  | 488DBE  | 47F7F6 | SPOILER how the window shattered - part 2
+ 7B | 488F02  | 489C72  | 488F21 | SPOILER how the window shattered - part 3
+ 7C | 489DE0  | 48A251  | 489DFF | TV frame with "CHUN" at bottom
+ 7D | 48A3B0  | 48AFBD  | 48A3CF | JP TEXT copyrights after "chunsoft presents"
+ 7E | 48B0A8  | 48B6CD  | 48B0C7 | UNUSED picture of the spy route's note
+    |         |         |        | こんや　かまいたちが　あらわれる
+ 7F | 48B741  | 48BD75  | 48B760 | UNUSED picture of the murder route's note
+    |         |         |        | こんや　１２じ　だれかが　しぬ
+ 80 | 48BDE5  | 48C4AA  | 48BE04 | UNUSED bloody note in the treasure route
+ 81 | 48C506  | 48CFE5  | 48C57F | pendant in the occult route
+
+According to my graphics dumper, the tilemap data for the last entry ends at
+0x245081 ($48D081). So all in all, graphics from 0x128492 to 0x245081, or
+0x11CBF0 bytes (over a megabyte!).
+
+--------------------------------------------------------------------------------
+
+Format for palettes:
+The byte at the pointer contains up to 8 bits for how to interpret data.
+Read bits starting from the MSB, and ignore trailing 0 bits at the end.
+Data gets copied into a buffer at $7FF700, X-indexed.
+- If 1, advance X offset by 2 (color 0 in row is black), and read a group of
+  0x1E bytes (0xF groups of 2 byte color values) into the buffer.
+- If 0, advance X offset by 0x20 = skip the row of colors.
+
+The tilemaps and tilesets are each compressed in their own formats. They were
+complicated enough to deserve their own writeups about how they work.
+
+--------------------------------------------------------------------------------
+
+There is one special case with tilemaps, and one special case with palettes.
+
+The pointer value of the file select bookmark's tilemap is $4640AF. That it
+doesn't map to ROM marks that the pointer is for TWO compressed tilemap blocks:
+first for the currently selected bookmark, which is in its own gfx layer on top
+of the second tilemap, which is for the three bookmarks in the background. The
+second block starts immediately after the end of the first block.
+
+The game colors in bookmarks based on the player's progress in the file, but
+this doesn't substantially change the graphics themselves. There are two pointer
+tables at $018225 and $018232 for blocks of palette data: brown at $01E780, pink
+at $01E79E, gold at $01E7BC, and three more at $01E7DA, $01E7F8, $01E816.
+
+---
+
+The palettes for the title screen's background are changed on the fly in-game.
+Specifically, there are two "animation frames," so to speak, that solely consist
+of changing five colors at a time in the layer's palette. It accomplishes the
+blood splatter effect you see. The five colors are from a table at $0094E9.
+
+     $0094a9         $0094e9
+   | init. palette |    frame 1    |    frame 2
+ # | BGR15   RGB24 | BGR15   RGB24 | BGR15   RGB24 
+---+---------------+---------------+---------------
+10 | 0000 = 000000 |               |                
+---+---------------+---------------+---------------
+11 | 5294 = A5A5A5 | 000E = 730000 | 000E = 730000      blood on frames 1 and 2
+12 | 4E73 = 9C9C9C | 000C = 630000 | 000C = 630000
+13 | 4A52 = 949494 | 000A = 520000 | 000A = 520000
+14 | 4631 = 8C8C8C | 0008 = 420000 | 0008 = 420000
+15 | 4210 = 848484 | 0006 = 310000 | 0006 = 310000
+---+---------------+---------------+---------------
+16 | 5294 = A5A5A5 |               | 000E = 730000      blood on just frame 2
+17 | 4E73 = 9C9C9C |               | 000C = 630000
+18 | 4A52 = 949494 |               | 000A = 520000
+19 | 4631 = 8C8C8C |               | 0008 = 420000
+1A | 4210 = 848484 |               | 0006 = 310000
+---+---------------+---------------+---------------
+1B | 5294 = A5A5A5 |               |                    always white/gray
+1C | 4E73 = 9C9C9C |               |              
+1D | 4A52 = 949494 |               |              
+1E | 4631 = 8C8C8C |               |              
+1F | 4210 = 848484 |               |              
+
+Similarly, the palettes for the title logo itself get changed on the fly.
+$0094A9: 0x10 color table for title screen background
+$0094e9: 0x 5 color table for splatter frame 1
+$0094f3: 0x10 color table for fully red palette of blood splatter
+$009513: 0x10 color table for final palette visible on screen
+
+--------------------------------------------------------------------------------
+
+The tilesets for some of the labyrinth pathways (gfx IDs 4D-51) all use common
+graphics data. You can reuse tileset 50 for IDs 4D-51.
+
+4D is a subset of 4E (first 4 tiles of 5).
+4E is identical to 4F and 51.
+4E is a subset of 50 (first 5 tiles of 6).
+
+Bear in mind, the tilesets are not very large to begin with, and you save less
+than 200 bytes total from cutting out and repointing tilesets 4D-4F and 51.
+
+--------------------------------------------------------------------------------
+
+The palettes for ALL of the labyrinth pathways (4D-57) are identical, so 0xA are
+duplicates. Other gfx ID groups with the same palettes:
+- 2A-2B, 1 duplicate;  guest room with curtains open/closed
+- 59-5A, 1 duplicate;  door 6 in labyrinth
+- 68-6D, 5 duplicates; banana dismemberment joke
+- 6F-70, 1 duplicate;  buzzsaw animation
+- 71-78, 7 duplicates; frames of the laser firing animation
+- 79-7B, 2 duplicates; pictures explaining how the window shattered
+
+Save 0x1F*(A+1+1+5+1+7+2) bytes.

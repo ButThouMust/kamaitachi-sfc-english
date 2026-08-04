@@ -1,0 +1,387 @@
+There is a graphics decompression subroutine located at $03A9D8 in the ROM for
+Kamaitachi no Yoru. The 0x63 bytes of machine code are copied from there into
+work RAM ($7E24F4 or $7E2574). Why WRAM? It allows for easily editing the ROM
+bank which data is read from, and the RAM bank which data is written into.
+
+After examining the assembly code, I found that the compression format is an
+implementation of LZSS compression (relevant keywords: "sliding window").
+
+Two possible entry points for copying in the code to bank 7E:
+$03A992: JSL to here with your 24-bit pointers contained in A, X, Y.
+         - X and low byte of A are the source pointer (compressed data).
+         - Y and high byte of A are the destination pointer (decomp buffer).
+         Code is copied to $7E2574.
+$03A942: JSL to here with your 24-bit pointers in $1C48 (src) and $1C4C (dest).
+         Code is copied to $7E24F4. (Assume that $1C4B and $1C4F are [00])
+
+I initially found this when attempting to decipher the format for the grid of
+characters that appears when choosing a name for the protagonist and his
+girlfriend. It turns out that unlike Otogirisou, the grid of 90 characters you
+see is *not* rendered with the normal font you see in main gameplay, but instead
+stored separately in the ROM in this LZ compressed format. (See $01D94B)
+    Tileset starts at offset 0xB00 in the decompressed data.
+
+The game uses this format for several other things, but the name entry character
+grid is the only one I've found that contains any text. Offsets include:
+$04C004, $04DD73: tileset and tilemap (curtain and snow in Tanaka's room)
+$5E8000:          tilemap and tileset contained in one "file" (name entry font)
+$5F8000:          tileset for VFX input 0E (bad ending)
+$5FC9A2, $5FCE57: tileset and tilemap for VFX input 0B
+$5FD15B, $5FD564: tileset and tilemap for VFX input 37
+$5FD7E7:          tileset for VFX input 3B
+
+$03961C is a pointer table of 14 offsets to LZSS tilemaps. See $0394EF.
+Used in conjunction with the compressed tileset in $5F8000.
+$5FA34C $5FA37A $5FA3C4 $5FA42A $5FA4AE $5FA548 $5FA600 $5FA6D0
+$5FA7BE $5FA8C7 $5FA9EC $5FAB2F $5FAC8B $5FADF6
+
+A pointer table at $03A8DA contains a list of two unique offsets:
+$5F8000: Blood spilling down from the top of the screen for VFX input 0E.
+         This offset is repeated four times. Only one instance is used?
+         (Related: $5FA33C has 0x10 bytes of palette data for this)
+$04C004: The curtain flapping in the wind, plus the snow both blowing in and
+         on the bed, when you first search Tanaka's room.
+
+Two data tables are at $5FC992 for two visual effects. See $039695, $0396E0.
+[A2 C9 5F 57 CE 5F A0 09] -> 5FC9A2 5FCE57 09A0 - VFX input 0B
+[5B D1 5F 64 D5 5F 60 07] -> 5FD15B 5FD564 0760 - VFX input 37
+
+--------------------
+
+A list of points where each decompression setup subroutine is called:
+
+$03A992 (ptrs in A/X/Y)
+$039507: src (entry from $03961C ptr tbl) -> $7E2E0C, tilemap for VFX 0E blood
+$0396a9: src ($5FCE57 or $5FD564) -> $7E2E0C, tileMAP for VFX 0B or 37
+$0396f4: src ($5FC9A2 or $5FD15B) -> $7E2E0C, tileSET for VFX 0B or 37
+$03d33c: src $04DD73 -> dest $7E2E0C, tileMAP for flapping curtain
+$03d92f: src $5FD7E7 -> dest $7E360C, tileset for VFX 3B
+
+$03A942 (ptrs in $1c48/$1c4c)
+$01d965: src $5e8000 -> dest $7f2200, decompress font for name entry screen
+$03a8d4: src ($5f8000 or $04c004) -> ($7E8000 or $7F8000, decided @ runtime)
+         this gets called at $01D4A2 (dest ptr decided shortly before), and the
+         index to the pointer table at $03A8DA is in $00; tileSETs for flapping
+         curtain or VFX 0E blood
+
+--------------------------------------------------------------------------------
+
+Here is a pseudocode representation for decompression:
+
+Allocate a buffer for writing data into.
+// Two SNES banks 0x10000 to represent WRAM should be enough.
+
+Given a pointer to compressed data in the ROM, loop: {
+    Read a byte N1 from the ROM
+
+    If N1 is positive (01-7F) {
+        // uncompressed data case
+        Read N1 bytes from the ROM into the buffer
+    }
+
+    If N1 is negative (80-FF) {
+        Read a byte from the ROM; this (plus 1) is the size of the data block
+        Data to copy is from existing data in decompression buffer
+        - Start location is at total_size + N1 (again, N1 is negative)
+        - e.g. if N1 is 0xCE, go back (CE ^ FF) + 1 = 0x32 bytes
+        Go back N1 bytes in buffer, and read # bytes + 1
+    }
+
+    If N1 is 00 {
+        Read a two byte value, call it N2
+
+        If N2 is 0000 (total: 00 00 00), this is the end of data
+
+        If N2 is negative (8000-FFFF) {
+            Read byte from ROM; this (plus 1) is the size of the data block
+            Go back N2 bytes in buffer, and read # bytes + 1
+            // This extends the negative N1 case to a match distance over 0x80.
+            // e.g. if N2 is FB30, go back (FB30 ^ FFFF) + 1 = 0x4D0 bytes
+        }
+
+        If N2 is positive (0001-7FFF) {
+            Read two bytes from ROM; this (plus 1) is the size of the data block
+            Go back N2 bytes in buffer, and read # bytes + 1
+            // This further extends the neg. N2 case to a match SIZE over 0x100.
+            // NOTE: This case is fairly uncommon with the data in the JP ROM.
+        }
+    }
+}
+
+--------------------------------------------------------------------------------
+
+The actual assembly code is below.
+
+Notation: lda $ss0000,X means to read data from the source pointer (bank SS).
+
+The raw code in the ROM uses bank 7E as the destination, but the code in WRAM
+can decompress into either bank 7E or 7F. Also note that the source data bank is
+fixed, so LoROM bank wrapping is not possible without heavy ASM modifications!
+
+--------------------
+
+algorithm_entry_point:
+    bra read_byte_N1
+
+case_end_of_data:
+    sep #$20
+    rtl
+
+; ---------------------------
+
+case_N1_is_zero:
+    inx                     ; if N1 = 00, read two bytes N2 from src ptr
+    rep #$20
+    lda $ss0000,x
+
+    beq case_end_of_data    ; if total [00 00 00], end of data
+    bmi case_N1_zero_N2_neg
+
+case_N1_zero_N2_pos:
+    inx                     ; advance two bytes past N2's value
+    inx
+
+    phx                     ; push src ptr, push dest ptr
+    phy
+
+    eor #$ffff              ; src_addr <- ~N2 + dest_addr + 1 = dest_addr - N2
+    sec                     ; (relevant keyword: reverse subtraction)
+    adc #$01,s
+    sta #$01,s
+
+    lda $ss0000,x           ; read two bytes = size of data to copy, MINUS ONE
+    plx
+    mvn $7e,$7e             ; copy previous data in buffer
+
+    plx                     ; advance src ptr past data size
+    inx
+    inx
+    sep #$20                ; continue with decompression
+    bra read_byte_N1
+
+; ---------------------------
+
+case_N1_zero_N2_neg:
+    inx                     ; advance two bytes past N2's value
+    inx
+
+    phx                     ; push src ptr, push dest ptr
+    phy
+
+read_N_bytes_back_from_dest_ptr:
+    clc                     ; code is reused, so two versions here:
+    adc $01,s               ; 1. src_addr <- dest + N1 (if N1 < 0; see below)
+    sta $01,s               ; 2. src_addr <- dest + N2 (if N1 = 0, N2 < 0)
+
+    lda $ss0000,x           ; read one byte = size of data to copy, MINUS ONE
+    and #$00ff
+
+    plx                     ; copy previous data in buffer to here
+    mvn $7e,$7e
+
+    plx                     ; advance past byte for data size
+    inx
+    sep #$20
+
+; ---------------------------
+
+read_byte_N1:
+    lda $ss0000,x           ; read byte from the ROM, check which case
+    beq case_N1_is_zero
+    bpl case_read_N1_bytes
+
+case_N1_is_negative:
+    inx                     ; advance past byte for N1
+
+    phx                     ; save src ptr X, dest ptr Y
+    phy
+
+    rep #$20                ; sign extend N1 to the 16-bit value FF[N1]
+    ora #$ff00
+
+    bra read_N_bytes_back_from_dest_ptr
+
+; ---------------------------
+
+case_read_N1_bytes:
+    inx                     ; N1 > 0; advance past the byte for its value
+
+    rep #$20                ; (8-bit value in 16-bit mode)
+    and #$00ff
+    dec a                   ; account for MVN quirk of transferring A+1 bytes
+
+    mvn $ss,$7e             ; copy N1 bytes from source (ROM) to buffer
+    sep #$20
+    bra read_byte_N1        ; continue with decompression
+
+--------------------------------------------------------------------------------
+
+For writing a (re)compressor algorithm, you should handle the overhead like so:
+
+Need to insert literals?
+- Encode the number of literals (up to 0x7F) as one byte N1.
+- List off the actual literals themselves.
+
+Otherwise, what is the largest available match's size, and how far back is it?
+
+- 0x101+ bytes, any distance back
+  * Write a [00] info byte as one byte N1.
+  * Write the distance back as-is as two bytes N2.
+  * Write the match size (minus 1) as two bytes.
+
+- 0x100 bytes or smaller, and at most 0x80 bytes back
+  * Write the (negated) distance back as one byte N1.
+  * Write the match size minus 1 as one byte.
+
+- 0x100 bytes or smaller, and 0x81+ bytes back
+  * Write a [00] info byte as N1.
+  * Write the (negated) distance back as two bytes N2.
+  * Write the match size (minus 1) as one byte.
+
+At the end of data, write the terminator sequence [00 00 00].
+
+--------------------
+
+Some optimizations you can do with the LZ compression phase:
+
+- Each different case uses a different number of bytes:
+  * 1: literal data, up to 0x7F bytes at a time
+  * 2: match size 0x1-0x100, distance back 0x 1-0x80
+  * 4: match size 0x1-0x100, distance back 0x81+
+  * 5: match size 0x101+,    distance back 0x 1+
+
+- If a match is only 1 byte, or if a match is 2-3 bytes but 0x81+ bytes back, it
+  would be just as, or more, efficient to encode it as literals.
+
+- Because the distance back is the only difference between the two cases using 2
+  overhead bytes or 4 overhead bytes, you can potentially use less overhead for
+  recompression simply by searching for matches "right to left" instead of "left
+  to right." This gets the largest match possible while minimizing the distance
+  to look back from the current position. Saving two bytes every now and then
+  adds up, and this simple change is enough to outperform Chunsoft's compressor!
+
+- You can keep applying the idea of 2 vs 4 overhead bytes to squeeze out some
+  more compression. Say the absolute best match at some point requires going
+  back 0x81+ bytes (4 overhead bytes). Compare it against the best match you can
+  get, with the provision of going back at most 0x80 bytes (2 overhead bytes).
+  If you lose only 1 or 2 bytes with the match size, take the smaller one.
+
+- If you can encode a 2-byte match in two bytes or a 4-byte match in four bytes,
+  you will not lose space from directly encoding the match's data, provided that
+  a sequence of literals comes right before or right after it.
+
+- I found that when I tried blindly converting all "optimizable" matches to
+  literals and converting all 4-byte matches to acceptable 2-byte matches, it
+  would save space overall but would occasionally lose space versus Chunsoft's
+  compressor. I got the idea for how to fix this when comparing analysis logs
+  for my decompressor and recompressor: if there is an opportunity for a split
+  point, get LZ tags for the the two paths until they converge, and use the path
+  that takes fewer bytes to encode.
+
+--------------------------------------------------------------------------------
+
+Summary of data blocks for comparing your output against:
+
+ start  |  end   | compressed size| decompressed size
+--------+--------+----------------+-------------------
+ 04C004 | 04dd72 | 0x1d6f =  7535 | 0x2ffc = 12284
+ 04DD73 | 04df06 | 0x 194 =   404 | 0x a58 =  2648
+ total  |        | 0x1f03 =  7939 | 
+--------+--------+----------------+-------------------
+ 5F8000 | 5fa33b | 0x223c =  8764 | 0x36a1 = 13985
+--------+--------+----------------+-------------------
+ 5FA34C | 5fa379 | 0x  2e =    46 | 0x 841 =  2113
+ 5FA37A | 5fa3c3 | 0x  4a =    74 | 0x 881 =  2177
+ 5FA3C4 | 5fa429 | 0x  66 =   102 | 0x 8c1 =  2441
+ 5FA42A | 5fa4ad | 0x  84 =   132 | 0x 901 =  2305
+ 5FA4AE | 5fa547 | 0x  9a =   154 | 0x 941 =  2369
+ 5FA548 | 5fa5ff | 0x  b8 =   184 | 0x 981 =  2433
+ 5FA600 | 5fa6cf | 0x  d0 =   208 | 0x 9c1 =  2497
+ 5FA6D0 | 5fa7bd | 0x  ee =   238 | 0x a01 =  2561
+ 5FA7BE | 5fa8c6 | 0x 109 =   265 | 0x a41 =  2625
+ 5FA8C7 | 5fa9eb | 0x 125 =   293 | 0x a81 =  2689
+ 5FA9EC | 5fab2e | 0x 143 =   323 | 0x ac1 =  2753
+ 5FAB2F | 5fac8a | 0x 15c =   348 | 0x 701 =  1793
+ 5FAC8B | 5fadf5 | 0x 16b =   363 | 0x 741 =  1857
+ 5FADF6 | 5faf6a | 0x 175 =   373 | 0x 781 =  1921
+ total  |        | 0x c1f =  3103 | 
+--------+--------+----------------+-------------------
+ 5FC9A2 | 5fce56 | 0x 4b5 =  1205 | 0x 9b0 =  2480
+ 5FCE57 | 5fd15a | 0x 304 =   772 | 0x 70a =  1802
+ 5FD15B | 5fd563 | 0x 409 =  1033 | 0x 760 =  1888
+ 5FD564 | 5fd7e6 | 0x 283 =   643 | 0x afe =  2814
+ 5FD7E7 | 5fd999 | 0x 1b3 =   435 | 0x1020 =  4128
+ total  |        | 0x ff8 =  4088 | 
+--------+--------+----------------+-------------------
+ TOTAL! |        | 0x5D56 = 23894 |
+--------+--------+----------------+-------------------
+ 5E8000 | 5ec49b | 0x449c = 17564 | 0x5572 = 21874
+
+--------------------------------------------------------------------------------
+
+Possible improvements to the format
+
+First up, the problems associated with how the code gets transferred to WRAM.
+- You must properly set the bank to READ from (four LDA instructions, half of one
+  MVN) and the bank to WRITE to (two full MVNs, half of one MVN).
+- You can't do any JSRs in bank 7E to reuse code.
+
+I suppose one obvious question is, why does $03A942 copy the code to $7E24F4
+whereas $03A992 copies it to $7E2574? I noticed VFX 0E and the flapping curtain
+each use both setup subroutines for the tilemaps and tilesets. Does the game
+decompress both at around the same time?
+
+Do the different locations imply a hard limit of 0x80 bytes on the size of the
+decompression code? I can see the branch distance limit of 0x80 being a factor.
+
+You can save 7 bytes to get the 0x63 bytes of code down to 0x5C:
+- Negative N1 case: rearrange the [REP #$20 ; ORA #$FF00] to start and reuse the
+  [INX ; PHX ; PHY] one byte after the existing branch target.
+- Move the branch targets for "read byte for N1" back to the [SEP #$20] before
+  it. You can now get rid of two [SEP #$20] instructions: before branching back
+  with the "N1 zero N2 positive" case or the "read N1 bytes" case.
+
+The code does not allow bank wrapping the source data pointer, and I think it'd
+be unreasonable to try to get it working. So in addition to edits requiring a
+single, large enough, contiguous space to insert to, they must not cross a bank
+boundary.
+
+--------------------
+
+Layout of the different cases:
+1 byte: [01-7F] [data...]
+2 byte: [-dist] [size]
+4 byte: [00]    [-dist low] [-dist high] [size]
+5 byte: [00]    [ dist low] [ dist high] [size low] [size high]
+
+----------
+
+Is it worth decreasing the size limit for the 1 byte case (literals) to increase
+the max lookback distance for the 2 byte case? Using grep let me find out that
+(not including the name entry character grid data), the largest group of lits is
+0x5B bytes. It turns out to be pretty easy to adjust this in the recompressor,
+since dedicating X values of a byte to literals means you just dedicate the
+other 0xFF-X values (00 is taken) to the 2 byte case. And from an ASM point of
+view, you can just change the existing BPL to a [CMP #(max lits + 1) ; BCC].
+
+Changing the lits size limit to 0x40 shrunk the total sizes from 0x59A6+0x83F to
+0x58F1+0x826. After testing a decent range of values, I found that the best was
+with a lits size limit of 0x1F (0xE0 distance back), with sizes of 0x588C+0x817.
+
+----------
+
+The 5 byte case for 0x100+ byte matches, at least with the data present in the
+game, is quite rare and does not make full use of the size ranges it is given.
+In fact, based on decompression logs for the VFX 0E tilemaps, Chunsoft appeared
+to have purposefully limited the max match size to 0x400 bytes at a time.
+
+Could you bitpack the size and the distance back into 3 bytes instead of 4?
+Originally, you can go back up to 0xFFFF bytes and copy up to 0x10000 bytes.
+Restrict the distance back to 0xFFF bytes and the size limit to 0xFFF bytes.
+However, because the ASM code depends on the two-byte distance value being
+encoded as positive, this would effectively restrict one value or the other to
+a limit of 0x7FF bytes. I suppose you'd want to do this for the distance.
+
+In the recompressed data, this case only occurs 20 times, and once more for the
+name entry graphics data. It may not be worth the trouble, but documenting this
+idea anyway.

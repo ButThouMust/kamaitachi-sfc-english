@@ -1,0 +1,372 @@
+Goal: Given a set of up to 0x400 tiles' worth of graphics data, compress them
+into as little space as possible.
+
+Graphics are all 4bpp, with four bitplanes, and 8 bytes per bitplane.
+
+Chunsoft's compression format is quite intricate, with all kinds of ways to
+compress data. Let's split up the compression process into two sections:
+- First, analyzing the tile data and determining how to compress it.
+- Second, taking the sequence of compression methods for the data, and encoding
+  it into bytes for the decompression ASM in the game.
+
+--------------------------------------------------------------------------------
+
+High level list of compression methods:
+- Simply read 0x20 bytes for a tile from the ROM.
+- Use a list of subroutines for how to fill in the four bitplanes.
+- Take list of 8 bytes, fill bitplanes as all 00, 8 bytes, ~[8 bytes], all FF.
+- Get either 2 or 3 lists of 8 bytes from which you can generate the tile data.
+- Reuse existing tile, and modify into new tile on BITPLANE basis.
+- Reuse existing tile, and modify into new tile on TILE ROW basis.
+
+Useful things for analyzing graphics data:
+- Convert a tile's worth of data into its four bitplanes.
+  Input an array of the 0x20 bytes; output a 4x8 matrix of the four bitplanes.
+- Get a distribution of the bytes in the bitplane, sorted by frequency.
+
+----------
+
+Strategies for analysis with the "bitplane fill subroutine" case:
+
+Tables of cases with IDs
+IDs   | description               IDs   | description
+------+-------------------------  ------+----------------------------
+00 -- | 8 raw bytes               07 0A | read 2 bytes X/Y, fill as:
+03 -- | decompress RLE                  | [X Y X Y X Y X Y]
+04 01 | fill with 00              08 -- | read 4 bytes W-Z, fill as:
+05 02 | fill with FF                    | [W X Y Z W X Y Z]
+06 09 | fill with next ROM byte   0B -- | build from 3/4 unique bytes
+0D 0E | copy BP from prev tile    0C -- | build from 4 unique nibbles
+
+IDs   | description     Operation | BP01  | BP02  | BP12  | BP012 
+------+-------------    ----------+-------+-------+-------+-------
+0f 10 | use  bp0        OR        | 17,18 | 27,28 | 33,34 | 3f,40 
+11 12 | use ~bp0        AND       | 19,1a | 29,2a | 35,36 | 41,42 
+13 14 | use  bp1        XOR       | 1b,1c | 2b,2c | 37,38 |  N/A  
+15 16 | use ~bp1        NOT OR    | 1d,1e | 2d,2e | 39,3a | 43,44 
+23 24 | use  bp2        NOT AND   | 1f,20 | 2f,30 | 3b,3c | 45,46 
+25 26 | use ~bp2        NOT XOR   | 21,22 | 31,32 | 3d,3e |  N/A  
+
+- Instead of returning a binary "yes, the bitplane PERFECTLY fits this method"
+  or "no, it doesn't fit", return a "fitness score" (# matching bytes) for each
+  method you can test. If you do need a perfect fit, just check if # bytes = 8.
+
+  Example, the bitplane [00 00 00 00 01 00 00 00] matches 7 bytes for the "fill
+  bp with all 00". You can then encode it as "fill bitplane with all 00" with
+  spot checks for the lone byte out.
+
+- Make a list of what subroutines make sense for each bitplane to fill in.
+  For example, it doesn't make sense to construct bp0 from (bp1 | bp2).
+
+  It turns out Chunsoft already designed the format with this in mind. You can
+  check indices 00-0E for every bitplane, and bitplanes except 0 can be checked
+  up through a certain index for the bitplane combination cases (11/12 for BP1,
+  21/22 for BP2, and any for BP3).
+
+  The code for extracting out what subroutines to run takes an input value for
+  index 0, and calculates indices 1-3 from a three byte data array:
+  index1 <- (array[1] >> 3) & 0x1F
+  index2 <-  array[0] & 0x3F
+  index3 <-  array[2] >> 1
+
+  The value range for index 0 depends on the entry point:
+  - Type byte 80-BF: array[1] & 0x3 (related, array[1] & 0x4 is bp3=00/FF flag)
+  - Type byte 01/11/21/31 and C0-FF: ((array[1] << 1) | (array[2] >> 7)) & 0xF
+  So the possibly bitpacked and effective ranges for each index/bitplane are:
+  BP0: 00-0F vs 00-0E ; BP1: 00-1F vs 00-12 ; BP2: 00-3F vs 00-22 ; BP3: 00-7F
+
+- Keep track of what subroutine ID groups pop up often, and encode them as the
+  bytes in the first 0xC bytes of the 0x1B tile metadata block. For example, the
+  decompression for gfx ID 00 has each of the four options appear several times:
+     Col 0 (34):    Col 1 (26):     Col 2 (17):     Col 3 (14):
+  0: 8 raw bytes    8 raw bytes     8 raw bytes     8 raw bytes
+  1: ~bp0, spots    all 00, spots   all 00, spots   8 raw bytes
+  2: all FF         ~(bp0 & bp1)    all FF          all FF, spots
+  3: all FF         all FF          all FF          all FF
+
+  Perhaps worth noting that these all would qualify for packing the indices into
+  just two bytes instead of three.
+
+----------
+
+list of options sorted by the absolute best case for encoded size:
+0: fill with 00/FF, combine previous bitplanes
+1: fill with value
+2: RLE (00 run + XX run), "repeat two byte" sequence
+   *any of the 0 byte cases, but off by 1 byte
+   reuse bitplane from previous tile (very time-intensive)
+3: *any of the 0 byte cases, but off by 2 bytes
+   *fill with value, but off by 1 byte
+4: "repeat four byte" sequence
+5: construct from 3 unique bytes
+6: construct from 4 unique bytes, construct from 4 unique nibbles
+8: uncompressed data
+
+If you find a bitplane that can be encoded in 0-2 bytes, you can skip checking
+the cases that are encoded in 4-6 bytes, as well as the reuse bitplane case.
+
+--------------------
+
+Make a table of what type bytes do what:
+
+Bit patt. | Value list  | Meaning
+----------+-------------+-------------
+0000 0000 | 00          | End of data
+----------+-------------+-------------
+0010 0000 | 20          | Read 0x20 raw bytes from ROM (last resort)
+----------+-------------+-------------
+00xx x000 | 08,10*,18*  | Read 8 raw bytes [x] -- fill BPs w/ [00],[x],[~x],[FF]
+not 00,20 | 28          | Construct BP from pseudo-RLE format
+          | 30          | Construct BP from 3 or 4 unique bytes
+          | 38          | Construct BP from 4 unique nibbles
+          | *: Unused   | (Look for BPs like [00][x][~x][FF], encode later)
+----------+-------------+-------------
+00xx 0001 | 01,11,21,31 | Get bp data subroutine index values from bytes 0-B of
+          |             | tileset metadata "header"
+----------+-------------+-------------
+00xx 1001 | 09,19,29,39 | Use existing tile's data and insert new ROWS
+----------+-------------+-------------
+01xx xxnn | 40-7F       | Use existing tile's data and insert new BITPLANES
+----------+-------------+-------------
+10xx xxxx | 80-BF       | fill in bitplanes with subroutines
+          |             | no restrictions on BP0 or BP3 as below
+----------+-------------+-------------
+11xx xxxx | C0-FF       | fill in bitplanes with subroutines
+          |             | assume: BP0 has index 0-3, and BP3 is full of 00/FF
+----------+-------------+---------------------------------------------
+----------+-------------+---------------------------------------------
+00xx x01y | [0-3][23AB] | x bit of 1 = get 8 bytes from RLE format
+----------+-------------+-------------
+00xx x10y | [0-3][45CD] | x bit of 1 = get 8 byte list from 3 or 4 unique bytes
+----------+-------------+-------------
+00xx x11y | [0-3][67EF] | x bit of 1 = get 8 byte list from 4 unique nibbles
+
+--------------------
+
+Last three sections are fairly complicated to explain, and have common elements:
+- xxx bits = 3 bit flags for how to get bitmask data (possible only 2 are used*)
+  0 = read 8 raw bytes; 1 = get bytes via compression method (can't mix & match)
+- y bit = flag for how to get bitpacked list of bit positions; 0 = read 2 bytes
+  1 = get 1 byte, consisting of two 4-bit indices that are addresses to metadata
+  However, if either 4-bit index in the byte is 0, use the 0 as-is.
+
+Their type byte lists in the table are encoded as regexes for brevity, such as
+"[0-3][23AB]" meaning 1st digit is from 0 to 3, and 2nd digit is one of 2, 3, A,
+or B. So the full lists of type bytes would be:
+- [0-3][23AB]: 02, 12, 22, 32, 03, 13, 23, 33, 0A, 1A, 2A, 3A, 0B, 1B, 2B, 3B
+- [0-3][45CD]: 04, 14, 24, 34, 05, 15, 25, 35, 0C, 1C, 2C, 3C, 0D, 1D, 2D, 3D
+- [0-3][67EF]: 06, 16, 26, 36, 07, 17, 27, 37, 0E, 1E, 2E, 3E, 0F, 1F, 2F, 3F
+
+Notice how you cannot mix and match different compression formats for a given
+type byte. Which is to say, you cannot have one bitmask group compressed with
+RLE and another group compressed by using 3 or 4 unique bytes.
+
+The bitpacked list of bit positions is a 16-bit big endian value where the
+position (MSB = 0, LSB = 0xF) of a set bit indicates what bitplanes to OR in the
+data for the current bitmask. For example, the value 239C would correspond to a
+list of the bit positions [2 6 7 8 B C D]: --1- --11 1--1 11--.
+*: The bitpacked list value can have at most EIGHT set bits, and if there are 5+
+   set bits, you must get three groups of bitmask data (use xxx bits) instead of
+   just two groups of bitmask data. (JP game has no lists of size 1 or 2)
+
+Given N bit positions and however many bitmask groups you needed to read, you
+must next generate N lists of bitmask data from the bitmask groups. Look at the
+list position itself (NOT the value there = the bit position) and appropriately
+bitwise-NOT and bitwise-AND the bitmask data together. The exact formulas depend
+on the # of bit positions:
+
+N <= 4          ||| N >= 5                  N >= 5           
+LP |  formula   ||| LP |     formula        LP |     formula
+---+----------- ||| ---+-----------------   ---+-----------------
+ 0 | ~G1 & ~G0  |||  0 | ~G2 & ~G1 & ~G0     4 |  G2 & ~G1 & ~G0
+ 1 | ~G1 &  G0  |||  1 | ~G2 & ~G1 &  G0     5 |  G2 & ~G1 &  G0
+ 2 |  G1 & ~G0  |||  2 | ~G2 &  G1 & ~G0     6 |  G2 &  G1 & ~G0
+ 3 |  G1 &  G0  |||  3 | ~G2 &  G1 &  G0     7 |  G2 &  G1 &  G0
+
+Finally, generate the four sets of bitplane data by bitwise-ORing the data in
+each list position together, using the value of the bit position to know what
+list positions to combine together. Continuing with the example from above, you
+would get the bitplane data from [2 6 7 8 B C D] by bitwise-ORing the data (read
+down the columns):
+LP0: 2 = --1-    bp0 =             LP2 |       LP4 |       LP6
+LP1: 6 = -11-    bp1 = LP0 | LP1 | LP2 |       LP4
+LP2: 7 = -111    bp2 =       LP1 | LP2 |             LP5 | LP6
+LP3: 8 = 1---    bp3 =                   LP3 | LP4 | LP5 | LP6
+LP4: b = 1-11
+LP5: c = 11--
+LP6: d = 11-1
+
+--------------------
+
+I only figured out how to do the recompression method for below by a flash of
+inspiration on Christmas Eve, funnily enough.
+
+Consider a bit position X, which is in the range 0-F. The list for bit position
+X consists of the data (bits) that are UNIQUE to a particular AND combination of
+bitplanes. For example, the data list for bit position 0x7 would have all bits
+that are common to bitplanes 0/1/2 (bits set) but are also NOT in bitplane 3
+(bits clear). Pseudocode would be: list7 <- ~bp3 & bp2 & bp1 & bp0
+
+--------------------
+
+Observation from comparing dump logs for Chunsoft's data and my calculations:
+- In the special case of having only 3 bit positions to keep track of, you don't
+  get to access the (G1 & G0) case because there aren't enough bit positions to
+  let you reach it. However, a simple workaround is to invert the bitmask data
+  before calculating the bit position formulas described above. So for example,
+  list 3 encoding (G1 & G0) is accomplished by encoding (~G1 & ~G0), which
+  will then be interpreted the game as (~~G1 & ~~G0) = (G1 & G0).
+- Similar for the case of having 7 bit positions and not being able to access
+  the (G2 & G1 & G0) case. Or you can also use this strategy if inverting all of
+  the bitmask groups in the interest of compressing RLE data better.
+
+--------------------
+
+As for how to extract out what groups should be encoded, you can bitwise OR
+certain bitplanes to do so. For example, look at the formulas above for N <= 4.
+Given:              Use Boolean algebra to calculate and simplify:
+LP0 = ~G1 & ~G0     LP0 | LP1
+LP1 = ~G1 &  G0     LP0 | LP2
+LP2 =  G1 & ~G0
+
+LP0 | LP1                               LP0 | LP2
+(~G1 & ~G0) | (~G1 & G0) - given        (~G1 & ~G0) | (G1 & ~G0) - given
+~G1 | (~G0 & G0) - factor out ~G1       (~G1 & G1) | ~G0 - factor out ~G0
+~G1 | 0 = ~G1                           0 | ~G0 = ~G0
+
+So you can calculate ~G1 as LP0 | LP1, and similar for ~G0 as LP0 | LP2.
+This explains why lists in Chunsoft's data always had 3+ bit positions.
+
+As for cases with 5+ list positions, the equations are:
+LP0 = ~G2 & ~G1 & ~G0   You can use Boolean algebra to calculate and verify:
+LP1 = ~G2 & ~G1 &  G0   ~G0 = LP0 | LP2 | LP4 | LP6
+LP2 = ~G2 &  G1 & ~G0   ~G1 = LP0 | LP1 | LP4 | LP5
+LP3 = ~G2 &  G1 &  G0   ~G2 = LP0 | LP1 | LP2 | LP3
+LP4 =  G2 & ~G1 & ~G0
+LP5 =  G2 & ~G1 &  G0   If list positions are absent, assume their data is 0?
+LP6 =  G2 &  G1 & ~G0   That's my only justification for how this works out when
+LP7 =  G2 &  G1 &  G0   4 < N < 8, since variables don't cancel out in the
+                        formula if you don't include them.
+
+LP0 | LP2 | LP4 | LP6
+(~G2 & ~G1 & ~G0) | ( G2 & ~G1 & ~G0) | (~G2 &  G1 & ~G0) | ( G2 &  G1 & ~G0)
+~G0 | ((~G2 & ~G1) | (G2 & ~G1) | (~G2 & G1) | (G2 & G1))
+~G0 | (~G1 | G1) = ~G0 | 1 = ~G0
+
+LP0 | LP1 | LP4 | LP5
+(~G2 & ~G1 & ~G0) | (~G2 & ~G1 &  G0) | ( G2 & ~G1 & ~G0) | ( G2 & ~G1 &  G0)
+~G1 | ((~G2 & ~G0) | (~G2 & G0) | (G2 & ~G0) | (G2 & G0))
+~G1 | (~G2 | G2) = ~G1 | 1 = ~G1
+
+LP0 | LP1 | LP2 | LP3
+(~G2 & ~G1 & ~G0) | (~G2 & ~G1 &  G0) | (~G2 &  G1 & ~G0) | (~G2 &  G1 &  G0)
+~G2 | ((~G1 & ~G0) | (~G1 &  G0) | (G1 & ~G0) | (G1 &  G0))
+~G2 | (~G1 | G1) = ~G2 | 1 = ~G2
+
+Or if you want the direct data:
+G0 = LP1 | LP3 | LP5 | LP7
+G1 = LP2 | LP3 | LP6 | LP7
+G2 = LP4 | LP5 | LP6 | LP7
+
+And in fact, the formulas for when there are only 3 or 4 list positions are just
+special cases of the formulas for 5+ list positions.
+
+One comment: there are cases where sometimes, the game will calculate the data
+for LP0, when the bit position itself is also 0. Although this combination is
+not ORed into any bitplane, it is necessary for aligning the bit position list
+correctly.
+
+--------------------
+
+Perhaps note that type bytes 10 and 18 are both unused in the Japanese game's
+gfx data, and are identical to using a type byte of 08 in terms of control flow.
+If I had to speculate why this is, Chunsoft may have left in two slots for how
+to get 8 bytes of bitmask data (e.g. B0/B1 case) but ended up not using them.
+
+If you can brainstorm another good compression format (or even two), you can
+inject ASM for it/them over the BEQs at $02904B and $029063.
+
+One idea could be to construct a bitplane using only two unique bytes.
+- You can bitpack the 8 flags into 1 byte, and store the two data values as-is.
+- Use case: bytes do not lend themselves well to RLE, like repeating [B0 B1].
+- However, would this save space versus filling the bitplanes using indices such
+  as [all 00] [all FF] [B0 B1 sequence] [bpX] or [~bpX]?
+- Idea would require 1 byte for either the 10/18 case, 1 flags byte of "bp byte
+  is X/Y?", the two data bytes themselves, and 1 byte of "what bp is what". (5)
+- Indices approach would require encoding some combination of the indices 04,
+  05, 07, and possibly either [0F/11, 13/15, 23/25]. This would not qualify for
+  the C0-FF type byte case (encode indices in 2 bytes) because the index for bp0
+  couldn't be in the range 00-03. So you must encode the indices in 3 bytes,
+  plus the data values in 2 bytes, and we may assume there are no spot changes.
+  So this wouldn't save you space in the particular case of repeating [B0 B1].
+- Encoding the bitplane with RLE requires the 28 case byte, 1 byte of flags, and
+  the list of data groups' values. So the idea would be worth it if there are at
+  least 4 distinct run groups.
+
+Similarly, you could construct a bitplane using only two unique nibbles.
+- Bitpack the 16 flags into 2 bytes, and store the two data values as one byte.
+
+--------------------------------------------------------------------------------
+
+Design issue: both the bitplane subroutine case and the bitmask construction
+case can take fewer bytes by putting common compression values (encoded indices
+and bit positions, respectively) into the tileset's metadata.
+
+BP subroutine data requirements:
+- 3: Typical case
+- 2: BP0/BP3 are restrictable
+- 1: Indices from metadata
+Summarize: For typical case, you can save 2 bytes with the index lookup.
+If BP0/BP3 are restrictable, you can save 1 byte with the index lookup.
+
+Bitmask construction data requirements:
+- 2: Typical case, 16 1-bit flags
+- 1: Read 1 byte of 2 4-bit values
+So you can save 1 byte by doing two lookups for metadata values, but BOTH bytes
+must either be 00 or be in the lookup table.
+
+Suppose for a given tile, the best case is a tie between encoding with one group
+of bitmask data (00/FF/NN) and encoding with bitplane subroutines. Simple, you
+can give priority to the bitplane subroutines case and let it shrink by a byte
+or two depending if its indices can qualify for metadata.
+
+What's not so simple would be if the 00/FF/NN case outperforms the bitplane
+subroutine case by 1 byte. If the latter's indices must be encoded in 3 bytes
+but would qualify for metadata if included, this will make it the optimal choice
+by 1 byte. But if you find later that it wouldn't qualify for metadata after
+all, you'd have to go back and replace it with the originally optimal case of
+00/FF/NN, as well as remove the metadata bytes from the list of counts.
+
+Similar idea for if the indices can be encoded in 2 bytes and would qualify for
+metadata if included, which will make it equal the already optimal case. I
+suppose this could be useful in the edge case where it would make the difference
+between one set of encoded indices being included as the fourth metadata entry
+versus another, but it would have to already tie another set's count to save a
+byte. Probably not worth worrying about.
+
+What heuristic should you use for calculating the sizes of each case, and how
+should you handle ties before taking that heuristic into account?
+
+Idea for heuristic:
+- Calculate all the different options for how to compress a tile.
+- Determine which option takes the least space to compress.
+- Check if the bitplane subroutine case is the best, or would be 1 or 2 bytes
+  away from being the best depending on the indices.
+  - If yes, take note of how to encode the indices in THREE bytes, regardless of
+    whether directly encoding them would take two or three. Count both the
+    bitpacked value and the compressed tile's info in a list.
+- Check if the bitmask combination case is the best, or 1 byte away from it.
+  - If yes, take note of the bytes for the bitpacked bit positions (except if
+    one is 00 -- do not count 00, implied by format).
+
+If the tileset is not large enough to take full advantage of the header (gfx ID
+4D has only 4 tiles, for example), then the Japanese game fills the 0xF bytes
+for bitmask data with all 00, and remaining spaces for the bitplane combination
+indices with whatever is in slot 0. Perhaps you could save space by encoding
+into the pointer value (bits 23 and 15) whether each is included or not, since
+the LoROM memory layout should make it so bit 23 (800000) is clear and bit 15
+(008000) is set.
+
+It turns out choosing the correct values for both bitplane and bitmask metadata
+is fairly important. My compressor performed better for some data blocks, while
+Chunsoft's did better for others.
