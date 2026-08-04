@@ -182,43 +182,6 @@ FF END
 
 --------------------------------------------------------------------------------
 
-How to translate the credits:
-
-The big limitation to the existing system: the smallest block of graphics data
-we can obtain with a single character ID is a 3x3 tile block. Unlike the credits
-for Otogirisou, the tilemaps do not support X/Y flip and cannot be generated on
-a tile-by-tile granularity.
-
-When translating Otogirisou, I had learned about a program called superfamiconv
-that can automate tileset/tilemap generation. It lets me generate a tileMAP with
-24x24 pixel blocks (nine 8x8 cells in a 3x3 grid) and both a tileSET and tileMAP
-with 8x8 blocks, but it does not allow generating 24x24 tilesets. However, I was
-able to make a program to generate a 24x24 tileset from the 8x8 tileset+tilemap
-and 24x24 tilemap.
-
-I made an ASM hack for a "go left by one tile" character ID control code value.
-I felt a suitable value was FE. I injected it into the control flow by replacing
-the AND.w #$00FF at $01DB2B with a JSR to my custom code in bank 01. Purpose was
-to mitigate potential issues where a word can just barely exceed the right bound
-of a 3x3 tile block. It can claw back horizontal space that otherwise would be
-wasted either on screen or from baking a tile column into the gfx data.
-Example use case: reusing the tiles of the word "Development" between the two
-lines "Music Development" and "Development Director".
-
-Accounting for 00/FE/FF as control codes, we are limited to char values 01-FD
-(253 values) for text gfx blocks. The contiguous gfx data space only allows 0xC0
-blocks without repointing, but the pointers are 24-bit anyway.
-
-Can all the text fit within this 01-FD limit? Could using a formula for graphics
-pointers (where to put the code?) free up space versus the full pointer table?
-The table is 0x88*3 = 0x198 bytes, which fits 5 blocks with 0x30 bytes leftover.
-
-A clean 1-1 value-to-char mapping is most likely infeasible for English.
-However, table files allow you to do multi-byte entries like this:
-010203=NineTileWideText
-
---------------------------------------------------------------------------------
-
 As for accurately romanizing the names, I found this page:
 https://www.mobygames.com/game/65563/kamaitachi-no-yoru/credits/snes/
 
@@ -257,11 +220,14 @@ Composer
 開発監督
 Programming Director
 　開発会社
+  (Development Co.)
 　　アクアマリン
-    Development Co.
-	Aquamarine
+	Aquamarine Co., Ltd.
 　 斉藤 昌快
-   Masayoshi Saitō
+   Masayoshi Saitō*
+(Fun fact: Aquamarine went on to also develop Shiren the Wanderer GB, and most
+of the programmers' names here would appear in Shiren GB's credits. Aquamarine's
+name in Shiren GB is prefixed with 株, so translating here as just "Co. Ltd.")
 
 開発
 Programmer
@@ -343,3 +309,77 @@ Director
 Production/Copyright
 株式会社 チュンソフト
 Chunsoft Co., Ltd.
+
+--------------------------------------------------------------------------------
+
+How to insert translated versions of the credits:
+
+The big limitation to the existing system: the smallest block of graphics data
+we can obtain with a single character ID is a 3x3 tile block. Unlike the credits
+for Otogirisou, the tilemaps do not support X/Y flip and cannot be generated on
+a tile-by-tile granularity.
+
+When translating Otogirisou, I had learned about a program called superfamiconv
+that can automate tileset/tilemap generation. It lets me generate a tileMAP with
+24x24 pixel blocks (nine 8x8 cells in a 3x3 grid) and both a tileSET and tileMAP
+with 8x8 blocks, but it does not allow generating 24x24 tilesets. However, I was
+able to make a program to generate a 24x24 tileset from the 8x8 tileset+tilemap
+and 24x24 tilemap.
+
+---
+
+I made an ASM hack for a "go left by one tile" character ID control code value.
+I felt a suitable value was FE. For a quick test, I injected it into the control
+flow by replacing the AND.w #$00FF at $01DB2B with a JSR to my custom code in
+bank 01.
+
+Purpose: mitigate potential issues where a word can just barely exceed the right
+bound of a 3x3 tile block. It can claw back horizontal space that otherwise
+would be wasted either on screen or from baking a tile column into the gfx data.
+
+Example use case: reusing the tiles of the word "Development" between the two
+lines "Music Development" and "Development Director".
+
+---
+
+Accounting for 00/FE/FF as control codes, we are limited to char values 01-FD
+(253 values) for text gfx blocks. The contiguous gfx data space only allows 0xC0
+blocks without repointing, but the pointers are 24-bit anyway.
+
+---
+
+After another user FredArtz designed a credits font for me, I found that I was
+JUST able to make a tilemap with 0xFD unique graphics blocks. Furthermore, the
+graphics blocks had to be changed to 16x24 (recalculating loop counters in the
+disassembled ASM code was simple enough), and I did have to use that FE code.
+
+The 16x24 tileset made each block 0x30 bytes, which made it easier to calculate
+the graphics block pointer from the block ID in assembly code, rather than
+storing a pointer table.
+
+When converting the image mockup from GIMP to a 1bpp tileset, I found that the
+8x8 tileset was about half the size of its corresponding 16x24 tileset, because
+there were many empty tiles that got repeated amongst the tops of the lowercase
+letters.
+
+Significantly, the 8x8 tileset fits into the 0x400 tile limit. You may be able
+to change the graphics loading system to save space:
+- Original: Programmatically create the tileMAP once, and update the tileSET as
+  lines are displayed on the screen.
+- Edited: Copy the full tileSET into VRAM once, and update the tileMAP as lines
+  are displayed on the screen.
+
+Advantages: You can save tiles in the tileset with X/Y flip. FE value unneeded.
+Tradeoffs:  (Significant?) ASM rewrite needed. Tilemaps will take more space.
+
+Suggestion: Each line is 3 tiles tall. To not waste space on 00s padding out to
+the right edge of the screen, you can store tilemap entries column by column and
+define a data terminator like FFFF. You can write entries to the correct offsets
+in the tilemap buffer for the top/middle/bottom rows, advance a column right,
+and check for the terminator value.
+
+ Col | 0 1 2 3  Stored tilemap entries: [0 4 8 ; 1 5 9 ; 2 6 A ; 3 7 B ; FFFF]
+-----+--------
+ Top | 0 1 2 3
+ Mid | 4 5 6 7
+ Bot | 8 9 A B
