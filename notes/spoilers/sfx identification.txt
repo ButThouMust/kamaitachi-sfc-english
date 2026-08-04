@@ -1,0 +1,266 @@
+Internal sound effect IDs
+
+00: ペンション・シュプール, The Ski Lodge Spur
+01: 花のＯＬ三人組, Three Lovely Working Girls
+02: Ｏの喜劇, The Comedy of O
+03: わしが香山や！～男の大往生～, I am Kayama! ~ A Man's Peaceful Death ~
+04: わしが香山や！～男の大往生～ karaoke version
+05: 悪夢, Nightmare
+06: せまりくる恐怖, Imminent Fear
+07: ひとつの推理, A Deduction
+08: うろつく殺人犯, Prowling Murderer
+09: like a combination of 3E and 3F, with some unique sounds of its own
+0A: 変な場面, Unusual Scene
+0B: 混乱, Chaos
+0C: 殺人鬼, Cold-Blooded Murderer
+0D: 悪霊, Evil Spirit (note: plays when it is revealed the okama is alive)
+0E: 不快, Discomfort
+0F: 追憶, Recollection
+
+10: 長い夜の始まり, The Beginning of a Long Night
+11: "Welcome to Mysterious Fountain!"
+12: Introduction (file has been selected)
+13: レクイエム, Requiem
+14: レクイエム, Requiem without starting on the motif of "Introduction"
+15: 遠い日の幻影, Visions of a Distant Day (fade in)
+16: nothing? always appears before ID 15
+17: LOVER
+18: alt version of 懐かしいあの風景 when going to Osaka or leaving labyrinth
+19: 懐かしいあの風景, That Beloved/Fondly Remembered Scene
+1A: ノスタルジア, Nostalgia
+1B: すてきな宝物, Amazing Treasure (use SFX code 47 with inputs 01,1B to
+    transition into more full version)
+1C: すてきな宝物, Amazing Treasure (again)
+1D: mission
+1E: 雪の中の追跡, Pursuit in the Snow
+1F: labyrinth ambient music
+
+20: labyrinth battle music
+21: "the mystery pension!"
+22: two note "oops" sound
+23: grim discovery, e.g. "tonight, at midnight, someone will die"
+24: "find Kayama's body"
+25: "Midori is the traitor!"
+26: catch a glance of something outside the window ($08B277-0)
+27: "a monster appears!"
+28: "jackpot!"
+29: "jackpot!" chiptune version
+2A: ゲレンデの恋人たち, Lovers on the Ski Slope
+2B: 遅れてきた客　美樹本, The Tardy Guest Mikimoto
+2C: 血のついたメッセージ, A Message Written in Blood
+2D: 琥珀色の三日月, Amber Crescent Moon
+2E: フランス情報部SDECE, The French Intelligence Agency SDECE
+2F: かまいたちの夜, Kamaitachi no Yoru (used specifically for title screen?)
+
+30: かまいたちの夜, Kamaitachi no Yoru (used in the story)
+31: 意外な結末, An Unexpected End
+32: 闘い, Battle
+33: 俊夫の怒り, Toshio's Rage
+34: 追跡, Pursuit
+35: labyrinth final floor
+36: 解決, Resolution
+37: 失くしたものは……, What Was Lost...
+38: 伝説のスパイ, Legendary Spy
+39: labyrinth's game over music
+3A: sudden discovery, e.g. "tonight, KAMAITACHI will appear"
+3B: strange discovery (laser beam, Pension Knulp)
+3C: Otogirisou title theme
+3D: Mrs. Kayama pointing a gun at you and Mari
+3E: tones that play after "tonight, at midnight, someone will die"
+3F: low-pitched swelling/fading tone
+
+40: Toshio planning to do something with Tooru when everyone's arms are tied up
+41: describing the dismembered body, or you killing Kanako with a mop
+42: ambient noises when first discovering Mari being possessed
+43: heartbeat
+44: looking at Tanaka in the corner of the dining hall
+45: four-tone unsettling music in the occult route
+46: four-tone creepy ambient music when wandering the lodge after waking up
+47: "confirm menu" sound effect
+48: -- NOT USED IN SCRIPT - "cancel menu" sound effect
+49: ambient wind sfx, plays once
+4A: ambient wind sfx
+4B: ambient wind sfx
+4C: a high-pitched wind suddenly blows
+4D: ambient wind sfx
+4E: low winds when waking up after falling asleep
+4F: quiet winds when huddling in the Survival Game route
+
+50: high pitched wind starts and continues
+51: ambient wind sfx, somewhat continuous
+52: ambient wind sfx, comes in and out
+53: lightning
+54: cuckoo clock rings 1 time
+55: cuckoo clock rings 3 times
+56: -- NOT USED IN SCRIPT; 5 cuckoo clock rings
+57: cuckoo clock rings 7 times
+58: cuckoo clock rings 9 times (can do stop script per ring)
+59: ticking clock
+5A: TV changes channels
+5B: TV static
+5C: open a window
+5D: shut a window
+5E: a sound outside the broken window
+5F: glass shattering
+
+60: two chimes from the front door
+61: two chimes from the front door
+62: creak open a door
+63: a door creaking open
+64: chime of the front door
+65: ring the back door bell
+66: ring the back door bell
+67: door clicks open
+68: door clicks closed
+69: door opening
+6A: door closing
+6B: shut door
+6C: slam door closed
+6D: two knocks on a door
+6E: two knocks, then three knocks on a door
+6F: five rapid knocks on a door
+
+70: three bangs on a door
+71: five rapid knocks on a door
+72: open Mikimoto's unlocked door
+73: rattle a doorknob four times
+74: unlocking a door
+75: locking a door
+76: opening a door
+77: closing bathroom door
+78: opening curtains for the closet
+79: open car door
+7A: close car door
+7B: phone rings
+7C: -- NOT USED IN SCRIPT; phone rings
+7D: pick up the phone
+7E: hang up the phone
+7F: rapidly click the phone's switch hook
+
+80: stepping through snow
+81: four quick steps
+82: several quick steps away
+83: several quick steps away
+84: five steps up the stairs
+85: running up stairs
+86: stepping down the stairs, fade to the right
+87: stepping down the stairs
+88: running down stairs
+89: approaching creaks
+8A: a creak on the stairs
+8B: continuous creaks on the stairs
+8C: Kayama going down the stairs to the basement
+8D: like 8C but much slower
+8E: Jenny meowing
+8F: Jenny running out of the closet
+
+90: distant hum of an engine outside the lodge, and it turning off (Mikimoto)
+91: distant hum of an engine as Mr. Kobayashi approaches at end of spy route
+92: distant hum of an engine outside the lodge, and it turning off (Kayama)
+93: low hum of an engine
+94: low hum of an engine
+95: start up an engine
+96: try to start an engine three times
+97: violently steering a car out of the way of something
+98: a car crashing
+99: cocking a gun (1)
+9A: a gunshot
+9B: Mrs. Kayama shoots Tooru
+9C: muffled gunshot, when Toshio kills himself
+9D: cocking a gun (2)
+9E: cocking a gun (3)
+9F: machine gun firing - close
+
+A0: machine gun firing - distant
+A1: snowmobile engine (code 47: it speeds off and stops)
+A2: snowmobile engine (code 47: it speeds off and persists)
+A3: camera shutter
+A4: snow falls outside the lodge
+A5: a noise from inside the cleaning closet
+A6: items in the cleaning closet falling over
+A7: blunt object hits your head
+A8: a single swing at the air
+A9: swing a mop at the air
+AA: repeat sound effect of swinging something at the air in groups of 3-2-3-2
+AB: a mop hits some kind of surface (see $0782C5-2)
+AC: use a mop to open a door (a hollow sound)
+AD: brushing off snow from dismembered body
+AE: Mari moving away a ceiling tile when Tooru gives her a boost
+AF: stand up from the couch
+
+B0: a woman screaming
+B1: a woman screaming (slightly lower pitched)
+B2: Kanako screaming at you when she attacks you (higher pitched)
+B3: a man screaming (comedy of O route)
+B4: a man screaming (occult route)
+B5: noises when entering a room while looking the lodge for the murderer
+B6: a sound effect when something pierces something else
+B7: Mikimoto rips off his beard
+B8: an impact
+B9: a slap
+BA: a punch
+BB: a flurry of punch and hit sounds
+BC: plates and cups scattering off a table
+BD: a thud
+BE: Mikimoto breaks Tooru's arm
+BF: a thud on the ground
+
+C0: a thud as Toshio tackles Kayama, or when you fall after Mari stabs you
+C1: a thud as Kyoko's hand falls out of the bathroom
+C2: a stabbing sound (1)
+C3: a stabbing sound (2)
+C4: pulling off sheets from a bed
+C5: curtains flapping in the wind
+C6: skiing sound effects (continuous)
+C7: skiing sound effects (short); Mari kicking up some snow as she stops
+C8: Kayama turns off the TV
+C9: opening a zipper
+CA: a thud, for rope or piano wire
+CB: Toshio's body falls down when you open the entrance door
+CC: two thuds
+CD: Tooru's back hits a wall when confronting Mikimoto
+CE: a sharp metallic sound, e.g. a cold stare
+CF: rip the ski pole out of your neck
+
+D0: a slight bang on a door
+D1: the voice of Mari being possessed
+D2: a sucking sound, and a pop (comedy of O route)
+D3: slashing of Mari's hair
+D4: Mari's hair whipping Mr. Kobayashi (once)
+D5: Mari's hair whipping Mr. Kobayashi (twice in one animation)
+D6: an explosion
+D7: rumbling
+D8: clink of glasses
+D9: -- NOT USED IN SCRIPT - the "cast a spell" sound effect from Dragon Quest
+DA: Tooru takes damage in the labyrinth
+DB: enemy takes damage in the labyrinth
+DC: -- NOT USED IN SCRIPT - the "you missed!" sound effect from Dragon Quest
+DD: -- NOT USED IN SCRIPT - the "you dodged!" sound effect from Dragon Quest
+DE: -- NOT USED IN SCRIPT - the "unlock door" sound effect from Dragon Quest
+DF: -- NOT USED IN SCRIPT - a sound effect from Torneko? don't recognize it
+
+E0: run away in the labyrinth
+E1: DQ-style "the player attacks!" sound
+E2: DQ-style "the enemy attacks!" sound
+E3: DQ-style "go down stairs" sound
+E4: -- NOT USED IN SCRIPT - a slashing or stabbing sound
+E5: -- NOT USED IN SCRIPT - a crashing sound
+E6: DQ-style "a critical hit!" sound - flames appear
+E7: two enemy attack sounds
+E8: -- NOT USED IN SCRIPT - smoke rising out of a trap?
+E9: flame demon burns you to death
+EA: goblin disappears when defeated
+EB: -- NOT USED IN SCRIPT - low-pitched sound, like falling down
+EC: -- NOT USED IN SCRIPT - low-pitched sound of a door opening?
+ED: iron door moves in the labyrinth
+EE: statue moves in the labyrinth
+EF: jet of "water" out of the statue in the labyrinth
+
+F0: hit elevator button, and it moves
+F1: Labyrinth-kun disappears before you leave the labyrinth
+F2: rumbling of Labyrinth-kun's voice (1)
+F3: -- NOT USED IN SCRIPT - rumbling of Labyrinth-kun's voice (2)
+F4: rumbling of Labyrinth-kun's voice (3)
+F5: -- NOT USED IN SCRIPT - three slashes, and a stabbing sound
+F6: a quick slash - unique to door 4 in labyrinth
+F7: iron ball - unique to door 9

@@ -1,0 +1,241 @@
+The game has a dedicated control code, 103A, for doing visual effects.
+It takes one input that identifies which effect to do.
+
+Unused entries in the script (try making a script that will show what they do):
+02, 03, 04, 0A/27,
+10, 13 (same as used 2A?), 19, 1A, 1F,
+20, 23, 26, 28, 29, 2b,
+32/3e, 36, 3C, 3D,
+4A, 4D
+
+00: cancels out persistent effects like snow or flapping curtains
+01: cuts all the colors to "brownscale", when you find a dead body
+02: unused in script; inverts the colors of the bg gfx
+03: unused in script; also does like an inversion of the bg gfx
+04: unused in script; bg gfx spins along axis in middle of the screen
+    if you could look at it from the left side, it spins counter-clockwise
+05: deflate the "BOMB" bad idea graphic
+06: BG graphics contiguously "pour out" the bottom
+07: the individual scanlines on screen "pour out" the bottom
+08: one of the game's snow effects
+09: another snow effect, specifically on the snowy forest?
+0a: unused in script, same ptr as 27; red radiates out from center of screen
+0B: does like a "flashback"/tunnel vision iris effect
+0C: iris out (to black)
+0D: iris in (to graphics)
+0E: an animation of blood spilling down from the top of the screen
+0F: static noise for the "TV" in Kamai-tachi route
+
+10: unused in script; another static TV noise effect
+11: does the camera shutter effect when Aki asks for a picture
+12: fades out the text layer in some bad endings
+13: unused in script, same ptr as 2a; sinusoidal distortion of bg gfx
+14: double clock wipe in
+    - interestingly, code for this has a wrong (?) branch length (off by 1) that
+      ultimately doesn't get taken; see $03B613 in $03B604 subroutine
+15: screen flashes white for a few seconds, see $0CB86F-6
+16: a momentary white flash on screen (7 frames)
+17: barndoor wipe in  (like curtains opening)
+18: barndoor wipe out (like curtains closing)
+19: unused in script; appears to just cut the graphics layer to black?
+1a: unused in script; special color-based dissolve out effect
+1b: clamshell wipe in  (like a clam opening)
+1c: clamshell wipe out (like a clam closing)
+1d: an internal view of Tooru's mind as he imagines silhouettes of people
+1e: double clock wipe out
+1f: unused in script; bg gfx colors fade to like brownscale
+
+20: unused in script; bg gfx colors fade to inverted colors
+21: screen shakes for snowmobile
+22: cancel vfx 1d in particular?
+    also used right before setting up for screen to enter killer's name
+23: unused in script; a flash, then colors get inverted
+24: has something to do with snow?
+25: cut out snow effect 24?
+26: unused in script; some kind of snow effect - check in isolation
+27: unused in script, same pointer as 0a
+28: unused in script; slightly changes BG graphics colors, cut out all silhouettes
+29: unused in script; sine distortion of bg gfx; longer wavelength and amplitude
+2a: sinusoidal distortion of background gfx, see $07A99C-2, same pointer as 13
+2b: unused in script; does like a scanline interleave effect; evens go left,
+    odds go right (even/odd is WLOG); repeat six times
+2c: rapidly alternate showing the regular bg gfx layer and the top bg gfx layer
+    used for the two-frame animation of Tooru imagining a spinning buzzsaw
+2d: barndoor wipe in, allow text
+2e: barndoor wipe out
+2f: switch the Super Famicom off
+
+30: does the flapping curtains in the wind in Tanaka's room
+31: rapid flashing from a machine gun FLASHING LIGHTS WARNING
+32: unused in script, same pointer as 3e; don't know
+33: stop shaking snowmobile? not sure
+34: labyrinth enemies attacking you
+35: for attacking the goblin, see $0EA921-0
+36: unused in script; circle iris effect with sine distortion
+37: flashback iris effect - note that it affects silhouettes
+38: snow
+39: cut out snow 38
+3A: the "slash knife down" animation in some bad endings
+3b: dozens of small circles spiral into the center of the screen
+3c: unused in script; a flash, and inverted colors
+3d: unused in script; a flash, and colors converted to brownscale
+3e: unused in script, same pointer as 32; don't know
+3f: screen shakes in the occult route
+
+40: sporadic flashing
+41: text on file management for existing file without pink bookmark
+42: text on file management when continuing file not after an ending
+43: text on file management when continuing file after an ending
+44: text when choosing to delete a file
+45: fade out the whole screen to black in some endings
+46: for graphics on file management for new file?
+47: see $0BBD4D-4
+48: snowmobile effect, don't know for sure
+49: snowmobile effect, don't know for sure
+4a: unused in script; don't know
+4b: shows the "bad end" 終 graphic in the bottom right of the screen
+4c: convert silhouette from sprites to BG layer 2; set up for effect 4e
+4d: unused in script; needs set up like 4e; silhouette layer twitches to left
+4e: collapse a silhouette at $08A03C-0
+4f: shake the top layer of graphics
+
+50: dissolve out text layer but not bad end kanji
+51: dissolve out text layer with bad end kanji
+52: is for graphics on file management for pink/gold bookmark file?
+
+--------------------------------------------------------------------------------
+
+Misc. notes go here...
+
+--------------------
+
+$03BBF9-$03BC4B is a data list where one byte is for each VFX input ID.
+Indeed, the list has 0x53 entries. "--" means value 00.
+
+## | 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
+---+------------------------------------------------
+0x | 01 41 41 41 -- -- -- -- 02 02 -- 02 -- -- -- 01
+1x | 01 -- -- 81 -- -- -- -- -- -- -- -- -- 01 -- 81
+2x | 41 C1 -- 41 81 81 01 01 01 41 41 -- 41 -- -- --
+3x | 01 -- 01 C1 01 -- 01 01 02 01 -- -- 41 41 01 01
+4x | 41 -- -- -- -- -- -- 41 41 41 41 01 01 -- -- C1
+5x | -- -- --
+
+----------
+
+$00A9BF: Bits 6-7 are flags about what bytes to modify in the range 0B94-0B97.
+Ranges 00-3F -> 0b94, 40-7F -> 0b95, 80-bf -> 0b96, c0-ff -> 0b97.
+
+0b94 range: 00 04-12 14-1e 22 26-28 2b 2d-32 34-3b 3e 3f 41-46 4b-4e 50-52
+0b95 range: 01-03 20 23 29 2a 2c 3c 3d 40 47-49
+0b96 range: 13 1f 24 25
+0b97 range: 21 32 4f
+Some kind of way to prioritize which ones get run first?
+
+----------
+
+$00ABAF: Input flag in C flag. Check value N in bits 0-1 (bits 2-5 unused):
+N = 0? do nothing, regardless of C flag
+N = 1 and carry CLEAR? do nothing
+N = 2 and carry SET?   do nothing
+Otherwise, run the code at $00ABCC-$00ABEA.
+
+val 00: 04-07 0a 0c-0e 11 12 14-1c 1e 22 2b 2d-2f 31 35 3a 3b 41-46 4d 4e 50-52
+val 01: 00-03 0f 10 13 1d 1f-21 23-2a 2c 30 32-34 36 37 39 3c-40 47-4c 4f
+val 02: 08 09 0b 38
+
+Crude summary (needs more details):
+- 00 = anything that modifies the silhouettes and/or BG1 on the screen?
+- 01 = color conversions, static, sine distortion, internal silhouettes,
+    buzzsaw, curtains, screen shakes, circle iris effect, snowmobile effects
+    anything that keeps silhouettes on the screen?
+- 02 = snow, or "flashback" iris effect
+
+--------------------
+
+Input 01 ("brownscale")
+
+The game uses a lookup table at $5FE9DC for converting colors to "brownscale,"
+if that makes sense. Like grayscale, but where the colors are shades of brown.
+
+The formula for what index to use, given a color with 5-bit B/G/R components, is
+X = (R*5 + G*0xA + B*2) >> 4. The ASM code uses right shift 3 and AND with FFFE.
+
+ 15-bit | BB GG RR | 24-bit      15-bit | BB GG RR | 24-bit
+--------+----------+--------    --------+----------+--------
+  0000  |  0  0  0 | 000000       31F0  |  C  F 10 | 847B63
+  0001  |  0  0  1 | 080000       3611  |  D 10 11 | 8C846B
+  0422  |  1  1  2 | 100808       3632  |  D 11 12 | 948C6B
+  0843  |  2  2  3 | 181010       3A53  |  E 12 13 | 9C9473
+  0C64  |  3  3  4 | 211818       3E74  |  F 13 14 | A59C7B
+  0C85  |  3  4  5 | 292118       4295  | 10 14 15 | ADA584
+  10A6  |  4  5  6 | 312921       46B6  | 11 15 16 | B5AD8C
+  14C7  |  5  6  7 | 393129       46D7  | 11 16 17 | BDB58C
+  18E8  |  6  7  8 | 423931       4AF8  | 12 17 18 | C6BD94
+  1909  |  6  8  9 | 4A4231       4F19  | 13 18 19 | CEC69C
+  1D2A  |  7  9  A | 524A39       533A  | 14 19 1A | D6CEA5
+  214B  |  8  A  B | 5A5242       535B  | 14 1A 1B | DED6A5
+  256C  |  9  B  C | 635A4A       577C  | 15 1B 1C | E7DEAD
+  298D  |  A  C  D | 6B6352       5B9D  | 16 1C 1D | EFE7B5
+  29AE  |  A  D  E | 736B52       5FBE  | 17 1D 1E | F7EFBD
+  2DCF  |  B  E  F | 7B735A       63DF  | 18 1E 1F | FFF7C6
+
+--------------------
+
+VFX 02: While not used in the script, the ASM code seems to do like a color
+inversion. However, instead of necessarily doing the inversion based on white
+(BGR15 7FFF), it finds the strongest color component C in all of CGRAM (except
+colors used for the text) and uses C*(B=1,G=1,R=1) as the basis.
+
+--------------------
+
+$03C4E6: $98,$9A,$9C contain the R/G/B components for a color value
+Output values will be in $9E,$A0,$A2
+$A2 will have the mean of the smallest and largest components
+
+If R=G=B, $9E <- 0, $A0 <- 0, $A2 <- the component (still qualifies as mean)
+
+Otherwise, sort them from greatest to smallest (big, middle, small)
+Construct two 10-bit values consisting of the data:
+X <- ((mid - small) << 5) | (big - small)
+Y <- (big << 5) | small
+Use these values as a byte offset into a list at $5FD99A (value range: 00-1F).
+For the byte you get with the Y offset, store it directly to $A0.
+For the byte you get with the X offset, you likely need to modify it ($9E).
+
+(Assume below that a single two-way tie may occur, but not a three-way tie)
+R>=B>=G: 0xC0 - value       B>=R>=G: 0x80 - value
+R>=G>=B: value              G>=B>=R: value + 0x40
+B>=G>=R: 0x40 - value       G>=R>=B: 0x80 - value
+
+--------------------
+
+There are VFX code subroutines that the game does not use in normal gameplay.
+You can modify an entry in the VFX pointer table at $03BB53 with one of these:
+
+$0387B3: divides the screen into ninths (3x3); each ninth takes gfx from another
+         section on screen and individually shifts up/down and left/right, while
+         the whole screen itself also shifts left/right
+
+$039222: don't know for sure, but did some crazy stuff to the screen
+
+$039763: wait about a second, turn off sprites, and fade screen to bright red
+
+$039A0E: cut whole screen to black, then fade it back in over 45 frames
+
+$03C454: cut out silhouettes, make colors cycle through some weird patterns;
+         until it is done, text prints on screen more slowly, and will not show
+         next screen of text until color cycle is done
+
+$03C7C0: cut out silhouettes, colors on screen become brighter
+
+The code at $03D048 is not used in the script, but when I forced the game to
+load it anyway as VFX code (change pointer for VFX ctrl code input in table),
+it crashed the game in an interesting way.
+- First, the graphics mode is set to Mode 7, assuming that any graphics data in
+  VRAM is indeed in Mode 7 formatted tiles.
+- Then, the game displays ten memory addresses on the right side of the screen,
+  specifically the Mode 7 affine transformation values, M7HOFS/M7VOFS, and two
+  other things I don't know yet.
+- The hex digits for the addresses are, interestingly, sourced from a font that
+  exists uncompressed at the very end of the ROM.
