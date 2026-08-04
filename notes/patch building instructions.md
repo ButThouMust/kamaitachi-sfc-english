@@ -17,7 +17,7 @@ All the batch files assume the JP ROM is present unless otherwise specified.
   - Assumes that tilesets, tilemaps, LZSS data blocks have already been recompressed.
 - `BUILD patched game reuse script.bat`
   - Insert data for English script, menu text, recompressed data. Reuses the already generated script, assuming that you have already run `BUILD patched game.bat` at least once.
-  - Same assumption as above.
+  - Same assumption as above regarding recompressed data.
 - `TEST SCRIPT with Atlas.bat`
   - Does what it says on the tin. You can make sure that the script is being correctly parsed by Atlas before doing the whole build process.
 
@@ -55,7 +55,10 @@ These do not require the ROM to be present, but do require superfamiconv.
   - Use this if you want to make your own end credits not *wholly* from scratch. You still need to stitch them all together in an image editor, preferably one with layers like GIMP.
 
 ## Order of batch files to run
-You may be tempted to run `BUILD patched game.bat` or `BUILD patched game reuse script.bat` right away, but there are some other things you have to run first.
+Before you can run `BUILD patched game.bat` or `BUILD patched game reuse script.bat`, you must run the following batch files.
+
+### Initial setup with generating data
+A warning about disk space, if this concerns you: This section will eat up about 80 MB because of the detailed text logs for compression and decompression.
 
 Open a PowerShell terminal in the root directory of your clone of this repo. You need to recompress data from the JP game:
 1. `DECOMPRESS jp game tilesets.bat` and `TILESETS recompress.ps1`
@@ -63,11 +66,16 @@ Open a PowerShell terminal in the root directory of your clone of this repo. You
 3. `TILEMAPS recompress improved ranges.bat`
 4. `LZSS recompress rom blocks.bat`
 
-You also need to generate the binary data for the end credits from the supplied mockup image, as well as a lookup table for the name entry screen's character data.
+You also need to generate the binary data for the end credits from the supplied mockup image, as well as a lookup table for the name entry screen's character graphics data.
+
 5. `END CREDITS generate tilesets and maps from mockup.bat`
 6. `NAME ENTRY generate char GFX lookup table.bat`
 
+### Building the patch
+Recommended if doing script edits: run `TEST SCRIPT with atlas.bat` to make sure the script doesn't have any uncommented anomalous characters.
+
 Finally, you can run:
+
 7. `BUILD patched game.bat`
 
 And if you need to test something without doing any script modifications, you
