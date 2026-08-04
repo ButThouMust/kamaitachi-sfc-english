@@ -104,15 +104,3 @@ One of the pink bookmark routes has a joke that is completely lost in translatio
 > "No it's not, Mari. They're obviously talking about a 山."
 
 Where the joke is that 泉 *izumi* means fountain and 山 *yama* means mountain. I translated this to have Tooru think it's a different kind of fountain.
-
-## Otogirisou title screen
-![](/repo%20images/otogirisou%20title%20screen%20recreation%20tv%20border.png)
-![](/repo%20images/otogirisou%20title%20screen%20recreation%20full.png)
-
-No, I'm not making this up! This involves a joke route that you unlock after solving the murder mystery. In the lounge, Tooru and Mari find a Super Famicom with copies of Otogirisou and Kamaitachi no Yoru. If you pick Otogirisou, you will see a recreation of that game's title screen.
-
-The graphics for the TV border are separate, but in normal play, you will only ever see the title screen recreation with the TV border.
-
-I suppose you can argue that since the story says Super *Famicom* instead of Super *Nintendo*, you can get away with keeping in the original logo. I'd gotten permission from Muttvil, the creator of the translated title logo for my Otogirisou translation project, to reuse it for Kamaitachi no Yoru.
-
-There's one thing that complicates inserting the translated logo. In the original game, the logo and the background image of the mansion and field of flowers are on separate background layers. The recreation in Kamaitachi combines them into one layer, and the colors between each version are not 100% the same.

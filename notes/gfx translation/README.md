@@ -43,3 +43,15 @@ One notable thing about the title logo itself is that with the final palette you
 ![](/repo%20images/title%20screen%20in%20middle%20of%20fade%20to%20logo.png)
 
 And if you're wondering, yes, the shape of the splatter was designed with the Japanese title logo in mind. Some contours of the splatter fit with the logo, which you can see if you take a screenshot in the middle of the fade like above. So on top of translating the logo itself, you would have to also redraw the two blood splatter frames to have them match the logo.
+
+## Otogirisou title screen
+![](/repo%20images/otogirisou%20title%20screen%20recreation%20tv%20border.png)
+![](/repo%20images/otogirisou%20title%20screen%20recreation%20full.png)
+
+No, I'm not making this up! This involves a joke route that you unlock after solving the murder mystery. In the lounge, Tooru and Mari find a Super Famicom with copies of Otogirisou and Kamaitachi no Yoru. If you pick Otogirisou, you will see a recreation of that game's title screen.
+
+The graphics for the TV border are separate, but in normal play, you will only ever see the title screen recreation with the TV border.
+
+I suppose you can argue that since the story says Super *Famicom* instead of Super *Nintendo*, you can get away with keeping in the original logo. I'd gotten permission from Muttvil, the creator of the translated title logo for my Otogirisou translation project, to reuse it for Kamaitachi no Yoru.
+
+There's one thing that complicates inserting the translated logo. In the original game, the logo and the background image of the mansion and field of flowers are on separate background layers. The recreation in Kamaitachi combines them into one layer, and the colors between each version are not 100% the same.
