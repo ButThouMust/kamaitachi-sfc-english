@@ -3,7 +3,7 @@ prompt $g
 
 @set srcPath=".\src"
 
-javac .\src\tilemaps\KamaitachiTilemapDumper.java .\src\tilemaps\KamaitachiTilemapRecompressionImproveRanges.java
+javac .\src\tilemaps\decompression\KamaitachiTilemapDumper.java .\src\tilemaps\compression\KamaitachiTilemapRecompressionImproveRanges.java .\src\tilemaps\constants\TilemapCompConstants.java
 pause
 java -classpath %srcPath% tilemaps.compression.KamaitachiTilemapRecompressionImproveRanges
 java -classpath %srcPath% tilemaps.compression.KamaitachiTilemapRecompressionImproveRanges "./recompressed tilemaps/$46C1B8 combined tilemap.bin"
