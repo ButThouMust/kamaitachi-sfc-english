@@ -1,0 +1,912 @@
+According to a dump of the game's Huffman tree, there are around 0x62 control
+codes in Kamaitachi from 0x1000 to 0x1061. Corroborating the 0x62 figure is
+some code at $009585. If the game has determined a character in the uncompressed
+character buffer is a control code, it will not run the code if the value is
+0x63 or higher.
+
+--------------------------------------------------------------------------------
+
+$01A901 has a list of 4 byte structures that encode info about:
+- how to read input data (as regular data, or as pointers) and how many of each
+- what assembly code to execute for each at specific moments
+
+Oddly, the table is about twice as large as it should be, with 0xC4 structures
+instead of just 0x62 structures. Any purpose for the last half of the table?
+
+Data including mappings for ASM for control codes when in buffer:
+1000: 07 01 01 0A   1020: 17 01 01 0A   1040: 1E 81 02 0A   1060: 1C A0 00 0B
+1001: 08 01 01 0A   1021: 18 01 01 0A   1041: 3D 81 03 0A   1061: 1D A0 00 0B
+1002: 0D 80 F0 00   1022: 63 01 01 06   1042: 30 01 03 0A   1062: 63 81 01 00
+1003: 0D 00 00 0A   1023: 63 01 01 07   1043: 3E 82 05 0A
+1004: 0E 00 00 0A   1024: 32 80 F0 02   1044: 2F 02 05 0A
+1005: 0F 00 00 0A   1025: 31 C0 F0 01   1045: 3F 81 03 0A
+1006: 10 00 00 0A   1026: 0A 00 00 00   1046: 19 01 03 0A
+1007: 11 00 00 0A   1027: 3C 82 04 0A   1047: 1E 02 05 0A
+1008: 12 00 00 0A   1028: 33 01 01 0A   1048: 41 82 05 0A
+1009: 13 00 00 0A   1029: 42 82 04 0A   1049: 40 83 06 0A
+100A: 14 00 00 0A   102A: 34 01 01 0A   104A: 1D 03 06 0A
+100B: 15 00 00 0A   102B: 28 02 0B 0A   104B: 63 00 00 0A
+100C: 16 00 00 0A   102C: 29 02 0B 0A   104C: 63 00 00 0A
+100D: 06 00 00 0A   102D: 2A 02 0B 0A   104D: 22 00 00 0A
+100E: 03 00 F0 00   102E: 2B 02 0B 0A   104E: 23 01 03 0A
+100F: 63 05 27 08   102F: 2C 02 0B 0A   104F: 25 01 03 0A
+1010: 63 0A 28 0E   1030: 2D 02 0B 0A   1050: 00 C0 2A 03
+1011: 63 0A 28 0F   1031: 36 01 01 0A   1051: 00 C1 2A 03
+1012: 63 0A 28 04   1032: 37 01 01 0A   1052: 00 C2 2A 03
+1013: 63 0A 28 05   1033: 38 01 01 0A   1053: 00 C3 2A 03
+1014: 0C 00 00 0A   1034: 39 01 01 0A   1054: 01 C0 2A 03
+1015: 0B 80 F0 00   1035: 3A 01 01 0A   1055: 01 C1 2A 03
+1016: 21 00 F0 00   1036: 3B 01 01 0A   1056: 01 C2 2A 03
+1017: 1A 01 01 0A   1037: 45 81 02 0A   1057: 01 C3 2A 03
+1018: 0C C0 F0 09   1038: 63 01 01 0A   1058: 14 A0 00 0B
+1019: 04 01 01 00   1039: 63 01 01 0A   1059: 15 A0 00 0B
+101A: 05 01 01 00   103A: 43 81 01 0A   105A: 16 A0 00 0B
+101B: 05 80 F0 0C   103B: 44 81 01 0A   105B: 17 A0 00 0B
+101C: 06 80 F0 0C   103C: 0B 01 01 0A   105C: 18 A0 00 0B
+101D: 07 80 F0 0C   103D: 26 01 01 0A   105D: 19 A0 00 0B
+101E: 08 80 F0 0C   103E: 27 01 01 0A   105E: 1A A0 00 0B
+101F: 09 80 F0 0C   103F: 24 01 01 0A   105F: 1B A0 00 0B
+
+Convention: Script control code IDs will be denoted using their two byte script
+encoding rather than just the low byte, which is what I will use to represent
+the "internal" code IDs.
+
+--------------------
+
+Byte 00: Indicates an index into a list of subroutines ($00958E - $009619) for
+         what to do for each control code. Allows reusing ASM for ctrl codes.
+         Values 00 and 01 are reserved for the choice codes.
+         Value 02 has no associated control code.
+         Max value seems to be 45. Value 63 is some kind of placeholder value.
+    Use cases:
+    - $00879B: check if ctrl code is "normal" or for a choice
+    - $009559: interpretting value in a buffer, check if character or ctrl code
+    - $009A8F: read ctrl code args
+    - $009F3F: subtract 0x14 from byte 0 for offset for punctuation character
+    - $009F70: subtract 0x05 from byte 0 to get which name to write to buffer
+    - $00A2C3: run a subroutine from list at $00B490 ($00B496 - assumes >= 03)
+    - $00A776:
+
+----------
+
+Byte 01: Encodes how the game knows whether to read data as either regular
+         Huffman codes or as Huffman pointers. There are two cases:
+- For choice codes ($009AAB):
+  * Bits 0-1 encode both (# Huffman codes - 3) and (# pointers - 2).
+    For example, binary 10 -> 5 arguments and 4 pointers.
+- For non-choice codes ($009ADE):
+  * Bits 0-1 are # arguments.
+  * Bits 2-4 are argument types (0 = Huffman codes, 1 = pointers).
+  * Bits 5-6 unused?
+  * Bit 7 = need to stop reading upcoming text if 1; keep going if 0 ($009A3E)
+    Applicable codes: 1002, 1015, 1018, 101B-101F, 1024, 1025, 1027, 1029, 1037,
+                      103A, 103B, 1040, 1041, 1043, 1045, 1048, 1049, 1050-62.
+    Auto adv, end choice, end game, names, new chapter, clear, img fade in 27/29,
+    gfx top layer, vfx, execute function, starting sfx, choices, punctuation
+Also check:
+- $00A2DA: skip control codes when encountering a NEW CHAPTER code
+- $00A7E1: similar to above, don't know when each is called
+- $00A87D: (context: got a skip choice text code) skip running control code if
+           it is for delays, text speed, gfx, sfx, silhouettes, permanent flags
+
+----------
+
+Byte 02: ? Purpose in code unknown, but looking for patterns in existing data:
+00: 1003-100D, 1014, 1026, 104b-104d, 1058-1061
+    text speed, wait, code 14/26/4b/4c/4d, punctuation 
+01: 1000-1001, 1017, 1019-101a, 1020-1023, 1028, 102A, 1031-1036, 1038-103F, 1062
+    delay, code 17, x/y pos, flags, img fade out 28/2a, silh new screen, silh
+    group fade out, code 38/39, vfx, execute function, silh colors, brightness
+02: 1037, 1040
+    gfx top layer, code 40
+03: 1041, 1042, 1045, 1046, 104e, 104f
+    sfx, sfx cut out, code 1045/104e/104f, sfx stop script
+04: 1027, 1029
+    img fade in 27/29
+05: 1043, 1044, 1047, 1048
+    sfx fade in/out, sfx volume, code 1048
+06: 1049, 104a (both unknown purposes)
+0B: 102B-1030
+    silh fade in/out
+27: 100F
+    unconditional jump
+28: 1010-1013
+    conditional jumps
+2A: 1050-1057
+    choices
+F0: 100E, 1015, 1016, 1018, 101b-101f, 1024-1025
+    line, end choice, skip choice text, names, new chapter, clear
+
+----------
+
+Byte 03: See $009CED. There are 5 lists each of 0x10 subroutine pointers, that
+         are indexed using byte 03 of the metadata for a control code.
+
+Subroutines that use them are at:
+- $009C60 (list 0 $9D39)
+- $009C99 (list 3 $9D99) = printing chapter title
+- $009CED (list 1 $9D59 or list 2 $9D79)
+
+List 4 not used? No JSR to $009D24 (get byte 03 for list 4, execute function)
+The ## column below is out of order to focus on the unique entries.
+
+ ## | 9d39 | 9d59 | 9d79 | 9d99 | 9db9 | ctrl code IDs
+====+======+======+======+======+======+======================================
+ 01 | 9E7D | 9EA8 | 9F03 | 9F35 | ---- | 25 (clear)
+ 02 | 9DDE | ---- | ---- | ---- | ---- | 24 (new chapter)
+ 03 | 9DE5 | 9EF1 | 9F0C | 9DE5 | ---- | 50-57 (choices)
+ 0c | ---- | ---- | 9F61 | 9F63 | ---- | 1b-1f (printing names)
+ 0b | ---- | ---- | ---- | 9F3F | ---- | 58-61 (punctuation)
+ 09 | 9E0C | ---- | ---- | 9F2F | ---- | 18 (end game)
+
+ 04 | 9E28 | >>>> | >>>> | >>>> | 9F2F | 12 (script jump if temp flag set)
+ 05 | 9E36 | >>>> | >>>> | >>>> | 9F2F | 13 (script jump if temp flag clear)
+ 06 | 9E0E | >>>> | >>>> | >>>> | 9F2F | 22 (set temp flag)
+ 07 | 9E1B | >>>> | >>>> | >>>> | 9F2F | 23 (clear temp flag)
+ 08 | 9E67 | >>>> | >>>> | >>>> | 9E67 | 0f (script jump always)
+ 0e | 9E45 | >>>> | >>>> | >>>> | 9F2F | 10 (script jump if flag set)
+ 0f | 9E53 | >>>> | >>>> | >>>> | 9F2F | 11 (script jump if flag clear)
+
+ 00 | ---- | ---- | ---- | 9F2F | ---- | 02, 0e, 15, 16, 19, 1a, 26, 62
+    | auto adv, line, end choice, skip text when picked, set x/y pos, ?, ?
+    | for these, either do nothing (----) or back up text buffer offset (9F2F)
+
+ 0a | ---- | ---- | 9F2F | 9F2F | ---- | 00, 01, 03-0D, 14, 17, 20, 21, 27-4F
+    | delays, text speed, 1014=?, 1017=?, set/clear flag, gfx/silhs/sfx
+
+ 0d | ---- | ---- | ---- | 9F2F | ---- | n/a - can repurpose?
+
+"----" means $009DD9, which is just CLC and RTS
+">>>>" means to copy over from the left
+
+The value 0A has some special meaning in terms of printing choice options' text,
+particularly that they should have their underlying code skipped.
+
+What do the individual lists mean? How does the game know which to use?
+With execute break points, I determined:
+- $9D39 column is for, when you press X, the game must read up to ten pages back
+  and assemble a data table at $0700 for each page (text ptr, prog flags, etc).
+- $9D59 column handles ctrl codes in upcoming text that game reads in advance.
+- $9D79 column handles ctrl codes when printing previously viewed text (X/Y buttons).
+  * Method: check $009F61 for printing a name
+- $9D99 column is for printing the chars on the chapter list screen.
+  * Method: check $009F3F for the punctuation codes
+- Hypothesis: $9DB9 column is for demo play or choice text? Check in game
+
+For convenience, $009BBE = read pointer, $009B06 = read Huffman code.
+
+Related, the "read previous text" feature that uses the $9D39 column has a limit
+of 0x200 bytes per screen of text, since the text buffer starts at $0500 in RAM.
+When playtesting, I found that screens of English text would exceed this limit
+and clobber the table's contents, so I made an ASM hack to push it to $0800 (see
+ASM @ $009E7D for creating the table, $04A121 for reading from the table).
+
+--------------------------------------------------------------------------------
+
+
+A list of which script control code IDs go to which "internal" code IDs:
+
+Choices:
+00: 1050, 1051, 1052, 1053
+01: 1054, 1055, 1056, 1057
+
+Placeholder (jumps, flags, a few others)
+63: 100F, 1010, 1011, 1012, 1022, 1023, 1038, 1039, 104B, 104C, 1062
+
+Not directly accessible via script:
+02, 1F, 20, 2E, 35 
+
+Summary:
+00: choices     10: 1006        20: N/A     30: 1042    40: 1049
+01: choices     11: 1007        21: 1016    31: 1025    41: 1048
+02: N/A         12: 1008        22: 104D    32: 1024    42: 1029
+03: 100E        13: 1009        23: 104E    33: 1028    43: 103A
+04: 1019        14: 100A, 1058  24: 103F    34: 102A    44: 103B
+05: 101A, 101B  15: 100B, 1059  25: 104F    35: N/A     45: 1037
+06: 100D, 101C  16: 100C, 105A  26: 103D    36: 1031
+07: 1000, 101D  17: 1020, 105B  27: 103E    37: 1032
+08: 1001, 101E  18: 1021, 105C  28: 102B    38: 1033
+09: 101F        19: 1046, 105D  29: 102C    39: 1034
+0A: 1026        1A: 1017, 105E  2A: 102D    3A: 1035
+0B: 1015, 103C  1B: 105F        2B: 102E    3B: 1036
+0C: 1014, 1018  1C: 1060        2C: 102F    3C: 1027
+0D: 1002, 1003  1D: 104A, 1061  2D: 1030    3D: 1041
+0E: 1004        1E: 1040, 1047  2E: N/A     3E: 1043
+0F: 1005        1F: N/A         2F: 1044    3F: 1045
+
+List of unique subroutine mappings 0x0958E ("----" is for 969E = RTS):
+00: 97C4 | 10: ---- | 20: ---- | 30: ---- | 40: 9667
+01: 97C4 | 11: ---- | 21: ---- | 31: 9639 | 41: 965C
+02: ---- | 12: ---- | 22: ---- | 32: 961A | 42: 9684
+03: ---- | 13: ---- | 23: ---- | 33: ---- | 43: 969F
+04: ---- | 14: 9917 | 24: ---- | 34: ---- | 44: 96EE
+05: 98CF | 15: 9926 | 25: ---- | 35: ---- | 45: 9672
+06: 98F2 | 16: 9937 | 26: ---- | 36: ----
+07: 98F7 | 17: 997C | 27: ---- | 37: ----
+08: 98FC | 18: 9964 | 28: ---- | 38: ----
+09: 9901 | 19: 9970 | 29: ---- | 39: ----
+0A: ---- | 1A: 9988 | 2A: ---- | 3A: ----
+0B: 98CB | 1B: 998F | 2B: ---- | 3B: ----
+0C: 9906 | 1C: 9948 | 2C: ---- | 3C: 9684
+0D: 99FD | 1D: 9956 | 2D: ---- | 3D: 963D
+0E: ---- | 1E: 968A | 2E: ---- | 3E: 965C
+0F: ---- | 1F: ---- | 2F: ---- | 3F: 965C
+
+List of subroutines at $00B496 ($00B490). "----" is for B495 = RTS:
+00: N/A  | 10: AEE7 | 20: ---- | 30: AF44 | 40: AFC0
+01: N/A  | 11: AEEE | 21: ---- | 31: AC7F | 41: B008
+02: N/A  | 12: AEF5 | 22: B086 | 32: B41D | 42: B133
+03: AC02 | 13: AEFC | 23: B062 | 33: B186 | 43: B20D
+04: AC63 | 14: AF03 | 24: B469 | 34: B1D6 | 44: B23B
+05: AC70 | 15: AF0A | 25: B07B | 35: B180*| 45: B240
+06: AD2F | 16: AF11 | 26: B40D | 36: B098 | 46: ----*
+07: AC39 | 17: AF18 | 27: B415 | 37: B095  *: Is this inaccessible?
+08: AC51 | 18: AF1F | 28: B0B1 | 38: B092
+09: ---- | 19: B049 | 29: B0BF | 39: B0A6
+0A: ACFC | 1A: B48E | 2A: B0AE | 3A: B0A3
+0B: B405 | 1B: ---- | 2B: B0BC | 3B: B0A0
+0C: ---- | 1C: ---- | 2C: B0AB | 3C: B0D9
+0D: AEC6 | 1D: AFA8 | 2D: B0B9 | 3D: AF26
+0E: AED0 | 1E: AFDD | 2E: ---- | 3E: AF62
+0F: AEE0 | 1F: ---- | 2F: AF85 | 3F: B02B
+
+Hypothesis: The $00958E list is for when the game is reading Huffman data and
+decompressing the raw text into the buffer in advance (e.g. load graphics or
+sound data in advance). The $00B496 list is for when the game reads the raw text
+as it's printing it for the player on screen.
+
+As a single table of internal IDs, encodings, and subroutines:
+
+                  $958E    $B496
+## | ctrl codes | future | curr. | description (future, current)
+---+------------+--------+-------+--------------------------
+00 | 1050-1053  |  97C4  | N/A   | choices
+01 | 1054-1057  |  97C4  | N/A   | choices
+02 | N/A        |  ----  | N/A   | 
+03 |    100E    |  ----  | AC02  |                    line break
+04 |    1019    |  ----  | AC63  |                    set x pos
+05 | 101B, 101A |  98CF  | AC70  | Tooru            | set y pos (current)
+06 | 101C, 100D |  98F2  | AD2F  | Mari             | wait
+07 | 101D, 1000 |  98F7  | AC39  | killer 1         | delay (10N frames)
+08 | 101E, 1001 |  98FC  | AC51  | killer 2         | delay (N frames)
+09 | 101F       |  9901  | ----  | killer 3         | 
+0A | 1026       |  ----  | ACFC  |                    ?
+0B | 1015, 103C |  98CB  | B405  | end choice       | silh blue component
+0C | 1014, 1018 |  9906  | ----  | end game
+0D | 1002, 1003 |  99FD  | AEC6  | auto adv         | fast text
+0E |    1004    |  ----  | AED0  |                  | normal text speed
+0F |    1005    |  ----  | AEE0  |                  | slow text
+10 |    1006    |  ----  | AEE7  |                  | slow text
+11 |    1007    |  ----  | AEEE  |                  | slow text
+12 |    1008    |  ----  | AEF5  |                  | slow text
+13 |    1009    |  ----  | AEFC  |                  | slow text
+14 | 1058, 100A |  9917  | AF03  | period           | slow text
+15 | 1059, 100B |  9926  | AF0A  | R quote          | slow text
+16 | 105A, 100C |  9937  | AF11  | R inner quote    | slow text
+17 | 105B, 1020 |  997C  | AF18  | comma            | set flag
+18 | 105C, 1021 |  9964  | AF1F  | excl mark          clear flag
+19 | 105D, 1046 |  9970  | B049  | ques mark          sfx stop script
+1A | 105E, 1017 |  9988  | B48E  | excl mark plain    ? 
+1B | 105F       |  998F  | ----  | ques mark plain
+1C | 1060       |  9948  | ----  | L quote
+1D | 1061, 104A |  9956  | AFA8  | L inner quote      ?
+1E | 1040, 1047 |  968A  | AFDD  | ?                | ?
+1F | N/A        |  ----  | ----  | 
+20 | N/A        |  ----  | ----  | 
+21 | 1016       |  ----  | ----  | skip text when picked
+22 |       104D |  ----  | B086  |                    ?
+23 |       104E |  ----  | B062  |                    ?
+24 |       103F |  ----  | B469  |                    ?
+25 |       104F |  ----  | B07B  |                    ?
+26 |       103D |  ----  | B40D  |                    silh green component
+27 |       103E |  ----  | B415  |                    silh red component
+28 |       102B |  ----  | B0B1  |                    silh fade in 0xx
+29 |       102C |  ----  | B0BF  |                    silh fade out 0xx
+2A |       102D |  ----  | B0AE  |                    silh fade in 1xx
+2B |       102E |  ----  | B0BC  |                    silh fade out 1xx
+2C |       102F |  ----  | B0AB  |                    silh fade in 2xx
+2D |       1030 |  ----  | B0B9  |                    silh fade out 2xx
+2E | N/A        |  ----  | ----  | 
+2F |       1044 |  ----  | AF85  |                    sfx fade out
+30 |       1042 |  ----  | AF44  |                    sfx cut out
+31 | 1025       |  9639  | AC7F  | clear screen of text
+32 | 1024       |  961A  | B41D  | new chapter
+33 |       1028 |  ----  | B186  |                    img fade out duration 0xx
+34 |       102A |  ----  | B1D6  |                    img fade out duration 1xx
+35 | N/A        |  ----  | B180* | image fade out with duration 07F = instant
+36 |       1031 |  ----  | B098  |                    silh on new screen 0xx
+37 |       1032 |  ----  | B095  |                    silh on new screen 1xx
+38 |       1033 |  ----  | B092  |                    silh on new screen 2xx
+39 |       1034 |  ----  | B0A6  |                    silh group fade out 0xx
+3A |       1035 |  ----  | B0A3  |                    silh group fade out 1xx
+3B |       1036 |  ----  | B0A0  |                    silh group fade out 2xx
+3C | 1027       |  9684  | B0D9  | img fade in
+3D | 1041       |  963D  | AF26  | sfx
+3E | 1043       |  965C  | AF62  | sfx fade in
+3F | 1045       |  965C  | B02B  | ?
+40 | 1049       |  9667  | AFC0  | ?
+41 | 1048       |  965C  | B008  | ?
+42 | 1029       |  9684  | B133  | img fade in
+43 | 103A       |  969F  | B20D  | vfx
+44 | 103B       |  96EE  | B23B  | execute function
+45 | 1037       |  9672  | B240  | gfx top layer
+46*|            |        | ----  | 
+
+Value 35 (B180) appears to do <IMG FADE OUT 28><$007F><input>.
+
+--------------------------------------------------------------------------------
+
+Notes for how to read pointer data:
+
+First pointer read upon bootup is at $05FD12-8. The state of the Huffman buffer 
+is 0x01C0 (actual data is 0x00C0). The current script position (to next word to
+read) is $05FD14. A hex editor at 0x2FD12 has the data [2D C0 01 00 67 03].
+
+$0B = huffman buffer (with top 1 indicating end of data)
+$0D = next two bytes from script data
+$0F = either 1 if 8+ bits in Huffman buffer, or next two bytes after that if <=7
+
+Here, WRAM data is [C0 01 01 00 01 00], or [01C0 0001 0001] in big endian pairs.
+
+For first pair 01C0, rotate in a 1 at LSB and keep shifting left until you rotate
+out the "end of data" MSB of 1.
+
+So 01C0 -> 0381 -> 0702 -> 0E04 -> 1C08 -> 3810 -> 7020 -> E040 -> C080, done.
+Data is now [C080 0001 0001], or as one big value, 00010001C080
+
+Rotate in a 1 at MSB of big value, 0001 -> 8000. Make carries fall through to
+get value of 80008000E040.
+Keep shifting value right until you shift out the 1 that had been originally
+rotated in at the LSB of 01C0 (the 038*1*). Final result should be 0100010001C0,
+or as stored in memory: [C0 01 00 01 00 01].
+
+Next, rearrange the data here into this state ("--" = a [00] byte):
+Original:  0B 0C 0D 0E 0F 10
+Rearrange: 0E 0F 0B 0C 0D --
+Data:     [C0 01 00 01 00 01]
+New data: [01 00 C0 01 00 --]
+
+With data in this state, call $009C18 to get the final data for Huffman pointer.
+
+X <- value in $0E-$0F, [01 00] or 0x0001.
+Bitwise AND the value $0E-$0F with 0x03FF.
+Take original value of $0E-$0F, and bitwise AND with 0xFC00 (the other 6 bits).
+Left shift this, and OR these bits into memory at $0E-$0F.
+
+To summarize, let N = $0E-$0F.
+N <- (N & 0x03FF) | ( (N & 0x7C00) << 1)
+Result should be 0x0001, unchanged in this case.
+TODO fill in explanation for this:
+[---- --00 0000 0000 0000] [0000]
+ word offset from start     bit in word
+
+The data in $0D-$0F is the 24-bit pointer we want!
+
+--------------------------------------------------------------------------------
+
+Descriptions of control codes' functions:
+
+Codes that do not have Huffman encodings for the script:
+- 1009-100C, 1013, 1014, 1026, 1038, 1039, 1045, 1049-104C, 1057, 105F
+
+1000 = delay code, with one argument that encodes multiples of 10 frames
+to pause the script engine by.
+
+1001 = delay code, inserted after commas; directly encodes # frames
+
+1002 = auto advance text when there would normally be a WAIT
+
+1003-100C are control codes to set the text speed. Each uses a constant value to
+set a memory address that says "wait N frames until getting next character from
+script and printing it to the screen."
+- 1004: normal speed, 1 frame per character
+- 1005-1008 each use  2,  3,  4, or 12 frames per character. (all used)
+- 1009-100C each use 24, 36, 48, or 60 frames per character. (all unused)
+  Repurpose them for text kerning?
+- 1003 is a special case that sets the variable as 0, which more or less means
+  "print as much as possible per frame." Usually, the text speed is about 3 or 4
+  characters per frame. If the game is doing visual effects like snow, it slows
+  down quite a bit. Mainly used for printing previously read text, but is also
+  used once in the script for the end of the karaoke joke segment.
+
+100D = wait for player input
+100E = line break
+
+---
+
+100F = script position jump
+
+1010 and 1011 are conditional script position jumps; check progress flag to know
+if to take or not. 1010 takes it if a flag is SET. 1011 takes it if flag CLEAR.
+More about these flags at the bottom.
+
+1012 = conditional script position jump (checks temporary flag that gets reset
+       if the player decides to jump back to a point before the flag gets set)
+
+1013 = not used in the script, but I found that it should be like 1012, but only
+       takes the jump if the temporary flag is clear.
+
+---
+
+1015: marks "end of text for choice option"
+1016: Indicates that the text printed for a choice is different from the text
+      that appears when you actually pick it. Ignore chars until finding a 1015.
+
+---
+
+1017: Its ASM code consists only of running BRK_1C(29). See $00B48E, $049DDD
+
+It only pops up right before points where the player can potentially loop back
+to where they currently are. Excluding the maze section, the JP game has three
+such points: first opportunity to announce the killer's identity (input 0001),
+the second opportunity (input 0002), and "let me see the note again" in the
+treasure route (input 0004). Why no input of 0003?
+
+Purpose seemingly to prevent having to store infinite copies of pointers to the
+repeated text in the save file? Once the loop completes, you aren't able to view
+the text that you just read during the loop. For example, if you say "It was
+Mari" at the first opportunity, you won't be able to view the text from the
+aforementioned path once you get back to the choice.
+
+---
+
+1018 marks endings, both good and bad. Text decompression will stop with it.
+
+---
+
+1019 sets the X position of text on screen.
+101A is similar for the Y position.
+
+---
+
+101B = Protag's name
+101C = Girlfriend's name
+
+101D, 101E and 101F are all similar.
+At three specific points in the murder mystery route, the game will make you
+enter, in hiragana, the name of who you believe to be the killer. When you make
+your choice, this code will print the person's "canonical" name in kanji (if it
+matches with someone in the game's story) or the verbatim hiragana name (if no
+match found).
+
+There is, in fact, a purpose to having three control codes here for killer
+guesses. When going through the script, it is possible to reach two or more of
+these "enter the killer's name" points, and guess wrong with at least one.
+Should the player decide to read back in the script with the chapter list (press
+R or Select in gameplay), the engine must print the player's guesses at the
+correct points. By extension, all three guesses must be kept track of.
+
+This presents several problems with creating an English patch, because most
+characters' names (either first or last) are longer than 6 characters.
+- How to modify the name entry screen ASM code to handle, say, 10 characters?
+- How much ASM is separate for naming Tooru/Mari and for naming the killer?
+- Is there enough room in the memory map to hold 10 characters?
+- How to modify the SRAM format to handle five sets of 10 characters?
+
+Would it be sufficient to try changing the ASM to use a one-byte encoding
+instead, specifically for storing the names?
+
+---
+
+1020 sets a progress flag in the save file. They get checked for 1010 and 1011.
+    The input value is comprised of a four-bit value and a three-bit value:
+    0 XXXX YYY, where XXXX is the byte offset from address 0x10 in SRAM,
+    and YYY is the offset in ROM from $018B65 for the bit pattern to set.
+    The bit patterns are, unsurprisingly: 01 02 04 08 10 20 40 80
+    The flags for the current playthrough are stored at $700010.
+    The flags for all playthroughs so far are stored at $700018.
+
+1021 only appears twice in the script, in pink bookmark text.
+    According to the assembly code at $00AF1F, it resets progress flags.
+    It is for limiting access to a secret message in the game.
+
+1022 sets a "temporary" progress flag that gets cleared should the player choose
+to start over the beginning, or start from a chapter before the flag got set.
+However, it will otherwise persist for the rest of the current playthrough.
+
+1023 clears one of these temporary flags.
+
+---
+
+1024: Indicates that we got to new chapter.
+Do not print the chapter name to the screen, and set it as the chapter title. It
+is common to have control codes for graphics, silhouettes, and/or music between
+this and a CLEAR code, all of which are only executed when resuming the game at
+that chapter after reaching an ending.
+
+It is worth noting that if you change the start point for the story to text that
+doesn't have a starting 1024, the "text look back" and chapter list functions
+from pressing X and R/Select don't work correctly.
+
+---
+
+1025 = clear screen code? seems to decompress some other data here
+When you get to a "screen clear" icon and advance, the CODE 25s also seem to be
+markers for the game to say "read more text into the buffer, but only up to this
+point." Specifically, you get 1025 0000 0000 [ptr?] [two bytes].
+It overwrites up to just before the last two bytes. I would assume that the game
+stores where the "beginning of page" offset in the buffer would be?
+
+---
+
+1026 does not appear in the script but does pop up a lot in the game's internal
+control flow. It appears to both reset the tileset and tilemap for text, and
+sets both the text X/Y positions to 0xD.
+
+---
+
+1027 fades in graphics (2nd input) over a duration (1st input).
+1028 fades out graphics over a duration (input value).
+
+1029 fades in image over a duration. Is it substantially different from 1027?
+
+102A fades image to black over a certain duration.
+    According to ASM at $B1D6, it is the same as 1028 but encodes a duration
+    over 0x100.
+
+---
+
+102B-1036: Silhouette control codes.
+These have one "main" input that identifies what silhouette graphics to load.
+Chunsoft programmed these to have the 0x100's place of the silhouette ID value
+to be baked into the control codes themselves, as in "take input and add 0x100
+or 0x200" or "just use input as-is."
+
+Example:
+1031: Load silhouette set 0x0__, e.g. <1031><$0040> loads set 040
+1032: Load silhouette set 0x1__, e.g. <1032><$0040> loads set 140
+1033: Load silhouette set 0x2__, e.g. <1033><$0040> loads set 240
+
+I presume this was done in the interest of keeping the script's Huffman tree
+smaller than having the full IDs like 140 encoded in the script. In fact, this
+is beneficial to a translation patch that will likely use a much smaller set of
+characters than Japanese.
+
+Code | N*0x100 | Silhs do what?
+-----+---------+---------
+102B | 0x000   | fade in
+102D | 0x100   | fade in
+102F | 0x200   | fade in
+-----+---------+---------
+102C | 0x000   | fade out
+102E | 0x100   | fade out
+1030 | 0x200   | fade out
+-----+---------+---------
+1031 | 0x000   | loaded for new BG image
+1032 | 0x100   | loaded for new BG image
+1033 | 0x200   | loaded for new BG image
+-----+---------+---------
+1034 | 0x000   | set up for group fade out
+1035 | 0x100   | set up for group fade out
+1036 | 0x200   | set up for group fade out
+
+---
+
+1037: Loads graphics to be placed on a layer above the background graphics.
+
+103A: does visual effects. Takes one input. More on this in a separate file.
+
+---
+
+103B: Based on ASM code at $0096EE, takes an input and uses it to index two
+      lists at $0096FF (run when reading ahead in script?) and $008DD3 (run
+      when printing the text on screen?) of pointers to subroutines.
+      Input range is 00 to 2E. Pretty much, condense a bunch of control codes
+      into one to keep the Huffman tree small?
+
+      Some input values are not used in the script: 06, 08-10, 13-16, 1b, 1d, 1e
+
+      06: [Prep]  Call subroutine $01D8E9 (takes gfx ID value?) w/ $00 <- 0400
+      06: [Print] Set bit flag 0x02 in $15F2.
+
+      08: [Prep]  Call subroutine $01D8E9 with $00 <- 0600
+      08: [Print] runs unreached code, $00B35B; appears to DMA data from either
+          bank 7E or 7F ($7xC000 and $7x8000) into VRAM high and low bytes 
+
+      09: [Prep]  Call subroutine $01D8E9 with $00 <- 0800
+      09: [Print] Do nothing, just RTS.
+
+      0a-0d: [Prep] Call $01D8E9 with $00 <- either {00, 01, 02, 03} given input
+             is {0a, 0b, 0c, 0d}, and $01 <- 0x07
+      0a-0d: [Print] Do nothing, just RTS.
+
+      0e-10: [Prep]  Do nothing, just RTS.
+      0e-10: [Print] Set bit flag in $15F2: {08, 10, 20} for input {0e, 0f, 10}
+
+      13-16: Nothing? RTS for both print and read ahead. Possible to repurpose?
+             Potential use: set the right margin for the Kamai-tachi joke route.
+
+      1b, 1d, 1e: [Prep] Do nothing, just RTS.
+      1b: [Print] check save file value at $078 for save files 1-3; if all are 0
+          (use case: game is unused or has had its save data wiped?), set the
+          default names for Touru and Mari on save file 1
+          Possible recreation of how in Otogirisou, if all saves were empty, it
+          would auto start on name entry for file 1 after the title screen.
+      1d: [Print] Set $03DF to 0.
+      1e: [Print] If $03DF is 0, clear progress flag 7F. Otherwise, set it.
+                  Progress flag 7F is for accessing the author's secret message.
+
+      Interesting input values:
+      01: handles displaying the end credits for good endings?
+      02: handle title screen's gfx effects and control flow
+      03: change names for Touru and Mari for save file
+      04: let the player enter the name of who they believe to be the killer
+      05: handle file select
+      07: - in the karaoke machine joke sequence, prevents starting the music
+            again if the player resets the game in the middle of it
+          - makes it so a CLEAR code does not need player input to go ahead
+          - also used when the player reaches any ending
+      11: set the top graphics layer as needing to be preserved in the save file
+          across resets on future screens, e.g. the "CHUN" TV border
+      12: turn off just the "top layer" graphics like the "CHUN" TV, the goblin,
+          and the rokuro-kubi
+      17: delete save file
+      18: resume from chapter after reaching an ending (show chapter list)
+      19: resume file from last save
+      1a: start the story on a new file
+      1c: related to the file select screen - file has been chosen?
+      1f: gets run when new names have been entered for Touru and Mari
+      20: check entered killer name for after one death
+      21: check entered killer name for when nobody has died yet
+      22: check entered killer name for after five deaths
+      23: fake choice code used in story at [$0B8C28-2]
+      24: handle reaching an ending; increment # playthroughs, check progress,
+          recalculate save file checksums, copy scratchpad save into proper slot
+      25: handle "chunsoft presents" screen
+      26: stops demo play, but does nothing if in regular gameplay
+      27: fake third choice option used in story at [$0B8C28-2]
+      28: reenables viewing prev. text (gets run after exiting the snowy maze)
+      29: disables viewing prev. text  (gets run when entering the snowy maze)
+      2a: gets run around title screen
+      2b: gets run for getting file management prompts? new or existing file
+      2c: gets run in the "Night of the Kamai-tachi" joke route
+      2d: don't know
+      2e: gets run when player picks an existing save file
+
+---
+
+103C-103E: These change the color components (B/G/R) for the silhouettes.
+   They all come in triples. 103C is blue, 103D is green, 103E is red.
+   Input is a 5-bit value for the color component.
+
+Perhaps note that their default color in CGRAM is 04E7 (BGR components 1,7,7 or
+RGB24 393908), which is like a green shade of brown. However, the color math*
+going on under the hood typically makes it show up as shades of blue on screen.
+
+*: According to the color math registers listed in Mesen's Register Viewer,
+   colors are calculated as BG1 - SUB, where the subscreen is the sprite layer.
+
+In effect, you can think of the inputs for these as "how much of the color
+component should the silhouette block out from the background?" With the default
+color, it reduces the background's red and green components but lets through the
+blue component mostly unchanged.
+
+Another example: In scenes in the basement with silhouettes, the inputs are
+BGR 1F,0,1F. This completely blocks out the red and blue components and only
+lets through the green component. Indeed, they show up as shades of green.
+
+---
+
+103F: Sets the overall brightness of the screen. Used in situations like the
+      lights going out, or going out into the blizzard. Also set if resuming the
+      game from a chapter.
+
+1040: ?
+
+---
+
+1041-104F are all related to playing music or sound effects.
+
+They reuse quite a bit of code where they read the SFX ID value from the script,
+update an address for currently playing SFX (for resuming a file in the middle
+of a playthrough), and place onto the direct page:
+$00: a value that indicates what function to do with the sound effect.
+$02: data for the SFX ID from a list at $01BBCB (a 1-byte entry per ID)
+
+
+
+code | $00 | purpose
+-----+-----+----------
+1041 | 04  | starts SFX
+1045 | 04  | unused,
+1048 | 04  | 
+
+1042 | 09  | cut out SFX
+1043 | 05  | fade in SFX
+1044 | 0A  | fade out SFX over a duration.
+1046 | 0D  | start sound effect, allow it to finish before script advances
+1047 | 08  | hold out a sound effect? 0095 is for engine noises.
+     |     | allows a sound effect to run a full cycle before it ends
+     |     | (engine sounds, then it sputters out)
+     |     | same code pointer as 1040, check if both use it
+
+1049 | 06  | 
+104a | 06  | 
+     |     | 1049 checks for setting playing SFX ID in memory, 104A does not
+
+104b | --  | 
+104c | --  | 
+104d | 03  | 
+104e | 01  | appears to load sfx data in advance so it will play right on cue?
+104f | 02  | undo loading sfx data from calling 4E?
+
+$00 has a special value of 0x11 for if the game must end demo play and fade out
+all music and SFX.
+
+---
+
+1050-1057 look to be choice codes.
+  In both cases, once you pick a choice, the buffer "resets" back to $0500.
+  There are two choice codes each for having 2, 3, 4, or 5 options.
+  If N = # options, # of Huffman arguments is N+1, and # pointers is N.
+
+  Based on the choice codes present in the script, the first Huffman argument
+  uniquely identifies what choice it is.
+
+  The other N, I decided to just ignore for a very long time, until I found out
+  more about the SRAM format. Each choice has a byte in SRAM that tells which
+  options have been picked by the player. The N arguments might refer to the bit
+  position to set in the byte for each available option.
+
+---
+
+Control codes 1058-1061 are for placing punctuation characters into the text
+buffer in memory. They may or may not have a WAIT and/or a LINE following them,
+depending on whether the AUTO ADV flag was set, or if either flag indicating "in
+dialogue" or "in quoted dialogue" is set.
+
+The puncutation character itself is placed into the script buffer at $009F3F.
+
+code | char | add line?    | add wait?    | clear AA? | other things changed
+-----+------+--------------+--------------+-----------+----------------------
+1058 |  。  | ~AA, ~D, ~QD | ~AA          |    yes    |
+1059 |  」  | ~AA,     ~QD | ~AA,     ~QD |    yes    | D  <- 0
+105A |  』  | no           | ~AA, ~D      |    yes    | QD <- 0
+105B |  、  | no           | no           |    yes    | insert delay code 
+105C |  ！  | ~AA, ~D, ~QD | ~AA, ~D, ~QD |    yes    |
+105D |  ？  | ~AA, ~D, ~QD | ~AA, ~D, ~QD |    yes    |
+105E |  ！  | no           | no           | NO CHANGE |
+105F |  ？  | no           | no           | NO CHANGE |
+1060 |  「  | no           | no           |    yes    | D  <- 1
+1061 |  『  | no           | no           |    yes    | QD <- 1
+
+It is worth noting that 105E (simply write a "!" with nothing else) is only used
+once in the entire script, and that 105F (similar for "?") is not used at all.
+Are they good candidates for replacing with custom code?
+
+--------------------------------------------------------------------------------
+
+Potential ideas for control codes:
+- Text kerning
+- A dictionary code for printing common strings, to compress down names like
+  "Mr. Kobayashi" to just a control code ID and one control code input
+
+--------------------------------------------------------------------------------
+
+Interesting progress flag IDs include:
+Good end flag IDs: 01, 02, 03, 04, 0E, 12, 13
+Bad  end flag IDs: 06, 0C, 2B, 05, 07, 08, 09, 0A, 0B, 0F, 10, 11, 0D, 14
+    Note that 01-14 and 2B (total of twenty-one) are for endings, which matches
+    up with this page about "the road to the pink bookmark":
+    http://nohohonbaracha.blog.fc2.com/blog-entry-33.html
+    For it to appear, the data in SRAM at $700018 should be: FE FF 1F __ __ 38
+             
+Getting the pink bookmark unlocks four more endings for you. Their IDs are 15,
+16, 17 (bad), 18 (humorous).
+Finding ending 18 unlocks one final scenario that you may find out about when
+getting these four. It contains flag IDs 19-2A. Yeah, eighteen!
+
+The specific ASM code is at $049AD2.
+
+The list of IDs matches what you see in the PS1 and GBA versions' ending lists.
+ID | Bitmask, SRAM 018       | Meaning
+00 | 01 -- -- -- -- -- -- -- | N/A?
+01 | 02                      | "Good morning, Mari"
+02 | 04                      | Mari's good luck charm
+03 | 08                      | Mari solves the case
+04 | 10                      | Catch Mikimoto at 2nd opportunity
+05 | 20                      | Catch Mikimoto at 3rd opportunity
+06 | 40                      | Mari stabs Tooru with a ski pole
+07 | 80                      | Have Toshio pick someone else
+08 | -- 01 -- -- -- -- -- -- | Slashed in Mari's room in the dark
+09 |    02                   | Think that Mari was the killer
+0a |    04                   | Think that Haruko was the killer
+0b |    08                   | Push Mari down the stairs
+0c |    10                   | Become a Kansai CEO
+0d |    20                   | Snowy maze
+0e |    40                   | Spy route good ending
+0f |    80*                  | Jump at Haruko's gun
+10 | -- -- 01 -- -- -- -- -- | Rush up to Toshio's body
+11 |       02                | "I don't want to die yet"
+12 |       04                | "Your mother still loves you"
+13 |       08                | "Until a smile returns to her face"
+14 |       10                | Kamai-tachi ending
+15 |       20                | Comedy of O
+16 |       40                | Treasure route good ending
+17 |       80                | Treasure route bad ending
+18 | -- -- -- 01 -- -- -- -- | Chunsoft Party conspiracy route
+19 |          02             | Box of Happiness
+1a |          04             | Myssie
+1b |          08             | Halcyon
+1c |          10             | Muramasa
+1d |          20             | Burnt to death by the flame demon
+1e |          40             | Trapped by two flame demons
+1f |          80             | Door 4
+20 | -- -- -- -- 01 -- -- -- | Door 2
+21 |             02          | Door #
+22 |             04          | Door 6
+23 |             08          | Door 9
+24 |             10          | Door 3
+25 |             20          | Door 1
+26 |             40          | Door *
+27 |             80          | Door 5
+28 | -- -- -- -- -- 01 -- -- | Door 0
+29 |                02       | Door 8
+2a |                04       | Box of Unhappiness
+2b |                08*      | Toshio stabs Tooru with a knife
+2c |                10       | Surmised about Tanaka being a yakuza here
+2d |                20       | Viewed text introducing the girls and the Kayamas
+2e |                40       | ?
+2f |                80       | ?
+30 | -- -- -- -- -- -- 01 -- | ?
+31 |                   02    | ?
+32 |                   04    | ?
+33 |                   08    | Credits viewed at least once (any of endings 1-4) 
+34 |                   10    | Pink bookmark obtained
+35 |                   20    | Player has viewed ending 0x18
+36 |                   40    | Gold bookmark obtained? Not sure
+37 |                   80    | ?
+38 | -- -- -- -- -- -- -- 01 | ?
+39 |                      02 | ?
+3a |                      04 | ?
+3b |                      08 | ?
+3c |                      10 | ?
+3d |                      20 | Player has finished file at an ending
+3e |                      40 | Is set right before chance to access ending 0x18
+3f |                      80 | Checked for accessing ending 0x18
+
+---
+
+Some places in the JP script can have optimized control flow. For example,
+original ctrl flow is "if flag set, jump to point 1; otherwise, jump to point 2;
+[point 1] choice code with points 2 and 3; [point 2]".
+You can optimize this to "if flag clear, jump to point 2"
+
+Places you can do this:
+$0680FB-5, $069487-0, $0AD85A-1, $0DC01D-4
+
+$0D9FAF-7 is a special case containing a conditional jump, in text that you can
+only access if the same flag has already been checked.
+
+Places you can do this, IF YOU'RE CAREFUL:
+$05FEE1-0 (JP script has a clear code between the two jump codes)
+$09804A-4 through $098118-7
+
+Place(s) you can NOT do this:
+
+---
+
+Related, you might be able to optimize out repeated text.
+Places you can do this:
+$069072-7
+$06F23F-3 and $06F285-5
+$07B4DA-7
+$0D9EEA-7
+
+---
+
+Unknown: What is the purpose of flag 00? I am aware of the game changing your
+bookmark's color to gold, if you pick every single choice (including options
+for the name of the killer) and view every line of text in the game.
+
+--------------------
+
+Temp flag IDs:
+- 01 = game will let you view the spy route
+- 02 = decided to go out looking for the killer in the blizzard
+- 03 = checked if Tanaka's bathroom was used when looking with Mari and Toshio
+- 04 = temp flag in occult route about how you enter the Kayamas' room
+- 05 = game will let you view the occult route
+- 10 = picked option for Mari going a little higher with massaging Touru's legs
+- 06-0F = temp flags for the snowy maze; if you reach any one spot in it and
+          return to it, the game will show you new, slightly different text

@@ -1,0 +1,135 @@
+The script is compressed using Huffman coding, and in the exact same format as
+what Chunsoft used for Otogirisou. Great for me because I could just retool my
+existing Otogirisou script dumper. Some differences exist in the fine details.
+
+Brief notation note:
+- "$" before a hex value represents a CPU address.
+- "0x" before a hex value represents a ROM offset.
+- "-N" after one of the above represents a "bit in a byte" offset.
+  7 is most significant, 0 is least significant.
+
+--------------------
+
+While the data format is the same, the ASM algorithm to read Huffman codes was
+updated. Otogirisou reads one byte and keep track of the current "bit in a byte"
+offset. When the offset goes negative, it reads another byte of Huffman data.
+
+Kamaitachi reads two bytes, and immediately rotates in a 1 bit at the MSB of
+the accumulator. This also shifts out the LSB into the C flag = either go left
+or right in the Huffman tree. The 1 bit acts as a sentinel flag in that when the
+Huffman bits in the buffer are ALL zero, this signals that more data should be
+read. This makes it so the "bit in a byte" offset doesn't need to be explicitly
+kept track of.
+
+--------------------
+
+Huffman right trees (1): $018B6E - $019951
+Huffman left  trees (0): $019952 - $01A735
+
+Each block consists of 0x6F2 little-endian two-byte entries (0xDE4 bytes).
+- MSB set   -> leaf  node; (entry & 0x1FFF) = decompressed character value
+- MSB clear -> inner node; (entry & 0x7FFF) = byte offset from start of block
+  to the next entry to check, one level down in the tree
+
+The inner nodes using the byte offset is different from how Otogirisou's Huffman
+trees encode the offset in two-byte entries.
+
+--------------------
+
+The format for knowing how many and what types of arguments for control codes is
+different from Otogirisou but still fairly easy. More details in dedicated notes
+on the control codes, but a quick overview of what's needed for a script dumper:
+
+$01A901 has a list of 0x63 four-byte structures for control code metadata.
+Byte 1 of a structure encodes the following data:
+
+Choice codes:
+- Bits 0-1: Encodes (# Huffman codes - 3) and (# pointers - 2)
+  For example, binary 10 -> 5 Huffman code input values and 4 pointers.
+
+Non-choice codes:
+- Bits 0-1: Encodes # arguments = # Huffman codes + # pointers
+- Bits 2-4: Flags for argument types (0 = Huffman code, 1 = pointer)
+
+--------------------
+
+The pointers for control codes are in the same format as Otogirisou: 24 bits
+written after the control code and any numerical inputs. The 24 bit value
+encodes the number of BITS from the start of the script, assuming a contiguous
+file (i.e. no LoROM bank wrapping).
+
+Whereas Otogirisou had just three external pointers for the three possible start
+points, there is only one start point (Chapter 1) in Kamaitachi. This being
+said, there are more pointers outside the script for control flow purposes.
+
+If you leave the game alone on the title screen for about 20-30 seconds, it will
+fade to black and show an attract mode starting at one of five possible points
+in the script. There is a pointer table for this at $018359. The pointer format
+is like the start points in Otogirisou: a 24-bit little endian value that packs
+a 21-bit LoROM address and a 3-bit "bit in a byte" offset.
+
+There are eight special pointers baked into the immediates of instructions. Four
+unique values exist.
+- two for the script overall (assume to reuse in the final patch)
+  [08 E7] at $008B0A, and [2F 00] at $008B10; 2FE708 -> $05FCE1-0 (2FCE1)
+  [08 E7] at $009C2F, and [2F]    at $009C38
+
+- one for going to title screen from letting attract/demo mode finish
+  [B1 E7] at $01CE6D, and [2F 00] at $01CE73; 2FE7B1 -> $05FCF6-1
+
+- three for going to file select (Chunsoft logo, title screen, demo mode)
+  [0D E8] at $008AA6, and [2F 00] at $008AAC; 2FE80D -> $05FD01-5
+  [0D E8] at $008E5D, and [2F 00] at $008E63
+  [0D E8] at $01CE7E, and [2F 00] at $01CE84
+
+- two that go to all the "clear temp flag" codes section before main text
+  [89 F1] at $008F44, and [2F 00] at $008F4A; 2FF189 -> $05FE31-1
+  [89 F1] at $049A6C, and [2F 00] at $049A72
+  (location of second one is not set in stone for patched game!)
+
+--------------------
+
+Some differences from Otogirisou that are worth pointing out:
+- Quite a lot of control flow for going through the title screen and menus is
+  encoded into the script itself.
+- The start of the script data in the ROM is NOT the same as the start of
+  chapter 1's text.
+- The pointer to chapter 1, when choosing in the menu to restart the story from
+  the beginning, is embedded into the script.
+
+That last point is important because changing the start points to facilitate
+playtesting the patch is not as simple as Otogirisou. For context, you could
+have Otogirisou start from any screen you wanted in the game, without having to
+plot out a series of choices to reach it, by overwriting the start points'
+proper data with the correct bytes.
+
+You could assume for Otogirisou that the start points' pointers are not only
+byte-aligned, but also exist at a specific dedicated position in the ROM. This
+is not true of Kamaitachi, but it didn't prevent me from figuring out a way to
+do it anyway!
+
+In my script dumper, I had to first determine the ROM position of the pointer to
+chapter 1.
+- I used a stripped down version of the script dumping algorithm to search for
+  the first JMP code after a block of codes that clear temporary progress flags.
+  (Empirically determined this method from the script dump)
+- Read either 3 bytes (if pointer byte aligned) or 4 bytes (not byte aligned),
+  and strip out the 24 bits of the pointer to chapter 1 (preserve the preceding
+  JMP code's trailing bits and the following "skip when picked" code's starting
+  bits).
+
+For example, in the Japanese game, the 24 bits of the pointer start at bit 6 in
+$05FE63 (ROM position 0x2FE63). The data present there is [91 14 03 00].
+- Rearrange to a big endian value: 00031491.
+- The correct bitmask for the pointer bits is 0xFFFFFF << 6 = 0x3FFFFFC0
+- Bitwise NOT this to mask out the pointer bits: ~0x3FFFFFC0 = 0xC000003F.
+- Bitwise AND this mask into the ROM bytes to keep the surrounding Huffman codes'
+  while discarding the pointer bits: 0xE00001F & 0x00031491 = 0x00000011
+- So the bytes you need are [11 00 00 00].
+
+Then when you reach a new page of text, you can just take the current bit offset
+in the script, shift it left 6 bits, and then OR it into the four bytes.
+
+By the way, the pointer value itself is 031491 >> 6 = 0xC52. This corresponds to
+0x18A bytes + 2 bits from the start of the script. The final ROM position is
+0x2FCE1 + 0x18A + 2 bits = 0x2FE6B-2, or CPU offset $05FE6B-2.
