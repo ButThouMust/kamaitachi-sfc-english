@@ -211,7 +211,8 @@ print "Inserting recompressed BG GFX tilesets and tilemaps..."
     NewGfxTilemapPtr!OpeningCreditsGfxId:
         incbin "recompressed tilemaps/RECOMPRESSED credits map.bin"
     NewGfxTilesetPtr!OpeningCreditsGfxId:
-        incbin "gfx/new opening credits/RECOMPRESSED credits tiles.bin"
+      ; incbin "gfx/new opening credits/RECOMPRESSED credits tiles.bin"
+        incbin "recompressed tilesets/RECOMPRESSED credits tiles.bin"
 
     ; insert tilesets/tilemaps for 7E through 81, end of data
     for n = $!OpeningCreditsGfxId+1..!NumGfxIds
