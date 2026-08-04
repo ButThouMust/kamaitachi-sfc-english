@@ -25270,13 +25270,13 @@ She stuck her elbow in my side.
 <END CHOICE 15>
 //<「60>そうよ<！5C>　<DELAY 00><$00><$03>
 //長い間東側のために働いてきた<『61>かまいたち<』5A>は<、5B>米ソの緊張が緩んだ今でさえ重要な情報を数多く持っているはずなの<。58>
-//中には自衛隊や在日米軍に関する重要機密も含まれているでしょう<。58>
-//そういった情報を手に入れるためならどんな大金でも積む<、5B>という国はたくさんあるわ<」59>
-// this text doesn't fit onto the screen with Tooru's reply, so splitting in the
-// middle with a clear code
-“That's right!<DELAY 00><$00><$03> Kamaitachi had worked for the East so long, that even now with eased tensions between the US and the Soviets, they should have lots of important information.”
+// whole translation doesn't fit onto the screen with Tooru's reply, so
+// splitting in the middle with a clear code
+“That's right!<DELAY 00><$00><$03> Kamaitachi had worked for the Eastern Bloc so long, that even now with eased tensions between the US and the Soviets, they should have lots of important information.”
 <CLEAR 25>
 
+//中には自衛隊や在日米軍に関する重要機密も含まれているでしょう<。58>
+//そういった情報を手に入れるためならどんな大金でも積む<、5B>という国はたくさんあるわ<」59>
 She continued, “For example, they might have classified information about the Japan Self-Defense Forces or the United States Forces Japan. Many countries would pay handsomely to get their hands on that information.”
 <CLEAR 25>
 
