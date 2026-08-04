@@ -1,0 +1,16 @@
+Welcome to the ski lodge “Spur.”
+Our guests are
+and his partner
+,
+.
+Start game
+Change names
+Delete file
+Read from where?
+Auto save
+Beginning
+Chapter
+File will be deleted.
+Are you sure?
+Yes
+No
