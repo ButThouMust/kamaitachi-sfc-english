@@ -290,6 +290,9 @@
 //[$05FE1E-5] -> 0x2FF0F5
 #EMBWRITE(0034)
 // restart an existing file from the start of the script (file NOT from ending)
+// interesting modification: if you comment out embwrite 34 here and move it to
+// the above page for $05FE0F-0, you can change this restart option to go to the
+// chapter list, without needing to reach an ending
 #EMBWRITE(0036)
 // restart an existing file from the start of the script (file from ending)
 //<SKIP WHEN PICKED 16>
@@ -326,6 +329,13 @@
 //[$05FE66-6] -> 0x2FF336
 #EMBWRITE(0013)
 #EMBWRITE(0024)
+// these control codes are from a choice checking something once the player
+// finishes entering Tooru and Mari's names (both new and existing files); page
+// 9 of the manual says "when you are done entering their names, the story will
+// begin", which is not how it works in the final game, but IS how Otogirisou's
+// name entry screen worked; leftover from development?
+// when I tried swapping the pointers for the new file "choice," the game just
+// hung on the screen of the lodge in the distance after confirming Mari's name
 <SKIP WHEN PICKED 16><END CHOICE 15><END GAME 18>
 
 //[$05FE6B-2] -> 0x2FF35A -> [91 14 03 00]
@@ -7990,7 +8000,8 @@ His face was right in the middle of a pool of dark blood, about two meters in di
 //香山さんまで……<。58>
 Even Mr. Kayama...<WAIT 0D><LINE 0E>
 //もはや正常な思考ができる状態ではなくなっていた<。58>
-Our situation was now completely inconceivable.
+// it was becoming a situation where you couldn't think normally
+I couldn't think straight about anything now.
 //バラバラ死体<、5B>姿なき襲撃者<、5B>殴り殺されたみどりさん<、5B>そして小林夫婦に香山さん……<。58>
 A dismembered body, an unseen assailant, Midori beaten to death, and now the Kobayashis and Mr. Kayama...
 <CLEAR 25>
@@ -12925,7 +12936,7 @@ His face was right in the middle of a pool of dark blood, about two meters in di
 //香山さんまで……<。58>
 Even Mr. Kayama...<WAIT 0D><LINE 0E>
 //もはや正常な思考ができる状態ではなくなっていた<。58>
-Our situation was now completely inconceivable.
+I couldn't think straight about anything now.
 //バラバラ死体<、5B>姿なき襲撃者<、5B>殴り殺されたみどりさん<、5B>そして小林夫婦に香山さん……<。58>
 A dismembered body, an unseen assailant, Midori beaten to death, and now the Kobayashis and Mr. Kayama...<WAIT 0D><LINE 0E>
 //もうこれは<、5B>推理だの謎解きだのと言っていられる状況ではない<。58>
