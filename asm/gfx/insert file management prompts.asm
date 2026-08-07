@@ -260,6 +260,13 @@ StructResumeRestartScreen:
     dw Prompt10GfxPtrBeginning
     dw Prompt10GfxPtrBeginning+Prompt10Size
     dw Prompt10Size
+; I found a fairly easy script modification that lets you replace the "restart"
+; option here with going to the chapter list, so that you don't have to reach an
+; ending to be able to jump to a previous chapter; should you do this, you'll
+; want to update the text graphics as well (comment out previous 3 "dw" lines)
+  ; dw Prompt11GfxPtrChapter
+  ; dw Prompt11GfxPtrChapter+Prompt11Size
+  ; dw Prompt11Size
 
     dw PromptListEnder
 
