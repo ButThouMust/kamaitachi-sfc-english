@@ -252,6 +252,11 @@ GotCharacter:
     sta.b $0d
     bra GotLine
 
+; - possible flaw: if the decompressed text is an uninterrupted stream of just
+;   the same character over and over again without any spaces (i.e. not standard
+;   English prose like what's used in the patch), this code may break due to no
+;   space characters coming in to set the buffer position as expected
+
   + lda.w BufferPosOfLastSpaceChar
     and.w #!SentinelNoPositionForSpace
     cmp.w #!SentinelNoPositionForSpace
@@ -299,8 +304,8 @@ GotCharacter:
     clc
     adc.w #!TextBufferSize
     bra GotNumCharsToProcess
-    eor.w #$ffff
-    inc
+  ; eor.w #$ffff
+  ; inc
 
 GotNumCharsToProcess:
 ; take care of case mentioned above where X can currently be 0400
@@ -387,7 +392,7 @@ SimulateLineBreak:
  ++ sta.w CalculatedXPos
     rts
 
---------------------------------------------------------------------------------
+; ------------------------------------------------------------------------------
 
 AdvancePastTextValueWithBufferWraparound:
     pha
@@ -398,7 +403,7 @@ AdvancePastTextValueWithBufferWraparound:
     pla
     rts
 
---------------------------------------------------------------------------------
+; ------------------------------------------------------------------------------
 
 ; reuse code at $00a313
 ; note that this will not preserve what is in A i.e. the char value
@@ -429,7 +434,7 @@ AddCharWidthToCalculatedXPos:
     sta.w CalculatedXPos
     rts
 
---------------------------------------------------------------------------------
+; ------------------------------------------------------------------------------
 
 ; handle hard-coded input of [SET X POS]*0x20* after printing a choice letter
 pushpc
