@@ -36,7 +36,7 @@ IDs   | description               IDs   | description
 04 01 | fill with 00              08 -- | read 4 bytes W-Z, fill as:
 05 02 | fill with FF                    | [W X Y Z W X Y Z]
 06 09 | fill with next ROM byte   0B -- | build from 3/4 unique bytes
-0D 0E | copy BP from prev tile    0C -- | build from 4 unique nibbles
+0D 0E | copy BP from a prev tile  0C -- | build from 4 unique nibbles
 
 IDs   | description     Operation | BP01  | BP02  | BP12  | BP012 
 ------+-------------    ----------+-------+-------+-------+-------
@@ -47,13 +47,16 @@ IDs   | description     Operation | BP01  | BP02  | BP12  | BP012
 23 24 | use  bp2        NOT AND   | 1f,20 | 2f,30 | 3b,3c | 45,46 
 25 26 | use ~bp2        NOT XOR   | 21,22 | 31,32 | 3d,3e |  N/A  
 
+The second columns of IDs indicate "use the ID in the first column, and do spot
+changes for the encoded data."
+
 - Instead of returning a binary "yes, the bitplane PERFECTLY fits this method"
   or "no, it doesn't fit", return a "fitness score" (# matching bytes) for each
   method you can test. If you do need a perfect fit, just check if # bytes = 8.
 
   Example, the bitplane [00 00 00 00 01 00 00 00] matches 7 bytes for the "fill
   bp with all 00". You can then encode it as "fill bitplane with all 00" with
-  spot checks for the lone byte out.
+  spot checks for the lone byte out. So subroutine index 04 -> index 01.
 
 - Make a list of what subroutines make sense for each bitplane to fill in.
   For example, it doesn't make sense to construct bp0 from (bp1 | bp2).
@@ -70,9 +73,10 @@ IDs   | description     Operation | BP01  | BP02  | BP12  | BP012
   index3 <-  array[2] >> 1
 
   The value range for index 0 depends on the entry point:
-  - Type byte 80-BF: array[1] & 0x3 (related, array[1] & 0x4 is bp3=00/FF flag)
-  - Type byte 01/11/21/31 and C0-FF: ((array[1] << 1) | (array[2] >> 7)) & 0xF
-  So the possibly bitpacked and effective ranges for each index/bitplane are:
+  - Type byte C0-FF: array[1] & 0x3 (related, array[1] & 0x4 is bp3=00/FF flag)
+  - Type byte 01/11/21/31 and 80-BF: ((array[1] << 1) | (array[2] >> 7)) & 0xF
+
+  Compare the possibly bitpacked and effective index ranges for each bitplane:
   BP0: 00-0F vs 00-0E ; BP1: 00-1F vs 00-12 ; BP2: 00-3F vs 00-22 ; BP3: 00-7F
 
 - Keep track of what subroutine ID groups pop up often, and encode them as the
@@ -116,7 +120,7 @@ Bit patt. | Value list  | Meaning
 0010 0000 | 20          | Read 0x20 raw bytes from ROM (last resort)
 ----------+-------------+-------------
 00xx x000 | 08,10*,18*  | Read 8 raw bytes [x] -- fill BPs w/ [00],[x],[~x],[FF]
-not 00,20 | 28          | Construct BP from pseudo-RLE format
+not 00,20 | 28          | Construct BP from RLE format
           | 30          | Construct BP from 3 or 4 unique bytes
           | 38          | Construct BP from 4 unique nibbles
           | *: Unused   | (Look for BPs like [00][x][~x][FF], encode later)
@@ -143,7 +147,11 @@ not 00,20 | 28          | Construct BP from pseudo-RLE format
 
 --------------------
 
-Last three sections are fairly complicated to explain, and have common elements:
+Last three sections are fairly complicated to explain, and I'm still not 100%
+sure this explanation for it makes sense as you read it. Getting down the
+detection code for this was the big barrier to making my recompressor.
+
+Nevertheless, the three options here have common elements:
 - xxx bits = 3 bit flags for how to get bitmask data (possible only 2 are used*)
   0 = read 8 raw bytes; 1 = get bytes via compression method (can't mix & match)
 - y bit = flag for how to get bitpacked list of bit positions; 0 = read 2 bytes
@@ -153,9 +161,9 @@ Last three sections are fairly complicated to explain, and have common elements:
 Their type byte lists in the table are encoded as regexes for brevity, such as
 "[0-3][23AB]" meaning 1st digit is from 0 to 3, and 2nd digit is one of 2, 3, A,
 or B. So the full lists of type bytes would be:
-- [0-3][23AB]: 02, 12, 22, 32, 03, 13, 23, 33, 0A, 1A, 2A, 3A, 0B, 1B, 2B, 3B
-- [0-3][45CD]: 04, 14, 24, 34, 05, 15, 25, 35, 0C, 1C, 2C, 3C, 0D, 1D, 2D, 3D
-- [0-3][67EF]: 06, 16, 26, 36, 07, 17, 27, 37, 0E, 1E, 2E, 3E, 0F, 1F, 2F, 3F
+- [0-3][23AB]: 02 12 22 32, 03 13 23 33, 0A 1A 2A 3A, 0B 1B 2B 3B
+- [0-3][45CD]: 04 14 24 34, 05 15 25 35, 0C 1C 2C 3C, 0D 1D 2D 3D
+- [0-3][67EF]: 06 16 26 36, 07 17 27 37, 0E 1E 2E 3E, 0F 1F 2F 3F
 
 Notice how you cannot mix and match different compression formats for a given
 type byte. Which is to say, you cannot have one bitmask group compressed with
@@ -187,7 +195,8 @@ Finally, generate the four sets of bitplane data by bitwise-ORing the data in
 each list position together, using the value of the bit position to know what
 list positions to combine together. Continuing with the example from above, you
 would get the bitplane data from [2 6 7 8 B C D] by bitwise-ORing the data (read
-down the columns):
+down the columns for 1 bits):
+         3210
 LP0: 2 = --1-    bp0 =             LP2 |       LP4 |       LP6
 LP1: 6 = -11-    bp1 = LP0 | LP1 | LP2 |       LP4
 LP2: 7 = -111    bp2 =       LP1 | LP2 |             LP5 | LP6
@@ -198,18 +207,39 @@ LP6: d = 11-1
 
 --------------------
 
-I only figured out how to do the recompression method for below by a flash of
-inspiration on Christmas Eve, funnily enough.
+That's how this case's decompression works. I only figured out how to do the
+recompression by a flash of inspiration on Christmas Eve, funnily enough.
 
 Consider a bit position X, which is in the range 0-F. The list for bit position
 X consists of the data (bits) that are UNIQUE to a particular AND combination of
 bitplanes. For example, the data list for bit position 0x7 would have all bits
 that are common to bitplanes 0/1/2 (bits set) but are also NOT in bitplane 3
-(bits clear). Pseudocode would be: list7 <- ~bp3 & bp2 & bp1 & bp0
+(bits clear). Here is a list of all 16 possible cases:
+
+bit pos 0 <- ~bp3 & ~bp2 & ~bp1 & ~bp0  ----
+bit pos 1 <- ~bp3 & ~bp2 & ~bp1 &  bp0  ---1
+bit pos 2 <- ~bp3 & ~bp2 &  bp1 & ~bp0  --1-
+bit pos 3 <- ~bp3 & ~bp2 &  bp1 &  bp0  --11
+bit pos 4 <- ~bp3 &  bp2 & ~bp1 & ~bp0  -1--
+bit pos 5 <- ~bp3 &  bp2 & ~bp1 &  bp0  -1-1
+bit pos 6 <- ~bp3 &  bp2 &  bp1 & ~bp0  -11-
+bit pos 7 <- ~bp3 &  bp2 &  bp1 &  bp0  -111
+bit pos 8 <-  bp3 & ~bp2 & ~bp1 & ~bp0  1---
+bit pos 9 <-  bp3 & ~bp2 & ~bp1 &  bp0  1--1
+bit pos a <-  bp3 & ~bp2 &  bp1 & ~bp0  1-1-
+bit pos b <-  bp3 & ~bp2 &  bp1 &  bp0  1-11
+bit pos c <-  bp3 &  bp2 & ~bp1 & ~bp0  11--
+bit pos d <-  bp3 &  bp2 & ~bp1 &  bp0  11-1
+bit pos e <-  bp3 &  bp2 &  bp1 & ~bp0  111-
+bit pos f <-  bp3 &  bp2 &  bp1 &  bp0  1111
+
+You then have to check all 16 cases to see how many bit positions' data are not
+"empty" i.e. just eight 00 bytes. There can be at most 8 non-empty bit positions
+for this case to apply.
 
 --------------------
 
-Observation from comparing dump logs for Chunsoft's data and my calculations:
+Observation from comparing dump logs for Chunsoft's data with my calculations:
 - In the special case of having only 3 bit positions to keep track of, you don't
   get to access the (G1 & G0) case because there aren't enough bit positions to
   let you reach it. However, a simple workaround is to invert the bitmask data
@@ -236,6 +266,7 @@ LP0 | LP1                               LP0 | LP2
 
 So you can calculate ~G1 as LP0 | LP1, and similar for ~G0 as LP0 | LP2.
 This explains why lists in Chunsoft's data always had 3+ bit positions.
+To calculate the direct data: G1 = LP2 | LP3, and G0 = LP1 | LP3
 
 As for cases with 5+ list positions, the equations are:
 LP0 = ~G2 & ~G1 & ~G0   You can use Boolean algebra to calculate and verify:
@@ -288,7 +319,7 @@ inject ASM for it/them over the BEQs at $02904B and $029063.
 
 One idea could be to construct a bitplane using only two unique bytes.
 - You can bitpack the 8 flags into 1 byte, and store the two data values as-is.
-- Use case: bytes do not lend themselves well to RLE, like repeating [B0 B1].
+- Use case: if bytes do not lend themselves well to RLE, like repeating [B0 B1].
 - However, would this save space versus filling the bitplanes using indices such
   as [all 00] [all FF] [B0 B1 sequence] [bpX] or [~bpX]?
 - Idea would require 1 byte for either the 10/18 case, 1 flags byte of "bp byte
@@ -370,3 +401,148 @@ the LoROM memory layout should make it so bit 23 (800000) is clear and bit 15
 It turns out choosing the correct values for both bitplane and bitmask metadata
 is fairly important. My compressor performed better for some data blocks, while
 Chunsoft's did better for others.
+
+--------------------------------------------------------------------------------
+
+How to encode compressed graphics data
+
+If you want to do a quick and dirty tileset encoder with no compression at all,
+you could follow these steps:
+- Write a 0x1B byte header with any data you want. "uncompressed tileset header"
+  in ASCII is an exact fit if you want to use that!
+- For each 4bpp tile in the tileset (minus the empty 000 tile):
+  - Write the "uncompressed tile data" type byte of [20].
+  - Write the 0x20 bytes of the 4bpp tile.
+- Write the data terminator byte [00].
+
+Otherwise, high-level encoding instructions for each case:
+
+----------
+
+Common data for bitplane cases:
+0xC bytes of data, consisting of 4 sets of bitplane indices, encoded in 3 bytes
+(Even if the indices can be encoded in 2 bytes, you must encode them in 3 bytes)
+
+Write the data in the order:
+byte 0 of option 0, byte 0 of option 1, byte 0 of option 2, byte 0 of option 3
+byte 1 of option 0, byte 1 of option 1, byte 1 of option 2, byte 1 of option 3
+byte 2 of option 0, byte 2 of option 1, byte 2 of option 2, byte 2 of option 3
+
+----------
+
+Common data for bitmask cases:
+0xF bytes of encoded bits for the bitpacked bit position lists
+Just write the 0xF bytes
+
+----------
+
+00 NN FF ~NN case:
+Determine how to encode the 8 bytes of NN data. The type byte to use will be:
+08 = 8 uncompressed bytes
+28 = RLE format
+30 = construct from 3 or 4 unique bytes
+38 = construct from 4 unique nibbles
+Then write the (un)compressed data for the group
+
+----------
+
+Reusing tile on bitplane basis:
+
+Type byte = 0x40 | (bitplane flags 3-0 << 2) | (bits 9-8 of src tile num)
+Bits 7-0 of src tile num
+For each bitplane that has to be changed (bp0 first, bp3 last):
+- Flags byte for which bytes have to be changed
+- New data bytes
+
+----------
+
+Reusing tile on row basis:
+
+Type byte = 0x09 | (bits 9-8 of src tile num << 4)
+Bits 7-0 of src tile num
+Flags byte for which rows need to be changed
+Four bytes of data for each row to be changed (row 0 first, row 7 last)
+
+----------
+
+Creating tile from bitmask groups:
+
+Determine which compression type to use. Start w/ the correct type byte bitmask.
+- RLE = 0x02, unique bytes = 0x04, unique nibbles = 0x06
+
+Bitpack the up to 8 list positions into a big endian 16-bit value.
+- If both bytes of the value are either 00 or in the list of 0xF common bytes,
+  you can encode the two indices in one byte. Bitwise OR 0x01 into type byte.
+- If either byte is not 00 and also not in the common list, you must encode the
+  16-bit value directly.
+
+Then encode the possibly compressed data for the two or three bitmask groups.
+- If group 0 is compressed, bitwise OR 0x20 into type byte.
+- If group 1 is compressed, bitwise OR 0x10 into type byte.
+- If group 2 is compressed, bitwise OR 0x08 into type byte.
+
+----------
+
+Creating tile from bitplane subroutines:
+
+Provided you know the four subroutine indices, there are three patterns.
+- Set of indices is common enough to be one of the four sets in the metadata:
+  Type byte = 0x01 | (metadata index << 4)
+
+- Index 0 is from 00-03, and index 3 is either 04 (all 00) or 05 (all FF)
+  Type byte = 0xC0 | index2
+  Data byte 1 = index0 | (index1 << 3) | (index3 & 1) << 2
+
+- General case
+  Type byte = 0x80 | index2
+  Data byte 1 = (index1 << 3) | (index0 & 0xE) >> 1
+  Data byte 2 = index3 | (index0 & 0x1) << 7
+
+And then you have to encode the data for each of the four subroutine indices.
+
+----------
+
+Data for each bitplane subroutine
+
+8 uncompressed bytes are self-explanatory.
+
+Spot changes (placed AFTER the data for the "primary" subroutine index):
+One byte of flags for which bytes in the bitplane have to be changed
+The new data bytes to write
+
+RLE format (also used for 00/FF/NN and bitmask data tile cases):
+One byte of flags for the start positions of the runs of new values
+(if the 8 bytes start with at least one byte of 00, its value is implied)
+The bytes for the values of each run
+
+Fill bitplane with a byte:
+If 00 or FF, the value is implied. Otherwise, just write the value as-is.
+
+Read two  bytes X/Y and fill bitplane with [X Y X Y X Y X Y]:
+Read four bytes W-Z and fill bitplane with [W X Y Z W X Y Z]:
+Encode the data bytes, that's it.
+
+Construct bitplane from 3 or 4 unique bytes (same deal as RLE, reused)
+One 16-bit big endian value consisting of eight 2-bit indices
+- If you assume that the 8 bytes are [0 1 2 3 4 5 6 7], fill the indices as:
+  bits F-E = BP byte 7, bits D-C = BP byte 6, ..., bits 1-0 = BP byte 0
+- If bitplane has 3 unique bytes, signify this by setting bits 0-1 to non-zero
+  (Reasoning: BP byte 0 is the first unique byte in the bitplane, and so we can
+  assume that the first index ought to be binary 00 regardless of the data)
+Then write the three or four data bytes in order of [0 1 2 (3)].
+
+Construct bitplane from 4 unique nibbles (same deal as RLE, reused)
+One 32-bit big endian value consisting of sixteen 2-bit indices
+- If you assume that the 8 bytes' nibbles are [01 23 45 67 89 AB CD EF]:
+  bits 1F-1E = nibble F, bits 1D-1C = nibble E, ..., bits 1-0 = nibble 0
+Then two bytes containing the data nibbles in order of [01 23].
+
+Copy bitplane from previous tile
+A 16-bit big endian value that encodes the following data:
+- Bit F: Flag for if src bitplane is copied as-is (0) or in reverse order (1)
+- [Bits E-C: unused]
+- Bits B-A: Which bitplane (0-3) in the src tile to use as a base
+- Bits 9-0: Tile number (000-3FF) to get the bitplane from
+
+No data is required for any of the bitplane subroutines that combine previous
+bitplanes in the tile together.
