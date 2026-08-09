@@ -27,3 +27,10 @@ recompressed*/**
 # By default, `git status` will not list off .bin files you haven't uploaded
 # Be careful about which files you do upload; do not distribute partial ROM data
 **/*.bin
+
+# GIMP projects for image editing
+**/*.xcf
+
+# Graphics data to be loaded with Tilemap Studio; 2bpp = silhs, 4bpp = BG GFX
+**/*.2bpp
+**/*.4bpp
