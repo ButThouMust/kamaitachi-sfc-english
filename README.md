@@ -65,19 +65,27 @@ If I could, I'd like to reach out to the Project Kamai team and ask for permissi
 - It popped up after a choice, over whether to reply to the question "Nothing strange has happened, has there?" with "Huh, how'd you know?" or "Not really, no."
 - In the script translation, search for the text `BFB41`.
 
-### ASM hacks
+### <ins>ASM hacks</ins>
 I had incorporated [text kerning](https://en.wikipedia.org/wiki/Kerning) into Otogirisou, and having it in Kamaitachi would be nice, too. The lack of it is most noticeable with lowercase `j` in the middle of a word, as well as with the `ï` in `naïve`.
 
 Another thing that might be nice to have: improve the text drop shadow to fully surround characters, instead of just doing three pixels right, down, and down right.
 
-### Graphics translation
+### <ins>Graphics translation</ins>
 The title logo is not translated. In short, the blood splatter animation on the title screen complicates the design of a translated logo. Let me know if you would be interested!
 
 Kamaitachi has a graphic that references another Chunsoft game, specifically a recreation of its title screen. I consider translating the graphic to be debatably unnecessary.
 
 More details [here](/notes/gfx%20translation/README.md). These are more "nice to have" items than "absolutely necessary."
 
+### <ins>Chapter list hack</ins>
+In the Japanese game, you are only able to start from a previous chapter after reaching an ending. After releasing version 1.0 of the patch, I discovered a fairly simple [ROM edit](https://github.com/ButThouMust/kamaitachi-sfc-english/commit/fe30d6eeee4ecb18cd4848f69866f3e666183a0c#diff-a3eaa1986eb6f1b75f101528095451dccc84b2d37d97eb7c57d4f83e5012fc2cR293) that allows the player to start from a previous chapter at any point in the story. You would also want to do a simple [graphics edit](https://github.com/ButThouMust/kamaitachi-sfc-english/commit/ca112e3f0d4e617cf931b793f8baab7aacfb2db9).
+
+I'd personally recommend against using it. The game will signify if you have gotten 100% completion, so to speak, from picking every possible choice and reading every bit of text in the game. It's a major undertaking that I've never done myself in the SFC version. If you want to try to get it, I do not know if this change will help or hinder your efforts.
+
+If people *do* want this change in the translation patch, I would include it as a separate, optional patch.
+
 ## Solved items
+Here's a list of things that had to be done to translate the game into English.
 ### <ins>Text</ins>
 - Dump the Japanese font.
 - Dump the compressed Japanese script.
