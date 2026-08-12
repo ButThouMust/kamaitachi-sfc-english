@@ -1,0 +1,405 @@
+There is a scan of the manual on the Internet Archive:
+https://archive.org/details/kamaitachi-no-yoru
+
+--------------------------------------------------------------------------------
+
+[Front cover]
+
+Kamaitachi no Yoru
+Instruction Manual
+SHVC-EU
+Super Famicom
+
+--------------------------------------------------------------------------------
+
+[Page 2]
+
+ごあいさつ
+Greeting
+
+このたびは、スーパーファミコン用ソフト「かまいたちの夜」
+をおお買いあげいただき、まことにありがとうございました。
+Thank you very much for purchasing Kamaitachi no Yoru for the Super Famicom.
+
+本ソフトは、チュンソフトが独自の視点から提案したジャンル、
+サウンドノベルの第２弾です。前作「弟切草」と同様、音の付い
+た小説を、テレビ画面を通して楽しむことができるソフトです。
+今作品は、さらに数々の新技術や斬新な試みを盛り込んで完成さ
+せたもので、きっと皆様に御満足いただける仕上りになったと自
+負しております。
+This game is the second sound novel, a genre that Chunsoft proposed from their
+unique point of view. Like the previous entry Otogirisou, you can enjoy a novel
+with sound added, on a TV screen. We are proud to have completed this entry with
+even more of the latest technologies and innovative endeavours, and hope that
+everyone will be satisfied with the result.
+
+ご使用に際しましては、プレイする前にこの「取扱説明書」を
+よくお読みいただき、正しい使用法でご愛用ください。なお、こ
+の「取扱説明書」は大切に保管してください。 
+Please take good care of this instruction manual, carefully read it before
+starting the game, and follow the directions for usage every time you play.
+
+--------------------------------------------------------------------------------
+
+[Page 3]
+
+目次
+Table of Contents
+
+サウンドノベルとは　　　　　　　　　　 ４
+「かまいたちの夜」の楽しみ方　　　　　 ６
+ゲームのはじめ方　　　　　　　　　　　 ８
+ケームのすすめ方　　　　　　　　　　　１０
+登場人物の横顔　　　　　　　　　　　　１２
+「シュプール」の謎に迫る　　　　　　　１６
+中村光一流読書のすすめ　　　　　　　　２０
+キミもピンクのしおりにチャレンジだ！　２１
+使用上のご注意　　　　　　　　　　　　２３
+
+Page 4: What is a Sound Novel?
+Page 6: How to Enjoy Kamaitachi no Yoru
+Page 8: How to Start the Game
+Page 10: How to Play the Game
+Page 12: Profiles for the Cast of Characters
+Page 16: Approaching the Mystery of The Spur
+Page 20: Koichi Nakamura's Recommended Reading*
+Page 21: We challenge you as well with getting the pink bookmark!
+Page 23: Usage Precautions
+
+*: Japanese pun, 一 "ichi" is reused between 光一 "Koichi" and 一流 ichiryuu
+"first-class"
+
+--------------------------------------------------------------------------------
+
+[Page 4]
+サウンドノベルとは
+What is a Sound Novel?
+
+サウンドノベルとは、テレビ画面を通じて
+小説を楽しむことができるソフトです。もち
+ろん、スーパーファミコンならではの高度な
+映像・音響効果と、工夫をこらされた演出が
+雰囲気を盛り上げ、プレイヤーをより深く小
+説の世界へ引きこんでくれるのです。
+// NOTE rewrite translation for 演出, "staging" doesn't sound quite right
+A sound novel is a piece of software that allows you to enjoy a novel on a TV
+screen. And of course, with the Super Famicom's advanced graphics and sound
+effects, we exercised our ingenuity to bring you staging that livens the
+atmosphere and draws the player ever deeper into the world of the novel.
+
+リアルで高品位な、背景グラフィック
+Realistic, High-Grade Background Graphics
+
+　物語の背景で展開されるグ
+ラフィックは、実写取り込み
+による高品位なもの。 リアル
+な映像が､臨場感を高めます。
+The background graphics developed for the story were captured from real photos.
+The realistic images heighten the sense of actually being in the lodge.
+
+その背景には、登場人物のシ
+ルエットをオーバーラップし
+て表現。それぞれの人物の影が
+物語の進行に合わせて現れ、 
+プレイヤーの想像力をより一層かき立てる役割を果たします。
+Silhouettes of the cast of characters are overlaid onto the graphics. With the
+characters' shadows matching the story progression, they better accomplish the
+task of stirring the player's imagination.
+
+　また、動くさし絵ともいえる、アニ
+メーション映像が効果的に挿入されて
+いるなど、さまざまな視覚的効果が臨
+場感を高め、プレイヤーを物語の世界
+により深くひき込むように用意されて
+いるのです。
+Effectively inserted animated graphics and various visual effects heighten the
+sense of realism. They have been prepared to draw the player ever deeper into
+the world of the story.
+
+[Page 5]
+
+思わずドキリ、迫力のステレオサウンド
+Sudden Shocks from Impactful Stereo Sound
+
+物語の進行に合わせて流れるBGMは、ストーリーに彩りを与
+え、物語の世界をいきいきと演出してくれます。そして、要所に
+入る､サンプリング音源方式による効果音。
+ドアの開く音、ガラスの割れる音などがリ
+アルに表現されます。 もちろんBGM、効
+果音はすべてステレオサウンド。物語を立
+体的に楽しむことができるシステムです。
+Background music matching the story progression gives it a touch of color, and
+livens its world. Important places also have sampled audio effects, such as the
+sound of a door opening, or the sound of glass shattering. Of course, the music
+and sound effects are all in stereo sound. The system allows you to enjoy the
+story three-dimensionally.
+
+千変万化、魅力のマルチシナリオ
+A Fascinating Multi-Scenario with Infinite Variety
+
+普通の小説ともっとも違うところは、途中にいくつも現れる選
+択肢で行動を決定することによって、物語の展開が大きくかわっ
+ていくことです。物語の結末も一
+つではなく、 さまざまなエンディ
+ングが用意されています。あたり
+前の選択肢を選んでいては体験で
+きない秘密のストーリーや、あっ
+と驚く意外な結末も、ふんだんに
+用意されているのです。
+Completely differently from normal novels, what happens in the story can
+dramatically change depending on the choices you make. [There is not just one
+conclusion to the story.] Many endings, some quite shocking, have been prepared
+for you, as well as stories that you cannot experience by picking the obvious
+choices.
+
+音声はぜひステレオサウンドで
+Be Sure to Play in Stereo Sound!
+
+　物語を立体的にお楽しみいただくために、音声はぜひステ
+レオでお聞きください。ご使用になるテレビがステレオ対応
+で、スーパーファミコンとの接続が「ステレオAVケーブル」
+か「S端子ケーブル」であればOKです｡テレビがステレオ対
+応でない場合は、音声だけをステレオ機器、
+あるいはステレオラジカセに接続するだけで
+もステレオサウンドが楽しめます。 また、ス
+テレオヘッドホンの使用も効果的です。
+To enjoy the story three-dimensionally, please be sure to listen in stereo
+sound. You will need a stereo-compatible TV, as well as a stereo AV cable or
+an S-Video cable for your Super Famicom. If your TV is mono only, you can enjoy
+stereo sound by connecting just the audio to either a stereo system or a stereo
+radio cassette player. Using stereo headphones is also effective.
+
+--------------------------------------------------------------------------------
+
+[Translation note: ペンション "pension" refers to a type of boarding house
+common in Europe and some Asian countries, where they serve not just breakfast
+but also dinner and (sometimes) lunch. Not to be confused with the form of
+salary or payment. I decided to translate it as "ski lodge" for the purposes of
+talking about the game.]
+
+[Page 6]
+「かまいたちの夜」の楽しみ方
+How to Enjoy Kamaitachi no Yoru
+
+「かまいたちの夜」は、前作にひき続き、迫
+力満点のサスペンス・ホラー。あなたは冬の
+ペンションで不可解な殺人事件に巻き込まれ
+ます。あなたは推理の動かせて犯人を見つけ、
+事件を解決することができるでしょうか。
+Continuing from Otogirisou, Kamaitachi no Yoru is an intense suspense horror.
+You have been drawn into an inexplicable murder case at a ski lodge in [the
+middle of] winter. Will you be able to use your powers of deduction to find the
+killer and solve the case?
+
+　今回、舞台となるのは、山あいの地に建つログキャビン風のペ
+ンション。主人公であるあなたは、恋人と二人でスキーを楽しむ
+ためにこのペンションを訪れます。しかし、夕方から吹雪に見舞
+われたペンションは、町から遠く離れていることもあって、孤立
+状態になってしまいます。そこで、第一の事件が起きました。ペ
+ンション内の人間は、従業員を含めて13人。そのうちの1人が、
+客室でむごたらしく殺されていたのです。残りの12人は恐怖にお
+ののき、ペンションの談話室に集まります。犯人はどこにいるの
+か。ペンションのどこかに潜んでいるのか。それとも、まさかこ
+の12人の中の誰かが……? 見えない犯人の影に怯える12人の男
+女をあざ笑うかのように、第二､第三の殺人が起きていくのです。
+
+This time, the story is set in a log-cabin-style ski lodge in the middle of the
+mountains. You as the protagonist visit the lodge with your girlfriend to have
+fun skiing. But that night, a blizzard strikes the lodge. Far away from town, it
+becomes isolated from the outside world. And then, the first incident happens.
+There are 13 people in the lodge, including the employees. One of them is
+gruesomely murdered in a guest room. Shaking from fear, the remaining 12 gather
+in the lounge. Where is the killer? Are they hiding somewhere in the lodge? Or,
+could it be that they are one of the remaining 12...? As if ridiculing the
+twelve frightened men and women in the invisible killer's shadow, more murders
+begin to occur.
+
+「かまいたちの夜」へようこそ
+Welcome to Kamaitachi no Yoru
+
+あなたはスキーに行ったことがありますか？　ペンションに泊
+まったことは？　そして… 恐ろしい殺人事件に出会ったことは？
+「かまいたちの夜」をプレイしようとしているあなたがたを待ち受
+けているのは、吹雪の中で起きる血も凍る連続殺人です。あなた
+は物語の主人公となって一刻も早く事件の謎を解いてください。
+さもないと、親しい人や、あなた自身さえも被害者になってしま
+うかもしれません。
+Have you ever gone skiing before? Ever stayed at a ski lodge? What about... Have
+you ever found yourself in a frightening murder case? What awaits you about to
+play Kamaitachi no Yoru is a serial murder case in the snow, that will make your
+blood freeze. As the protagonist, please try to solve the mysteries of the case
+as quickly as possible. Should you not, those you hold dear or even you yourself
+may fall victim to the killer.
+
+　素晴らしいBGMと効果音､美しく、時には恐ろしいグラフィッ
+クの数々が、小説や映画では味わえない恐怖を演出してくれるで
+しょう。
+The excellent music and sound effects, as well as the beautiful and sometimes
+frightening graphics, will bring out fear that you cannot experience from movies
+or [traditional] novels.
+
+　しかし、どんなに恐ろしくても、本当の出来事のように思えて
+も、スイッチを切ってしまいさえすればあなたに危害が及ぶこ
+とはないはずです。たぶん……。
+However, no matter how frightening it may be or how real it may seem, no harm
+will come to you as long as you simply turn the game off. Hopefully...
+
+平成６年　秋　我孫子武丸
+Autumn 1994 - Takemaru Abiko
+
+　本ソフト用にオリジナルシナリオを手
+がけた我孫子武丸氏は、京都大学ミステ
+リー研究会出身の新鋭ミステリー作家。
+1989年､｢8の殺人｣(講談社ノベルス)でデ
+ビュー、新本格ミステリーの若き旗手と
+して脚光を浴びました。
+Takemaru Abiko, who handled the original scenario for the game, is an up and
+coming mystery author from Kyoto University's Mystery Club. He debuted in 1989
+with "The Eight Murders" (sold by Kodansha Novels), and has been in the
+limelight as a young standard-bearer of the New Traditionalist mystery novelist.
+
+　その作風は、独特の軽快なテンポをも
+ち、思わずくすりとさせられるエスプリ
+の効いたユーモアで、さわやかな読後感
+を与えてくれるものです。
+His writing style has a unique, light tempo with a sense of humor and spirit
+that can make you giggle, and leaves a delightful impression once you are done
+reading.
+
+　また、映画鑑賞やテレビケームを趣味
+とし、日本テレビ系「マジカル頭脳パワー」
+に、ミステリードラマのプレーンとして
+参加するなど、小説だけにとどまらない
+幅広い分野で活躍中です。
+His hobbies include appreciating movies, as well as TV games. He appeared in
+Nippon TV's "Magical Brain Power" as the Mystery Drama Brain, showing he engages
+in a wide range of fields beyond writing novels.
+
+--------------------------------------------------------------------------------
+
+[Page 8]
+ゲームのはじめ方
+How to Start the Game
+
+　カセットを、スーパーファミコン本体にしっ
+かりと差し込み、パワースイッチをONにし
+てください。チュンソフトマークに続き、タ
+イトル画面が現れます。コントローラー１の
+いずれかのボタンを押してみましょう。
+Please firmly insert the cartridge into the Super Famicom's cartridge slot, and
+switch the system on. After the Chunsoft logo, the title screen will appear.
+Press any button on player 1's controller.
+
+はじめてプレイする場合
+Playing for the First Time
+
+ボタンを押すとしおり画面になりますが、はじめて
+プレイする時は、セーブされたデータはありませんの
+で､空白のしおりが三つならんでいます。 この時､画面
+左下にステレオ／モノラルを切り替えるウインドウが
+現れているので､モノラルのテレビで楽しまれる方は、
+セレクトボタンで切りかえてく
+ださい。この設定は、次に切り
+かえ操作をするまで、そのまま
+で維持されます。
+　ステレオ／モノラルの設定が
+OKなら、Aボタンを押してく
+ださい。
+Pressing a button will bring you to the bookmark screen. When you play the game
+for the first time, there will be three blank bookmarks. A window in the bottom
+left will let you switch between stereo or mono audio. For those who are playing
+on a mono TV, please press the Select button to switch to mono audio. This
+setting will be preserved until the next time you change it. When you have made
+your choice for stereo or mono, please press the A button.
+
+キャラクター名の設定
+Setting Character Names
+　右のような画面が現れ、シナ
+リオに出てくる主人公（プレイ
+ヤー）と、その彼女の名前を変
+更・決定することができます。
+初期設定では主人公が「透」、彼
+女は「真理」となっていますの
+で、名前を自分好みに変えたい人は「名前をかえる」をえらびま
+す。カーソル( ▶) を十字ボタンで上下に動かし、Aボタンを押す
+と名前入力画面となります｡「そのまま始める」をえらんだ場合は、
+お話がスタートします。
+The screen on the right will appear, where you are able to change and set the
+names of the protagonist and his girlfriend. Their default names are "Tooru" and
+"Mari", but you can change them to whatever you like by picking "Change names".
+Move the cursor up and down with the d-pad, and press A to go to the name entry
+screen. If you choose "Start game", the story will begin.
+
+[Page 9]
+名前入力画面
+Name Entry Screen
+
+まず、漢字・ひらがな・
+カタカナのうち、使いた
+い文字を十字ボタンの上
+下でえらび、画面中央に
+表示された文字群のなか
+から、使いたい文字を十
+字ボタンでえらびます。
+First, press Up or Down on the d-pad to choose whether you want to input kanji,
+hiragana, or katakana. Then, use the d-pad to select the characters that you
+want to use from the on-screen grid.
+
+漢字は数が多いので、読
+みごとにまとめてブロックにしてあります。十字ボタンの上下で、
+希望の漢字をさがしてください｡使用したい漢字が現れたら､カー
+ソル（緑色のマス）をその字に重ね、Aボタンを押してください。
+Because there are many kanji, they are sorted into blocks based on their
+readings. Please search for the kanji you want by pressing Up or Down on the
+d-pad. When the kanji you want to use appears, move the cursor (green block) to
+it and press the A button.
+
+文字と文字の間隔をあけたい時は画面右の「スペース」を、一字
+だけ訂正したい時は「←なおす」を、いったん入力した文字をす
+べて消したい時は「全消」を選択してください。入力したい文字
+をえらびおえた時は「終わり」を選択しましょう。同じようにし
+て、彼女の名前も変更・入力することができます。 2人の名前を
+入力し終えると、ストーリーが始まります。
+Pick "Space" for a space between two characters, "Delete" to delete just one
+character, "Clear" to delete all inputted characters at once, and "End" when you
+have finished entering the name. You can then change the girlfriend's name in
+the same fashion. Once you input their names, the story will begin.
+
+[One note: "once you input their names, the story will begin" is not how this
+works in the final game, but it IS how the screen worked in Otogirisou]
+
+セーブデータがある場合
+Playing with Existing Save Data
+
+　一度プレイした後は、データがセーブされ
+ていますので、しおり画面に主人公の名前が
+表示されたしおりが現れます。ここでAボタ
+ンを押すと、キャラクター名決定画面で「そ
+のまま始める」をえらぶと、左のような画面となります。前回の続き
+を読みたい場合は「続きから」、はじめから読み直したい場合には「は
+じめから」にカーソル( ▶) を合わせてAボタンを押してください。
+After playing for the first time, bookmark(s) with the protagonist's name will
+appear on the bookmark screen. When you select "Start game" on the screen
+for setting characters' names, a screen like at left will appear. Put the cursor
+on either "Continue" to continue reading where you left off, or "From Beginning"
+to reread from the beginning of the story, and press the A button.
+
+　しおりは三つあり、3人が別々に読みすすむことも可能です。
+しおりには、主人公の名前、エンディングに到達した回数と、前回
+までに読みすすんだ章のタイトルが表示されます。
+With three bookmarks, three people can separately read through the story. Each
+bookmark will show the protagonist's name, the number of times they have reached
+an ending, and the title of the chapter they had last read up to.
+
+　また、いったんプレイしたしおりを消去したい場合は、きゃラ
+クター名決定の画面で「しおりを消す」を選択してください。
+Finally, if you would like to delete a bookmark, please select "Delete bookmark"
+on the screen for setting characters' names.
+
+--------------------------------------------------------------------------------
+
+[Page 10]
+ケームのすすめ方
+How to Play the Game
+
+
