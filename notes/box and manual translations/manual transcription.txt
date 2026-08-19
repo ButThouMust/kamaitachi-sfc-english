@@ -1,13 +1,21 @@
 There is a scan of the manual on the Internet Archive:
 https://archive.org/details/kamaitachi-no-yoru
 
+It is missing pages 14 and 15.
+
 --------------------------------------------------------------------------------
 
 [Front cover]
 
+かまいたちの夜
 Kamaitachi no Yoru
+
+取り扱い説明書
 Instruction Manual
+
 SHVC-EU
+
+スーパーファミコン®
 Super Famicom
 
 --------------------------------------------------------------------------------
@@ -62,12 +70,9 @@ Page 8: How to Start the Game
 Page 10: How to Play the Game
 Page 12: Profiles for the Cast of Characters
 Page 16: Approaching the Mystery of The Spur
-Page 20: Koichi Nakamura's Recommended Reading*
+Page 20: Koichi Nakamura's Recommended Reading
 Page 21: We challenge you as well with getting the pink bookmark!
 Page 23: Usage Precautions
-
-*: Japanese pun, 一 "ichi" is reused between 光一 "Koichi" and 一流 ichiryuu
-"first-class"
 
 --------------------------------------------------------------------------------
 
@@ -115,6 +120,8 @@ task of stirring the player's imagination.
 Effectively inserted animated graphics and various visual effects heighten the
 sense of realism. They have been prepared to draw the player ever deeper into
 the world of the story.
+
+--------------------
 
 [Page 5]
 
@@ -330,6 +337,8 @@ names of the protagonist and his girlfriend. Their default names are "Tooru" and
 Move the cursor up and down with the d-pad, and press A to go to the name entry
 screen. If you choose "Start game", the story will begin.
 
+--------------------
+
 [Page 9]
 名前入力画面
 Name Entry Screen
@@ -402,4 +411,734 @@ on the screen for setting characters' names.
 ケームのすすめ方
 How to Play the Game
 
+[Note: text uses 巻き戻し "rewind" and 早送り "fast-forward" to describe going
+backwards and forwards in previous text.
 
+　スタートすると、次々と文章が画面に映し
+出されます。ストーリーを読みすすんでいく
+と、いくつかの選択肢がある、分岐画面が現
+れます。また、一度読んだ部分は、ボタン操
+作で巻き戻しや早送りができます。
+Once you begin, sentences will appear one after another on the screen. As you
+progress through the story, it will present you with several choices and
+branching paths. You can also press buttons to rewind or fast-forward through
+previously read text.
+
+・文を送る..... (A)または(L)
+　文章の区切りに▶マーク、そのペー
+ジが終わると[PAGE]マークが現れ、点滅し
+ます。(A)ボタン・(L)ボタンのいずれか
+を推すと、次の文章が現れます。
+- Advance text ..... (A) or (L)
+A cursor or page icon will blink on and off at pauses in the story. Press either
+the A or L button to show the next sentence.
+
+・選択肢の選択..... Up or Down
+　分岐の画面が現れたら、任意の選択肢を十字
+ボタンの上下でえらびます。現在えらんでいる
+選択肢は、赤色で表示されます。
+- Select option for choice ..... Up or Down
+When the choice screen appears, press Up or Down on the d-pad to select any
+option you like. The currently selected option will be highlighted in red.
+
+・選択肢の決定..... (A)または(L)
+　えらんだ選択肢を決定するには、(A)又は
+(L)ボタンを押します。
+- Confirming option for choice ..... (A) or (L)
+Press either the A or L button to confirm the choice you have picked.
+
+・文章の巻き戻し・早送り ..... (X) (巻き戻し) (Y) (早送り)
+　今までに読んだ文章を、巻き戻して読み返すこと
+ができます。前の文章を読み返したい時は(X)ボタン
+を押してください。巻き戻してから先へ進みたい時
+は(Y)ボタンで早送りとなります。(A)または(L)ボタン
+を押せば、読み進んでいた画面へ戻ります。また、
+セレクトボタンを押すとチャプター（章）選択画面
+となって、今までに読んだ分を、章単位でさかのぼ
+ることができます。十字ボタンの上下で章をえらび、
+(A)または(L)ボタンを押せば、えらんだ章のはじめか
+ら読み返すことができます。
+- Rewinding or Fast-Forwarding the Story ..... (X) (backwards) (Y) (forwards)
+You can reread any text that you have previously seen. Please press the X button
+when you would like to do so. Press the A or L button to return to the current
+page of text. Also, pressing the Select button will bring up a chapter select
+screen. Choose a chapter with the A or L button, and you can read back from the
+start of that chapter.
+
+--------------------
+
+[Page 11]
+コントローラ各ボタンの名称と操作
+Names and Functions of Each Button on the Controller
+
+[These are listed going from the top left and moving right and then down]
+
+(L)ボタン
+(A)ボタンとともに、文やページの送
+り、選択肢の決定などを行います。
+L Button
+Along with the A button, advances to the next sentence or page, and confirms
+options for choices.
+
+(R)ボタン
+このソフトでは使いません。
+R button
+Not used in this game.
+
+スタートボタン
+ゲームスタート時にのみ
+使います。
+Start Button
+Only used for starting the game.
+
+(X)ボタン
+読みすすんでいる時、ペー
+　　　　　ジの巻き戻しが
+　　　　　　　できます。
+X Button
+Allows you to go back a page for previous text when reading through the story.
+
+(Y)ボタン
+読みすすんでいる時、ペー
+ジの早送りができます。
+Y Button
+Allows you to advance a page for previous text when reading through the story.
+
+セレクトボタン
+読みすすんでいる時、章
+単位でさかのぼりたい場合に
+選択画面を表示します。
+Select Button
+When reading through the story, this will display a list of chapters from which
+you can read back from.
+
+(B)ボタン
+名前入力時に、バックスペースボタンと
+して機能します。プレイ中は使いません。
+B Button
+When entering a name, this will function as the Delete key. Has no function in
+gameplay.
+
+十字ボタン
+選択肢の選択や、カーソ
+ルの移動などを行います。
+D-Pad
+Moves the cursor for selecting an option for a choice and such.
+
+(A)ボタン
+(L)ボタンと共通の機能を持ち、文字やペー
+ジの送り、選択肢の決定などをします。
+A Button
+Advances through text, and confirms choices. Has the same function as L.
+
+・いったんエンディングを迎えた場合
+　一度エンディングまで読み終えたシナリオを選択してふたたび
+プレイする場合は、これまでのプレイで読んだ各章の最初から読
+み始めることもできます。その場合、下のような画面となります
+ので、「各章のはじめから読む」を選択し、読み始めたい章を十字
+ボタンの上下でえらんで、(A)ボタンをおしてください。もちろん、
+前回と違う選択肢をえらべば話の展開も変
+化し、エンディングも変わっています。
+また、エンディングを迎えるごとに分岐点
+での選択肢が増えるなど、物語の幅がどん
+どんひろがっていくのです。
+　そして、エンディングのスタイルもさまざまです。あなたが迎
+えたエンディングでは、スタッフロールが流れましたか？　もし
+流れていなければ、まだまだ事件を解決したとはいえないのです。
+
+- Upon Reaching an Ending
+When playing the game again after reaching an ending, you can start reading from
+one of the chapters you had read on the way. Pick "Read from Chapter" on the
+below screen and press Up or Down on the d-pad to select the chapter to start
+reading from. Of course, making different decisions from your previous time
+reading may change how the story plays out, and what ending you will see.
+Additionally, depending on what endings you find, more choices will be added,
+and the story will expand that much more.
+
+Finally, there are many different kinds of endings. Did the end credits roll in
+the ending you reached? If not, you cannot say yet that you have solved the
+mystery.
+
+--------------------------------------------------------------------------------
+
+[Page 12]
+登場人物の横顔
+Profiles for the Cast of Characters
+[Fun thing: like "profile" in English, 横顔 in Japanese can refer to either
+seeing someone's head from the side (in profile), or to a brief description of
+someone]
+
+[Also note: pages 14 and 15 are not in the manual scan for some reason?]
+
+　ペンションにいる人物は、あなたと恋人を
+含めて１３人。そのシルエットと、簡単なプロ
+フィールを紹介しておきましょう。ひとりひ
+とりの人物像を知ることが、事件の謎を解く、
+一つの鍵になるかもしれません。
+Including you and your girlfriend, there are 13 people in the ski lodge. Here
+are silhouettes and a basic profile of them. Knowing what each person looks like
+may be one of the keys to solving the mysteries of the case.
+
+透(主人公)
+　首都圏に住む大学生。身長は172cm、
+体重60kgで中肉中背。吉田栄作風のヘ
+アスタイルだが、足もさほど長くなく、
+ごく平凡な大学生。真理とは大学で知
+り合ったが、まだ正式な恋人という感
+じではない。
+Tooru (Protagonist)
+A college student who lives in the Greater Tokyo Metropolitan Area. Has a medium
+build, standing 172 cm and weighing 60 kg. He has the same hair style as Eisaku
+Yoshida* but isn't as tall as him, and is a totally ordinary college student. He
+had met Mari at college, but he still doesn't feel like he can say they're a
+couple.
+
+[*: 吉田栄作 Eisaku Yoshida is a Japanese actor and singer. His website says
+that he is 182 cm tall, or about 4 inches taller than Tooru]
+
+真理
+　透と同じ大学に通う大学生で、歳も
+同じ。身長165cm、スタイル抜群で、ス
+トレートの長い髪が似合う美人タイプ。
+スポーツ万能で、頭の回転も早い。小
+林さんは叔父にあたり、そのつてでペ
+ンションにやって来た。
+Mari
+She goes to the same college as Tooru and is the same age as him. Her long,
+straight hair goes well with her beautiful figure. She's both athletic and
+smart. She came to the lodge thanks to how her uncle is Mr. Kobayashi.
+
+--------------------
+
+[Page 13]
+
+小林二郎
+　ペンション「シュプール」の
+オーナー。数年前に脱サラして、
+ペンションの経営をはじめた。
+年齢は45歳前後、やせ型。
+Jirou Kobayashi
+The owner of the Spur ski lodge. He had quit his job as a salaryman several
+years ago to start up his lodge. He is about 45 years old, and has a thin build.
+
+小林今日子
+　ペンションオーナーの奥さん。
+気さくで面倒見がいいおばさん
+だ。小柄だが、小林さんを内か
+らささえるしっかり者。
+Kyouko Kobayashi
+The wife of the lodge owner, and a friendly and very caring middle-aged woman.
+She may be petite, but she works hard to support her husband.
+
+香山誠一
+　大阪の会社社長。小林さんが
+むかし、仕事でお世話になった
+人だ。頭髪は薄く、太って腹が
+大きくせりだした風体。
+Seiichi Kayama
+The president of a company in Osaka. He had helped Mr. Kobayashi with his work a
+long time ago. His hair is thin, and his large stomach juts out.
+
+香山春子
+　香山誠一の奥さん。うりざね
+顔の日本美人。背も高く、夫と
+は対照的に上品なご婦人。口数
+も少なく、目立たないタイプだ。
+Haruko Kayama
+Mr. Kayama's elegant wife. Contrasting with her husband, she is a tall,
+beautiful, Japanese woman with an oval face. She doesn't stand out much, and is
+a woman of few words.
+
+--------------------
+
+[Page 14]
+田中一郎
+　年齢、職業ともに不詳。黒っぽい
+背広の上にコートをまとい、サング
+ラスをかけている。スキー場にはい
+かにも不釣り合いな感じだ。
+Ichirou Tanaka
+Age and profession unknown. Wears a coat over a black suit, and sunglasses. He
+seems very out of place at a ski lodge.
+
+美樹本洋介
+　フリーのカメラマン。風
+景写真の専門家だ。身長185
+cmで、がっしりした体型。
+ひげもじゃで、みるからに
+山男。
+Yousuke Mikimoto
+A freelance photographer who specializes in landscapes. A strongly built man who
+stands 185 cm tall and looks like a mountain man with his scraggly beard.
+
+久保田俊夫
+　ペンションでアルバイト
+として働く、自称大学6年
+生。身長180cmのスポーツマ
+ン体型で、スキー好き。服
+装も、スポーツマン風だ。
+Toshio Kubota
+A self-professed sixth-year college student working part-time at the lodge. He
+loves to ski, is 180 cm tall, and has a the outfit and build of a sportman.
+
+--------------------
+
+[Page 15]
+篠崎みどり
+　ペンションに住み込みで働く
+アルバイト。歳は20歳代で、中
+肉中背。丸顔で、髪はポニーテー
+ルでまとめている。
+Midori Shinozaki
+A live-in part-time worker at the lodge. She is in her 20s and has a medium
+build. She has a round face, and keeps her hair in a ponytail.
+
+北野啓子
+　３人組ＯＬの一人。太り気味
+だが、ぽっちゃりとかわいい印
+象も受ける。スキーよりも食事
+が楽しみといった感じ。
+Keiko Kitano
+One of the three female office workers. She looks overweight but gives off a
+cutely plump vibe. She seems to enjoy eating more than skiing.
+
+渡瀬可奈子
+　やせて髪の長い女性。美人と
+言っていい顔立ちが、ちょっ
+と軽薄そうな印象も与える。服装も
+ボディコン風で派手め。
+Kanako Watase
+A thin woman with long hair. She certainly looks beautiful but gives an
+impression of being somewhat shallow. She wears flashy, tight-fitting clothes.
+
+河村亜希
+　ＯＬ３人組の一人で、ボーイッ
+シュなイメージの女の子。ほかの
+二人と同じく18歳だが、服装のせ
+いもあって、歳よりも幼く見える。
+Aki Kawamura
+A boyish-looking girl who's one of the three female office workers. She is 18
+like the other two, but her clothes make her look younger than she really is.
+
+--------------------------------------------------------------------------------
+
+[Page 16]
+「シュプール」の謎に迫る
+Approaching the Mystery of The Spur
+
+　物語の大部分は、雪のため孤立したペンショ
+ン「シュプール」の中で進行します。ここでは、
+ペンション内の間取りと、部屋の配置につい
+て頭に入れておきましょう。推理をする上で、
+何かのヒントになるかもしれません。
+The majority of the story takes place in the Spur ski lodge, cut off from the
+outside world because of the snow. You should remember the layout of the lodge
+and the room locations of the rooms. It may provide a hint with deducing the
+facts of the case.
+
+[Photo of the stairs]
+１階と２階をつなぐの
+は、この階段だけだ。
+The only thing connecting floors 1 and 2 are these stairs.
+
+[Photo of chairs in the lounge]
+全員が集まって身を寄
+せ合う談話室。
+The lounge where everyone huddles together.
+
+[Photo of dining room]
+夕食の時は、誰もが幸
+せな気分だった…。
+At dinner time, everyone felt happy...
+
+--------------------
+
+[Page 17]
+
+[Photo of Tooru's room]
+僕の部屋だ。あんな事件
+がなければ…。
+This is my room. If only that frightening murder hadn't happened...
+
+[Photo of closet upstairs]
+掃除用具などが入って
+いるだけなのだが…。
+There should only be cleaning supplies inside it...
+
+[Photo of Mikimoto's room]
+フリーカメラマンの部屋。
+特に怪しいところは…。
+The freelance photographer's room. The particularly suspicious places are...
+
+[Photo of hallway upstairs]
+この廊下に、何度も
+悲鳴が響くことに…。
+Countless screams echoed in this hallway...
+
+[Photo of someone's room with curtains flapping]
+ヤクザ風の男の部屋だ。今夜、
+この部屋で何かが始まる…。
+The room for that guy who looked like a yakuza. Something will happen tonight in
+this room...
+
+[Photo of wine cellar downstairs]
+地下のワイン庫。
+ここにも謎が…？
+The wine cellar downstairs. Could there be mysteries here, too...?
+
+--------------------
+
+[Page 18]
+
+「かまいたちの夜」に隠されている無数のドラマ。そ
+してそのドラマは、カセットの中だけでは終わらない。
+本、そしてCDへとシナリオは続き、スーパーファミ
+コンの世界とリンケージ。
+これは、初めての体験だ。
+Kamaitachi no Yoru has countless dramas hidden in it, that don't end inside just
+the game cartridge. Scenarios continue into books and CDs linked to the world in
+the Super Famicom game. This is a first-of-its-kind experience.
+
+スーファミ版未収録、裏シナリオシリーズ
+A Series of Hidden Scenarios Not Included in the Super Famicom Version
+本で驚き、CDドラマで泣いた！
+Shocks in a Book, Cries in a CD Drama!
+
+[Boxes in the center, one letter per box]
+ヒントはこの
+中にある
+Hints are in here
+
+「かまいたちの夜」の世界をさらに何倍も楽しむことができるの
+が、このファンブック。ゲームカセットには収録されなかったオ
+リジナルストーリーをたっぷりと掲載。そのストーリーは、カセッ
+ト内の本編とリンクした内容です。つまり、本編の一つの分岐の
+先のシナリオが収録されているようなもの。そして、カセット内
+の本編に隠された重大な秘密に関するヒントもこの本の中に…。
+　　　　　　　　　　　　　　これはもう、買わずにいられない！
+Even more ways to enjoy the world of Kamaitachi no Yoru are in this fan book.
+It's full of original stories not included on the game cartridge, but linked to
+its main story. [Which is to say, the included scenario follows a particular
+branching path in the main story.] And this book has a hint related to a major
+secret hidden in the game's main story. You have to buy it!
+
+'94 12月下旬発売！      To be released between December 21-31, 1994!
+
+かまいたちの夜          Kamaitachi no Yoru Official Fan Book
+公式ファンブック        Publisher: Chunsoft
+発行／チュンソフト      Price: 1000 yen (tax included)
+定価／1,000円(脱込み)
+
+--------------------
+
+[Page 19]
+「かまいたちの夜」ゲームカセッ
+トに使われたBGMのオリジナル
+サウンドトラックCD。38曲のメ
+ロディーがふたたびゲームの感動
+を思い出されてくれるはずです。
+An original soundtrack CD of the background music used in the game. The 38
+melodies will again remind you of how the game deeply moved you.
+
+'94 12月1日発売！               To be released December 1, 1994!
+
+かまいたちの夜サウンドトラック  Kamaitachi no Yoru Soundtrack
+発売／キティエンタープライズ    Sold by Kitty Enterprises
+定価／2,500円(脱込み)           Price: 2500 yen (tax included)
+
+もう一本は、声優によるサウンドサスペンスドラマが収録された
+CDです。シナリオは、もちろんゲームカセット未収録のオリジ
+ナルストーリーで、本編にリンク。そして、本編に隠された二つ
+目の重大な秘密に関するヒントもこの中に…。
+さあ、こうしちゃいられない！
+The other book is a CD with voice actors and actresses performing a sound
+suspense drama. The original story, of course not included in the game, is
+linked to the main story. And in it is a hint for the second major secret hidden
+in the game's main story... Alright, you have to buy it!
+
+'94 12月10日発売！              To be released December 10, 1994!
+
+かまいたちの夜 CDドラマ         Kamaitachi no Yoru CD Drama
+発売／キティエンタープライズ    Sold by Kitty Enterprises
+定価／2,500円(脱込み)           Price: 2500 yen (tax included)
+
+--------------------------------------------------------------------------------
+
+[Page 20]
+中村光一流読書のすすめ
+Koichi Nakamura's Recommended Reading
+
+[Note: Japanese pun, 一 "ichi" is reused between 光一 "Koichi" and 一流 ichiryuu
+"first-class"]
+
+「かまいたちの夜」で、我孫子ワールドに目覚めたあなたに
+中村光一がこの本をお推めします。
+Koichi Nakamura recommends these books to you who have now learned of [Takemaru]
+Abiko's world through Kamaitachi no Yoru.
+
+　まずは、「Oの殺人」。この本の冒頭に作者か
+らの注意として、４人の容疑者の名前と次のよ
+うな文章が書かれています。
+First, "The Murder of O." Serving as a notice from the author at the beginning
+of the book, are the four suspects' names and the following passage.
+
+　極めて簡単な問題ですからほとんどの人は、
+終幕前に真相を見破られることでしょう、ほと
+んどの人は。でも、百人に一人くらいは分から
+ない人もいるのではないでしょうか。
+私がそうであったように、「かまいたちの夜」の
+プレイヤー全員が、その百人に一人となることでしょう。
+Most people, from such a simple question, would be able to figure out the truth
+before the end of the story. Most people, that is. Would one in every hundred
+people not figure it out? Perhaps everyone who will play Kamaitachi no Yoru will
+become that one percent of people.
+
+講談社ノベルス      Kodansha Novels
+定価740円(脱込み)   Price: 740 yen (tax included)
+
+　続いては、「探偵映画」。こちらも、あなたの
+予想を充分に裏切ってくれるでしょう。
+Next is "Detective Film." I am sure this will also thoroughly go against what
+you would expect.
+
+講談社ノベルス      Kodansha Novels
+定価760円(脱込み)   Price: 760 yen (tax included)
+
+　そして、きわめつけはこれ。かまいたちで次々
+と起こる連続殺人死体の数々に身震いをした方
+　　　　　　　　には「殺戮にいたる病」をお推めします。
+　　　　　　　　ハッキリいって、これはキツイです。しばらく
+　　　　　　　　は食べ物がのどを通らないでしょう。18歳未満
+　　　　　　　　の方や、心臓の弱い方はやめて下さい。また、
+　　　　　　　　我孫子先生ってステキ！と個人的に想っている
+　　　　　　　　女性にもお推めしません。(お推めになっていな
+　　　　　　　　い！）
+Finally, here is my favorite. I recommend "Disease Leading to Slaughter" for
+those who trembled seeing the serial murders happening one after another in
+Kamaitachi no Yoru. Honestly speaking, this one is very intense. You may not
+want to swallow food for a while. Those who are underage or faint-hearted
+probably should not read it. Same for some women who think "Mr. Abiko is
+amazing!" (Not recommended!)
+
+　犯人の名前、手口もすべて、そのまま書かれていながら一つ、
+そしてまた一つと繰り返される猟奇殺人。
+[REWRITE, this is probably not an accurate translation]
+It's a grotesque murder where the killer's name and modus operandi are written
+and repeated 
+吐気をおさえながら最後の１行をみたあなたは、その意外な事実
+にきっと、またはじめから読み直すことになるでしょう。
+When you read the final line as you hold back the urge to vomit, I am sure that
+the unexpected truth will make you want to read it again from the beginning.
+
+--------------------------------------------------------------------------------
+
+[Page 21]
+キミもピンクのしおりにチャレンジだ！
+We challenge you as well with getting the pink bookmark!
+
+サウンドノベル恒例！
+A Sound Novel Tradition!
+
+　　　先着
+　　3000名様に
+素敵なプレゼント！
+An Amazing Present to the First 3000 Entrants!
+
+　　　　　　　　　　　　　　　　サウンドノベルをプ
+　　　　　　　　　　　　　　レイしたことがある人
+　　　　　　　　　　　　　　ならご存じの、「ピンク
+のしおり」。さまざまなストーリーと、たくさんのエン
+ディングを体験した方は、しおりの色がピンクに変化
+することがあります。つまり、「かまいたちの夜」をど
+れくらプレイしたかの目安になるもの。早くもしお
+りがピンクになった、という方はしおりの画面を写真
+に撮って、チュンソフトにお送りください。ピンクの
+しおりを体験した方だけが楽しめる、ちょっとエッチ
+なミニドラマCDを先着3000名の方にプレゼントします。
+
+Those who have played a sound novel before may know about the pink bookmark.
+Players who find many endings in the various stories will see that their
+bookmark has turned pink. In other words, it measures how much you have played
+Kamaitachi no Yoru. For those who turned their bookmark pink quickly, please
+take a picture of the bookmark screen and send it to Chunsoft. The first 3000
+will receive a slightly dirty, mini drama CD as a present, which only those who
+have gotten the pink bookmark can enjoy.
+
+[Translation note: Please do not actually try to send pictures of this to Spike
+Chunsoft!]
+
+・あて先・
+Address
+
+〒160 東京都新宿区新宿6-24-20 丸増新宿ビル10階
+チュンソフト「かまいたちの夜ミニドラマCDプレゼント」系まで
+※写真と右下の「プレゼント応募券」を同封の上、住所・氏名(必
+ずフリガナをつけて下さい)・年齢・電話番号を明記して、上のあ
+て先までお送りください。
+※先着3000名後の到着分は無効となりますので、その節はご容赦
+　ください。
+
+〒160 Tokyo, Shinjuku Ward, Shinjuku 6-24-20 Marumasa Shinjuku Building, 10F
+Address it to Chunsoft "Kamaitachi no Yoru Mini Drama CD Present"
+
+Note: In the bottom right of your photo, enclose with your present application,
+in clear writing: home address, name (please be sure to write it with furigana),
+age, and phone number. Please send it to the above address.
+
+Note: Please forgive us that entries past the first 3000 will not be accepted.
+
+[In a triangle in the bottom right of the page at an angle]
+かまいたちの夜
+　プレゼント
+　　応募券
+Kamaitachi no Yoru Present Application
+
+--------------------
+
+[Page 22]
+あなたは　もう
+チャレンジした？
+Have you already taken on the challenge?
+
+チュンソフトの記念碑的
+オリジナルソフト第一弾
+Chunsoft's commemorative first original work
+
+　　　　　　　　サウンドノベル
+　　　　　　　第一弾「弟切草」。
+　　　　　　　テレビ画面を通し
+　　　　　　　て小説を楽しむと
+　　　　　　　いう、従来のゲー
+　　　　　　　ムの常識を打ち破
+　　　　　　　る、斬新なコンセ
+　　　　　　　プトは各方面から注目され、高い評価を得ました。
+
+　　　　　　　　物語の舞台は、森の中に建
+　　　　　　　つ古びた洋館。あなたは、彼
+女とのドライブの帰り道、その洋館に迷い込
+みます。そして、その中で二人を次々と襲う
+恐ろしい出来事……。
+　チュンソフトの記念すべき第一作、まだの
+方は、ぜひともチャレンジしてみてください。
+
+8M + バッテリーバックアップ
+希望小売価格8,800円(脱込み)
+
+The first sound novel was Otogirisou. Enjoying a novel through a TV screen
+shattered the norms for the latest video games. Novel concepts were observed
+through all points of view, and it has received good reviews.
+
+The story is set in an old Western-style mansion in the middle of a forest.
+Driving your way home with your girlfriend, you both lose your way into the
+mansion, and frightening things happen to you one after another inside...
+
+For those who have not yet experienced Chunsoft's debut work, we hope that you
+will give it a try.
+
+8 megabits + battery back-up
+MSRP 8,800 yen (tax included)
+
+チュンソフト質問ダイヤルのお知らせ
+チュンソフトでは、ゲームに関する質問を、
+電話で受け付けています。
+分からないことがある方は、下の番号へ電話してください。
+
+・電話番号 03(5272)5155 チュンソフト質問ダイヤル
+・受付時間 月曜日～金曜日(祝・祭日はのぞく)13:00～17:00
+※受付時間外は、テープによるインフォメーションとなります。
+
+Notice for Chunsoft Question Hotline
+Chunsoft is taking game questions over the phone. Those who do not understand
+something should call the below phone number.
+- Phone number 03(5272)5155 - Chunsoft Question Hotline
+- Hours of Operation: Monday-Friday (excluding holidays, festivals) 1 PM - 5 PM
+- If you call outside the hours of operation, you will hear a pre-recorded
+  informational message.
+
+--------------------------------------------------------------------------------
+
+[Page 23]
+使用上のご注意
+Usage Precautions
+
+● 精密機器ですので、極端な温度条件下での使用や保管および、強
+　いショックを避けてください。また、絶対に分解しないでください。
+Please avoid extreme temperatures and strong shocks when using the delicate
+electronics, and do not disassemble them.
+
+● コネクタ部分に触れたり、息を吹きかけたり､ぬらしたり、汚し
+　たりしないでください。故障の原因となります。
+Please do not touch or blow on the cartridge connector, nor get it wet or dirty.
+These can cause accidents.
+
+● シンナー・ベンジン・アルコール等揮発油ではふかないでください。 
+Please do not wipe the connector with paint thinner, benzene, alcohol, gasoline, etc.
+
+● テレビ画面から、できるだけ離れてゲームをしてください。
+Please play the game from as far back from the TV as possible.
+
+● 長時間遊ぶ場合は、健康のため1時間ないし2時間ごとに10分
+  間から15分間休憩してください。 
+When playing the game for extended periods of time, please take a 10 to 15
+minute break every hour for your own health.
+
+● カセット着脱時には､必ずスーパーファミコン本体の電源スイッチ
+　をお切りください。
+Always turn the Super Famicom off before inserting or removing the cartridge
+
+● ご使用後はACアダプタをコンセントから必ず抜いておいて
+　ください。
+Always unplug the AC adapter from the wall outlet when you are done playing.
+
+● この力セットはバッテリーバックアップシステムを採用してお
+　り､急に電源をオン/オフすると､セーブデータが消えてしまうこ
+　とがありますのでご注意ください。
+This cartridge uses a battery back-up system. If you rapidly turn the system on
+and off, it is possible that your save data will be deleted.
+
+● スーパーファミコンをプロジェクションテレビ（スクリーン投
+　影方式のテレビ）でプレイすると、残像現象（画面焼け）が生
+　ずるため、接続しないでください。
+To avoid screen burn-in, please do not connect your Super Famicom to a
+projection TV.
+
+健康上の安全に関するご注意
+Warnings for Health and Safety
+
+　疲れた状態や、連続して長時間にわたるプレイは、健康上好ま
+しくありませんので避けてください。また、ごく稀に、強い光の
+刺激や、点滅を受けたり、テレビ画面等をみたりしている時に、
+一時的に筋肉のけいれんや、意識の喪失などの症状を経験する人
+がいます。こうした症状を体験した人は、テレビゲームをする前
+に必ず医師と相談してください。また、テレビゲームをしていて、
+このような症状が起きた場合は、ただちにゲームをやめ、医師の
+診察を受けてください。
+Please avoid playing this game in ways that are detrimental to your health, such
+as playing it when you are tired, or playing it for very long periods of time.
+In very rare cases, stimuli such as strong lights or flashing from the TV screen
+may make some people have temporary muscle convulsions or lose consciousness.
+If you have had any of these symptoms, please discuss this with your doctor
+before playing the game. And should you experience these symptoms while playing
+the game, turn it off immediately and have an examination with your doctor.
+
+このカセットを無断を複製することおよびゲームの映像、内容等
+を無断で出版・上映・放送することを禁じます。
+Unauthorized copying of this cartridge, as well as unauthorized publishing,
+screenings, or transmissions of this game's video or contents, are prohibited.
+
+--------------------------------------------------------------------------------
+
+[Back cover]
+スーパーファミコン®は任天堂の商標です。
+Super Famicom® is a trademark of Nintendo.
+
+　　　　　株式会社　チュンソフト
+〒160 東京都新宿区新宿6-24-20 丸増新宿ビル10階
+Chunsoft Co. Ltd.
+〒160 Tokyo, Shinjuku Ward, Shinjuku 6-24-20 Marumasa Shinjuku Building, 10F
+
+FOR SALE and USE IN JAPAN ONLY. BUSINESS USE and RENTAL PROHIBITED.
+本品の転出、使用営業及び賃貸を禁じます。
+
+[the above English sentence is in English in the manual itself, and is a
+translation of the above Japanese sentence]
