@@ -221,6 +221,9 @@ could it be that they are one of the remaining 12...? As if ridiculing the
 twelve frightened men and women in the invisible killer's shadow, more murders
 begin to occur.
 
+--------------------
+
+[Page 7]
 「かまいたちの夜」へようこそ
 Welcome to Kamaitachi no Yoru
 
@@ -232,11 +235,11 @@ Welcome to Kamaitachi no Yoru
 さもないと、親しい人や、あなた自身さえも被害者になってしま
 うかもしれません。
 Have you ever gone skiing before? Ever stayed at a ski lodge? What about... Have
-you ever found yourself in a frightening murder case? What awaits you about to
-play Kamaitachi no Yoru is a serial murder case in the snow, that will make your
-blood freeze. As the protagonist, please try to solve the mysteries of the case
-as quickly as possible. Should you not, those you hold dear or even you yourself
-may fall victim to the killer.
+you ever found yourself in a frightening murder case? What awaits you, about to
+play Kamaitachi no Yoru, is a serial murder case in a blizzard, that will make
+your blood freeze. As the protagonist, please try to solve the mysteries of the
+case as quickly as possible. Should you not, those you hold dear or even you
+yourself may fall victim to the killer.
 
 　素晴らしいBGMと効果音､美しく、時には恐ろしいグラフィッ
 クの数々が、小説や映画では味わえない恐怖を演出してくれるで
@@ -262,7 +265,7 @@ Autumn 1994 - Takemaru Abiko
 して脚光を浴びました。
 Takemaru Abiko, who handled the original scenario for the game, is an up and
 coming mystery author from Kyoto University's Mystery Club. He debuted in 1989
-with "The Eight Murders" (sold by Kodansha Novels), and has been in the
+with "The 8 Mansion Murders" (sold by Kodansha Novels), and has been in the
 limelight as a young standard-bearer of the New Traditionalist mystery novelist.
 
 　その作風は、独特の軽快なテンポをも
@@ -428,7 +431,7 @@ previously read text.
 　文章の区切りに▶マーク、そのペー
 ジが終わると[PAGE]マークが現れ、点滅し
 ます。(A)ボタン・(L)ボタンのいずれか
-を推すと、次の文章が現れます。
+を押すと、次の文章が現れます。
 - Advance text ..... (A) or (L)
 A cursor or page icon will blink on and off at pauses in the story. Press either
 the A or L button to show the next sentence.
@@ -871,15 +874,17 @@ Koichi Nakamura's Recommended Reading
 [Note: Japanese pun, 一 "ichi" is reused between 光一 "Koichi" and 一流 ichiryuu
 "first-class"]
 
+[Translations of the book titles can stand to be rewritten]
+
 「かまいたちの夜」で、我孫子ワールドに目覚めたあなたに
 中村光一がこの本をお推めします。
 Koichi Nakamura recommends these books to you who have now learned of [Takemaru]
 Abiko's world through Kamaitachi no Yoru.
 
-　まずは、「Oの殺人」。この本の冒頭に作者か
+　まずは、「0の殺人」。この本の冒頭に作者か
 らの注意として、４人の容疑者の名前と次のよ
 うな文章が書かれています。
-First, "The Murder of O." Serving as a notice from the author at the beginning
+First, "The Murder of 0." Serving as a notice from the author at the beginning
 of the book, are the four suspects' names and the following passage.
 
 　極めて簡単な問題ですからほとんどの人は、
@@ -898,8 +903,8 @@ become that one percent of people.
 
 　続いては、「探偵映画」。こちらも、あなたの
 予想を充分に裏切ってくれるでしょう。
-Next is "Detective Film." I am sure this will also thoroughly go against what
-you would expect.
+Next is "Detective Film." I am sure this will also thoroughly subvert your
+expectations.
 
 講談社ノベルス      Kodansha Novels
 定価760円(脱込み)   Price: 760 yen (tax included)
@@ -916,9 +921,9 @@ you would expect.
 Finally, here is my favorite. I recommend "Disease Leading to Slaughter" for
 those who trembled seeing the serial murders happening one after another in
 Kamaitachi no Yoru. Honestly speaking, this one is very intense. You may not
-want to swallow food for a while. Those who are underage or faint-hearted
-probably should not read it. Same for some women who think "Mr. Abiko is
-amazing!" (Not recommended!)
+want to swallow food for a while [after reading it]. Those who are underage or
+faint-hearted probably should not read it. Same for some women who think "Mr.
+Abiko is amazing!" (Not recommended!)
 
 　犯人の名前、手口もすべて、そのまま書かれていながら一つ、
 そしてまた一つと繰り返される猟奇殺人。
@@ -929,6 +934,9 @@ and repeated
 にきっと、またはじめから読み直すことになるでしょう。
 When you read the final line as you hold back the urge to vomit, I am sure that
 the unexpected truth will make you want to read it again from the beginning.
+
+講談社              Kodansha Novels
+定価1400円(脱込み)  Price: 1400 yen (tax included)
 
 --------------------------------------------------------------------------------
 
@@ -972,19 +980,18 @@ Address
 
 〒160 東京都新宿区新宿6-24-20 丸増新宿ビル10階
 チュンソフト「かまいたちの夜ミニドラマCDプレゼント」系まで
-※写真と右下の「プレゼント応募券」を同封の上、住所・氏名(必
-ずフリガナをつけて下さい)・年齢・電話番号を明記して、上のあ
-て先までお送りください。
-※先着3000名後の到着分は無効となりますので、その節はご容赦
-　ください。
-
 〒160 Tokyo, Shinjuku Ward, Shinjuku 6-24-20 Marumasa Shinjuku Building, 10F
 Address it to Chunsoft "Kamaitachi no Yoru Mini Drama CD Present"
 
+※写真と右下の「プレゼント応募券」を同封の上、住所・氏名(必
+ずフリガナをつけて下さい)・年齢・電話番号を明記して、上のあ
+て先までお送りください。
 Note: In the bottom right of your photo, enclose with your present application,
 in clear writing: home address, name (please be sure to write it with furigana),
 age, and phone number. Please send it to the above address.
 
+※先着3000名後の到着分は無効となりますので、その節はご容赦
+　ください。
 Note: Please forgive us that entries past the first 3000 will not be accepted.
 
 [In a triangle in the bottom right of the page at an angle]
@@ -1124,7 +1131,7 @@ the game, turn it off immediately and have an examination with your doctor.
 このカセットを無断を複製することおよびゲームの映像、内容等
 を無断で出版・上映・放送することを禁じます。
 Unauthorized copying of this cartridge, as well as unauthorized publishing,
-screenings, or transmissions of this game's video or contents, are prohibited.
+screenings, or transmissions of this game's images or contents, are prohibited.
 
 --------------------------------------------------------------------------------
 
