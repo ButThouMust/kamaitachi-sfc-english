@@ -3,8 +3,9 @@ prompt $g
 
 @set srcPath=".\src"
 
-javac .\src\tilemaps\decompression\KamaitachiTilemapDumper.java .\src\tilemaps\compression\KamaitachiTilemapRecompressionImproveRanges.java .\src\tilemaps\constants\TilemapCompConstants.java
+javac .\src\tilemaps\decompression\KamaitachiTilemapDumper.java .\src\tilemaps\compression\KamaitachiTilemapRecompressionImproveRanges.java .\src\tilemaps\constants\TilemapCompConstants.java .\src\tilemaps\compression\*Tag.java .\src\tilemaps\compression\*Type.java
 pause
+
 java -classpath %srcPath% tilemaps.compression.KamaitachiTilemapRecompressionImproveRanges
 java -classpath %srcPath% tilemaps.compression.KamaitachiTilemapRecompressionImproveRanges "./recompressed tilemaps/$46C1B8 combined tilemap.bin"
 java -classpath %srcPath% tilemaps.compression.KamaitachiTilemapRecompressionImproveRanges "./gfx/new opening credits/credits map.bin"

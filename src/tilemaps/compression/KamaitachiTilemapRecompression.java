@@ -15,14 +15,13 @@ import tilemaps.constants.TilemapCompConstants;
 import tilemaps.decompression.KamaitachiTilemapDumper;
 import static tilemaps.constants.TilemapCompConstants.*;
 
-// This is my preferred tilemap recompressor that uses an altered version of the
-// compression format used in the Japanese game, in order to squeeze out more
-// space in the ROM. In a nutshell, size ranges are expanded, and there are new
-// cases for compressing the low bytes.
+// This is an old version of the tilemap recompressor that uses the original
+// compression format as in the Japanese game, without any of my improvements
+// to the format (original size ranges, no extra cases for low bytes).
 
-public class KamaitachiTilemapRecompressionImproveRanges {
+public class KamaitachiTilemapRecompression {
 
-    private static final String OUTPUT_FOLDER = "recompressed tilemaps/";
+    private static final String OUTPUT_FOLDER = "recompressed tilemaps orig format/";
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
@@ -57,12 +56,10 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         tilemapXYFlips = new int[NUM_TILEMAP_ENTRIES];
         for (int i = 0; i < rawTilemapEntries.length; i++) {
             int entry = rawTilemapEntries[i];
-            int highByte = entry >> 8;
-
             tilemapLowBytes[i]   = entry & 0xFF;
-            tilemapIdHighBits[i] = highByte & HIGH_BITS_BITMASK;
-            tilemapPalettes[i]   = (highByte & PALETTE_BITMASK) >> 2; // (entry >> 10) & 0x7;
-            tilemapXYFlips[i]    = (highByte & XY_FLIP_BITMASK) >> 6; // (entry >> 14) & 0x3;
+            tilemapIdHighBits[i] = (entry >> 8) & 0x3;
+            tilemapPalettes[i]   = (entry >> 10) & 0x7;
+            tilemapXYFlips[i]    = (entry >> 14) & 0x3;
         }
 
         propagateXorUpColumns();
@@ -79,7 +76,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
     }
 
     @SuppressWarnings("unused")
-    private static void outputSeparatedEntryComponentsToFiles(int rawTilemapEntries[], String filename) throws IOException {
+    private static void outputSeparatedEntryComponentsToFiles(String filename) throws IOException {
         // remove file extension
         int periodIndex = filename.indexOf(".");
         String noExtension = filename.substring(0, periodIndex);
@@ -89,28 +86,11 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         FileOutputStream palettesFile = new FileOutputStream(OUTPUT_FOLDER + noExtension + " palettes - XOR'd.bin");
         FileOutputStream flipBitsFile = new FileOutputStream(OUTPUT_FOLDER + noExtension + " XY flips.bin");
 
-        // two options for how to go about this:
-        // - write the separated out components individually - useful for
-        //   debugging the recompression process
-        boolean debugRecompress = true;
-        if (!debugRecompress) {
-            for (int i = 0; i < NUM_TILEMAP_ENTRIES; i++) {
-                lowBytesFile.write(tilemapLowBytes[i]);
-                highBitsFile.write(tilemapIdHighBits[i]);
-                palettesFile.write(tilemapPalettes[i]);
-                flipBitsFile.write(tilemapXYFlips[i]);
-            }
-        }
-        // write the data you get after each stage of decompression is done
-        // - useful for debugging the game decompressing the data you feed it
-        // (state after propagating XOR down the columns is not included)
-        else {
-            for (int i = 0; i < NUM_TILEMAP_ENTRIES; i++) {
-                lowBytesFile.write(tilemapLowBytes[i]);
-                highBitsFile.write(tilemapIdHighBits[i]);
-                palettesFile.write(tilemapIdHighBits[i] | (tilemapPalettes[i] << 2));
-                flipBitsFile.write(rawTilemapEntries[i] >> 8);
-            }
+        for (int i = 0; i < NUM_TILEMAP_ENTRIES; i++) {
+            lowBytesFile.write(tilemapLowBytes[i]);
+            highBitsFile.write(tilemapIdHighBits[i]);
+            palettesFile.write(tilemapPalettes[i]);
+            flipBitsFile.write(tilemapXYFlips[i]);
         }
 
         lowBytesFile.flush();
@@ -168,20 +148,8 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         }
     }
 
-    private static ArrayList<Integer> convertIntArrayToArrayList(int data[]) {
-        ArrayList<Integer> output = new ArrayList<>(data.length);
-        for (int val : data) {
-            output.add(val);
-        }
-        return output;
-    }
-
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
-
-    private static final int REPEAT_NEW_LOW_BYTE_LIMIT_120 = REPEAT_NEW_LOW_BYTE_THRESHOLD_20 + TAG_SIZE_LIMIT_100;
-    private static final int INC_SEQ_SIZE_LIMIT_13F = INC_SEQ_SIZE_THRESHOLD_3F + TAG_SIZE_LIMIT_100;
-    // private static final int REPEAT_CURR_ID_LIMIT_41 = REPEAT_CASE_MIN_SIZE + 0x3F;
 
     private static int checkForRepeatingCurrID(int currPos, int currTileID) {
         currTileID &= 0xFF;
@@ -199,12 +167,6 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         return size;
     }
 
-    // check pattern without needing to worry about what's at position
-    private static int checkForIncreasingSequence(int currPos) {
-        return checkForIncreasingSequence(currPos, tilemapLowBytes[currPos]);
-    }
-
-    // check pattern while enforcing what MUST be the value at the position
     private static int checkForIncreasingSequence(int currPos, int currTileID) {
         // must also enforce max size here due to altering current tile ID #
         int size = 0;
@@ -212,8 +174,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         int tileIDToCheck = currTileID & 0xFF;
         for (int pos = currPos; pos < tilemapLowBytes.length; pos++) {
             boolean isMatch = tilemapLowBytes[pos] == tileIDToCheck;
-            // if (!isMatch || size >= TAG_SIZE_LIMIT_100) {
-            if (!isMatch || size >= INC_SEQ_SIZE_LIMIT_13F) {
+            if (!isMatch || size >= TAG_SIZE_LIMIT_100) {
                 break;
             }
             size++;
@@ -263,13 +224,6 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         return size;
     }
 
-    // note: checking this usually doesn't require knowing the current tile ID,
-    // but the decreasing sequence case and the "pass over increasing sequence
-    // for now" logic above created a situation at 0x18C in $44B48F where this
-    // case will reuse a block from one row up, with the current ID at the end
-    // that would start an increasing sequence of length 2; however, when I put
-    // in code to handle that special case, it ended up compressing worse by 1
-    // byte, so leaving out
     private static int checkForReuseBlockFromOneRowUp(int currPos) {
         int size = 0;
         for (int pos = currPos; pos < tilemapLowBytes.length; pos++) {
@@ -308,8 +262,10 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             return CASE_NOT_VALID;
         }
 
-        // int size = getRunLengthAtPosition(tilemapLowBytes, currPos, TAG_SIZE_LIMIT_100);
-        int size = getRunLengthAtPosition(tilemapLowBytes, currPos, REPEAT_NEW_LOW_BYTE_LIMIT_120);
+        // final int MIN_SIZE = 2;
+        // final int MAX_SIZE = 0x100;
+
+        int size = getRunLengthAtPosition(tilemapLowBytes, currPos, TAG_SIZE_LIMIT_100);
         if (size < REPEAT_CASE_MIN_SIZE) return CASE_NOT_VALID;
 
         // optimization: if the repeated value is the current tile ID and has a
@@ -348,168 +304,13 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         return size;
     }
 
-    // ---------
-    // new cases for updated low bytes compression format
-
-    private static int checkIfSettingCurrIdIsWorthIt(int currPos, int currTileID) {
-        int checkSettingForIncSequence = checkSettingCurrIdForIncSeq(currPos, currTileID);
-        if (checkSettingForIncSequence != CASE_NOT_VALID) {
-            return checkSettingForIncSequence;
-        }
-
-        int checkSettingForRepeatCurrId = checkSettingCurrIdForRepeatCurrId(currPos, currTileID);
-        if (checkSettingForRepeatCurrId != CASE_NOT_VALID) {
-            return checkSettingForRepeatCurrId;
-        }
-
-        return CASE_NOT_VALID;
-    }
-
-    private static int checkSettingCurrIdForRepeatCurrId(int currPos, int currTileID) {
-        // confirm that case would work here
-        int runLength = checkForRepeatingCurrID(currPos, tilemapLowBytes[currPos]);
-        if (runLength == CASE_NOT_VALID) {
-            return CASE_NOT_VALID;
-        }
-
-        // also confirm that you would find the incremented new current ID soon
-        // after the run; definition of "soon" is up to you
-        final int SEARCH_DIST = 0x3;
-        int posAfterRun = currPos + runLength + 1;
-        for (int pos = posAfterRun; pos < posAfterRun + SEARCH_DIST; pos++) {
-            if (tilemapLowBytes[pos] == tilemapLowBytes[currPos] + 1) {
-                return runLength;
-            }
-        }
-        return CASE_NOT_VALID;
-    }
-
-    private static int checkSettingCurrIdForIncSeq(int currPos, int currTileID) {
-        // check if there is an increasing sequence at the current position,
-        // supposing that the current tile ID is indeed whatever is there now
-        int possibleIncSeqLength = checkForIncreasingSequence(currPos);
-        if (possibleIncSeqLength == CASE_NOT_VALID || possibleIncSeqLength <= SET_CURR_ID_SIZE) {
-            return CASE_NOT_VALID;
-        }
-
-        // special case with tilemap 0B at offset 0x36D (curr ID = AB)
-        // the data is [56 AA AB AC ...] to end of low bytes block
-        // - better to do: 4 bytes = (3) 2 lits + (1) inc seq 0x11
-        // - using set ID: 5 bytes = (2) 1 lit + (2) set AA + (1) inc seq 0x12
-        // to do this in a general way, we must consider FF -> 00 wraparound
-        // because the below line is flawed and picks up false positives:
-        // "if (currTileID > seqStartValue && currTileID - seqStartValue <= 1)"
-        int seqStartValue = tilemapLowBytes[currPos];
-        for (int i = 0; i < possibleIncSeqLength; i++) {
-            int tileIdToTest = (seqStartValue + i) & 0xFF;
-            if (currTileID == tileIdToTest) {
-                // change the "i <= 1" as you see fit
-                if (i <= 1) return CASE_NOT_VALID;
-                break;
-            }
-        }
-
-        // suppose the current ID (were you to not set it for this increasing
-        // sequence) appears soon after with a sequence of its own; you'd have
-        // to set the current ID twice instead of just once; is that still
-        // worth it? (again, how you define "soon" is up to you)
-        final int SEARCH_DIST = 0x3;
-        int posAfterSeq = currPos + possibleIncSeqLength;
-        for (int pos = posAfterSeq; pos < posAfterSeq + SEARCH_DIST && pos < tilemapLowBytes.length; pos++) {
-            if (tilemapLowBytes[pos] == currTileID) {
-                int nextSeqLength = checkForIncreasingSequence(pos);
-                if (nextSeqLength != CASE_NOT_VALID && possibleIncSeqLength > SET_CURR_ID_SIZE * 2) {
-                    return possibleIncSeqLength;
-                }
-                return CASE_NOT_VALID;
-            }
-        }
-        return possibleIncSeqLength;
-    }
-
-    private static int checkForDecreasingSequence(int currPos, boolean currPosHasCurrId) {
-        // simplistic performance boost: start checking for the decreasing sequence at
-        // the byte right after the current position
-        final int START_OFFSET = 1;
-        int size = START_OFFSET;
-
-        int tileIDToCheck = (tilemapLowBytes[currPos] - 1) & 0xFF;
-        for (int pos = currPos + START_OFFSET; pos < tilemapLowBytes.length; pos++) {
-            boolean isMatch = tilemapLowBytes[pos] == tileIDToCheck;
-            if (!isMatch || size >= DEC_SEQ_MAX_LENGTH_10) {
-                break;
-            }
-            size++;
-            tileIDToCheck = (tileIDToCheck - 1) & 0xFF;
-        }
-
-        if (size < DEC_SEQ_MIN_LENGTH_02) {
-            return CASE_NOT_VALID;
-        }
-
-        // if current position both has the current ID and happens to be the
-        // start of a decreasing sequence, you should typically prioritize the
-        // increasing sequence (only 1 byte, but advances curr ID) regardless
-        // of the decreasing sequence's size; however, see if the current ID is
-        // right after the decreasing sequence to get both [dec seq] [inc seq]
-        if (currPosHasCurrId) {
-            final int SEARCH_DIST = 1;
-            boolean foundCurrIdAfterDecSeq = false;
-            for (int i = 0; i < SEARCH_DIST && foundCurrIdAfterDecSeq; i++) {
-                foundCurrIdAfterDecSeq = foundCurrIdAfterDecSeq || tilemapLowBytes[currPos] == tilemapLowBytes[currPos + size + i];
-            }
-            if (!foundCurrIdAfterDecSeq) {
-                return CASE_NOT_VALID;
-            }
-            System.out.println("Found dec seq with curr ID, followed by inc seq of curr ID");
-        }
-
-        return size;
-    }
-
-    private static int checkForShortIsolatedIncreasingSequence(int currPos, int currID) {
-        if (currID == tilemapLowBytes[currPos]) return CASE_NOT_VALID;
-
-        int size = checkForIncreasingSequence(currPos);
-        if (size < ISOLATED_INC_SEQ_MIN_LENGTH_02 || size > ISOLATED_INC_SEQ_MAX_LENGTH_05) {
-            return CASE_NOT_VALID;
-        }
-
-        // handle special case that popped up with gfx ID 0x6F @ 0x131
-        // current ID = 8F, data is [8E 8F 90 91 92 ; 4E 4E 4E 4E ; 93 94]
-        for (int i = 1; i < size; i++) {
-            if (tilemapLowBytes[currPos + i] == currID) {
-                return CASE_NOT_VALID;
-            }
-        }
-
-        // I made this case to handle some shortcomings I found with the "set
-        // current ID case", but sometimes, doing "set ID" is better
-        // here is an attempt to check if this is indeed the case or not
-        final int SEARCH_DIST = 0x2;
-        int idToSearchFor = (tilemapLowBytes[currPos] + size) & 0xFF;
-        for (int i = 0; i < SEARCH_DIST; i++) {
-            int posAfterSeq = currPos + size + i;
-            if (posAfterSeq >= tilemapLowBytes.length) break; 
-
-            if (tilemapLowBytes[posAfterSeq] == idToSearchFor) {
-                return CASE_NOT_VALID;
-            }
-        }
-
-        return size;
-    }
-
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
     private static ArrayList<LowByteTag> examineLowBytes() {
         int currentTileID = STARTING_LOW_BYTE;
         int currPos = 0;
-        // this is 0x20 in Chunsoft's compression format; reduce limit to make
-        // space for the decreasing sequence, isolated increasing sequence, and
-        // set current ID cases
-        final int MAX_LITERALS = 0xC;
+        final int MAX_LITERALS = 0x20;
 
         ArrayList<LowByteTag> compressionSequence = new ArrayList<>();
         while (currPos < tilemapLowBytes.length) {
@@ -523,26 +324,12 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             int reuseMostRecentCount = checkForReuseMostRecentVal(currPos);
             int repeatNewIDCount = checkForRepeatNewID(currPos, currentTileID);
 
-            // new: add check for decreasing sequence, only if increasing
-            // sequence is not valid
-            boolean canDoIncSeq = incSequenceCount != CASE_NOT_VALID;
-            int decSequenceCount = checkForDecreasingSequence(currPos, canDoIncSeq);
-
-            // new: add check for short, self-contained increasing sequence,
-            // only if regular increasing sequence is not valid
-            int isolatedIncSequenceCount = CASE_NOT_VALID;
-            if (!canDoIncSeq) {
-                isolatedIncSequenceCount = checkForShortIsolatedIncreasingSequence(currPos, currentTileID);
-            }
-
             HashMap<LowByteType, Integer> counts = new HashMap<>();
             counts.put(LowByteType.RepeatCurrID, repeatCurrIDCount);
             counts.put(LowByteType.IncreasingSequence, incSequenceCount);
             counts.put(LowByteType.ReuseBlockFromOneRowUp, reuseOneRowUpCount);
             counts.put(LowByteType.ReuseMostRecentValue, reuseMostRecentCount);
             counts.put(LowByteType.RepeatNewID, repeatNewIDCount);
-            counts.put(LowByteType.DecreasingSequence, decSequenceCount);
-            counts.put(LowByteType.IsolatedIncreasingSequence, isolatedIncSequenceCount);
 
             // determine which compression method to use
             int maxSize = CASE_NOT_VALID;
@@ -563,7 +350,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             }
             // int oldCurrID = currentTileID;
 
-            // encode a single literal byte if:
+            // encode a single literal byte if either:
             // 1. none of the compression methods work here
             if (maxSize == CASE_NOT_VALID) {
                 maxSize = 1;
@@ -571,37 +358,17 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             }
             // 2. the most recent case was literals and the current case is for
             //    a length 1 reuse of data (note: NOT an increasing sequence)
-            // (optimization based on low bytes for tilemap 4B at 0x1B6)
+            // (optimization based on tilemap low bytes for $4494C7 at 0x1B5)
             // idea is to combine multiple literal tags together and avoid using
             // multiple overhead bytes for seperate literal tags
-            //
-            // 3. the most recent case was for literals, and the current case is
-            //    for a length 2 decreasing sequence or length 2 isolated
-            //    increasing sequence
-            // the two blocks can be equivalently encoded as one block of 3 lits
-            else if ((bestType != LowByteType.IncreasingSequence && maxSize == 1) ||
-                     (bestType == LowByteType.DecreasingSequence && maxSize == DEC_SEQ_MIN_LENGTH_02) ||
-                     (bestType == LowByteType.IsolatedIncreasingSequence && maxSize == ISOLATED_INC_SEQ_MIN_LENGTH_02))
-            {
-                int numTags = compressionSequence.size();
-                if (numTags > 0) {
-                    LowByteTag lastTag = compressionSequence.get(numTags - 1);
-                    LowByteType lastType = lastTag.getType();
-                    int lastSize = lastTag.getSize();
-                    if (lastType == LowByteType.LiteralSequence && lastSize + maxSize <= MAX_LITERALS) {
+            else if (maxSize == 1 && bestType != LowByteType.IncreasingSequence) {
+                int totalCompSize = compressionSequence.size();
+                if (totalCompSize > 0) {
+                    LowByteType lastType = compressionSequence.get(totalCompSize - 1).getType();
+                    if (lastType == LowByteType.LiteralSequence) {
+                        maxSize = 1;
                         bestType = LowByteType.LiteralSequence;
                     }
-                }
-            }
-
-            // new: if literal, see if setting the current ID would create an
-            // increasing sequence now (must be long enough to be worth it)
-            // TODO see how isolated increasing sequence affects this
-            if (bestType == LowByteType.LiteralSequence) {
-                int checkSettingCurrID = checkIfSettingCurrIdIsWorthIt(currPos, currentTileID);
-                if (checkSettingCurrID != CASE_NOT_VALID) {
-                    bestType = LowByteType.SetCurrID;
-                    maxSize = 0;
                 }
             }
 
@@ -613,9 +380,6 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                 case IncreasingSequence:
                     currentTileID += maxSize;
                     break;
-                case SetCurrID:
-                    currentTileID = tilemapLowBytes[currPos];
-                    break;
                 default:
                     break;
             }
@@ -623,28 +387,18 @@ public class KamaitachiTilemapRecompressionImproveRanges {
 
             // if both the current and last iterations were for literal bytes,
             // just combine the size of the current iteration into the last one,
-            // if the combined size fits into the 0x10 literal byte limit
-            //
-            // this can also handle the reverse of "case 3" above: most recent
-            // case was a length 2 decreasing sequence (or isolated increasing
-            // sequence), and the current case is for a literal
-            // again, equivalently encodable as 1 block of 3 lits
-            // (optimization based on low bytes for $2C9A31 at 0x367)
-            int numTags = compressionSequence.size();
-            if (numTags > 0 && bestType == LowByteType.LiteralSequence) {
-                LowByteTag lastSet = compressionSequence.get(numTags - 1);
+            // if the combined size fits into the 0x20 literal byte limit
+            int compSeqLength = compressionSequence.size();
+            if (compSeqLength > 0 && bestType == LowByteType.LiteralSequence) {
+                LowByteTag lastSet = compressionSequence.get(compSeqLength - 1);
                 LowByteType lastType = lastSet.getType();
-                int lastSize = lastSet.getSize();
+                int combinedSize = lastSet.getSize() + maxSize;
+                int lastPos = lastSet.getPosition();
 
-                int combinedSize = lastSize + maxSize;
-
-                if ((lastType == LowByteType.LiteralSequence && combinedSize <= MAX_LITERALS) ||
-                    (lastType == LowByteType.DecreasingSequence && lastSet.getSize() == DEC_SEQ_MIN_LENGTH_02) ||
-                    (lastType == LowByteType.IsolatedIncreasingSequence && lastSet.getSize() == ISOLATED_INC_SEQ_MIN_LENGTH_02)) {
-                    // update last iteration, advance past this literal
-                    int lastPos = lastSet.getPosition();
-                    lastSet = new LowByteTag(LowByteType.LiteralSequence, combinedSize, lastPos);
-                    compressionSequence.set(numTags - 1, lastSet);
+                if (lastType == bestType && combinedSize <= MAX_LITERALS) {
+                    // in this case, update last iteration, and advance past this literal
+                    lastSet = new LowByteTag(lastType, combinedSize, lastPos);
+                    compressionSequence.set(compSeqLength - 1, lastSet);
                     currPos += maxSize;
                     continue;
                 }
@@ -655,12 +409,6 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             currPos += maxSize;
         }
         return compressionSequence;
-    }
-
-    // to be used if "compressing" a data block results in a larger block than
-    // if you just used the 0x380 byte block
-    private static ArrayList<Integer> generateUncompressedLowBytesBlock() {
-        return convertIntArrayToArrayList(tilemapLowBytes);
     }
 
     private static ArrayList<Integer> generateCompressedLowBytesBlock(ArrayList<LowByteTag> compressionSequence) {
@@ -683,14 +431,12 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     final int BITMASK = 0x40;
                     final int SPECIAL_CASE_BYTE = 0x7F;
 
-                    // int encodedSize = size - 1;
+                    int encodedSize = size - 1;
                     if (size <= INC_SEQ_SIZE_THRESHOLD_3F) {
-                        int encodedSize = size - 1;
                         compressedData.add(encodedSize | BITMASK);
                     }
                     else {
                         compressedData.add(SPECIAL_CASE_BYTE);
-                        int encodedSize = size - (INC_SEQ_SIZE_THRESHOLD_3F + 1);
                         compressedData.add(encodedSize);
                     }
                     break;
@@ -721,8 +467,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                         compressedData.add(encodedSize | BITMASK);
                     }
                     else {
-                        // int encodedSize = size - 1;
-                        int encodedSize = size - (REPEAT_NEW_LOW_BYTE_THRESHOLD_20 + 1);
+                        int encodedSize = size - 1;
                         compressedData.add(SPECIAL_CASE_BYTE);
                         compressedData.add(encodedSize);
                     }
@@ -732,8 +477,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     break;
                 }
                 case LiteralSequence: {
-                    // 111x xxxx (E0-FF) - originally
-                    // 1110 xxxx (E0-EB) - new
+                    // 111x xxxx (E0-FF)
                     final int BITMASK = 0xE0;
 
                     // first, encode the number of literal bytes
@@ -746,35 +490,12 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     }
                     break;
                 }
-                case DecreasingSequence: {
-                    // 1111 xxxx (F0-FE) - new
-                    final int BITMASK = 0xF0;
 
-                    // first, encode the sequence length
-                    int encodedSize = size - DEC_SEQ_MIN_LENGTH_02;
-                    compressedData.add(encodedSize | BITMASK);
-
-                    // write the first byte in the sequence
-                    compressedData.add(tilemapLowBytes[position]);
+                // the original format does not use these cases
+                case DecreasingSequence:
+                case IsolatedIncreasingSequence:
+                case SetCurrID:
                     break;
-                }
-                case SetCurrID: {
-                    final int SET_CURR_ID_TYPE_BYTE = 0xFF;
-                    compressedData.add(SET_CURR_ID_TYPE_BYTE);
-                    compressedData.add(tilemapLowBytes[position]);
-                    break;
-                }
-                case IsolatedIncreasingSequence: {
-                    // 1110 11xx (EC-EF) - new
-                    final int ISOL_INC_SEQ_TYPE_BYTE_BASE = 0xEC;
-
-                    // first, encode sequence length; note how here, we ADD, not
-                    // use bitwise OR
-                    int encodedSize = size - ISOLATED_INC_SEQ_MIN_LENGTH_02;
-                    compressedData.add(ISOL_INC_SEQ_TYPE_BYTE_BASE + encodedSize);
-                    compressedData.add(tilemapLowBytes[position]);
-                    break;
-                }
             }
         }
         return compressedData;
@@ -807,16 +528,6 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     tileIdChange = String.format("%02X      ", currID & 0xFF);
                     currID = (currID + 1) & 0xFF;
                     break;
-                case SetCurrID:
-                    currID = tilemapLowBytes[block.getPosition()];
-                    tileIdChange = String.format("%02X - SET", currID);
-                    break;
-                // optional: print the starting value of the decreasing seq
-                case DecreasingSequence:
-                case IsolatedIncreasingSequence:
-                    String sign = (block.getType() == LowByteType.DecreasingSequence) ? "-" : "+";
-                    tileIdChange = String.format("  (%02X)%s ", tilemapLowBytes[block.getPosition()], sign);
-                    break;
                 default:
                     break;
             }
@@ -827,24 +538,12 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             totalCompSize += compSize;
         }
 
-        // none of the game's tilemaps should trigger this, but it's possible to
-        // feed a data block that when "compressed" takes more space than if you
-        // just wrote the 0x380 bytes as-is (e.g. 0x38 blocks of 0x10 literals)
-        if (totalCompSize - ONE_BYTE_FOR_COMP_BLOCK_FLAGS > NUM_TILEMAP_ENTRIES) {
-            String info = "NOTE: 0x%3X > 0x%3X, so better stored uncompressed";
-            outputLog.write(String.format(info, totalCompSize - 1, NUM_TILEMAP_ENTRIES));
-        }
-
         outputLog.flush();
         // outputLog.close();
     }
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
-
-    // private static final int HIGH_BITS_MAX_00_RUN_AFTER_VAL_28 = 0x28; // 1 + 8 + 1f
-    // private static final int HIGH_BITS_MAX_REPEAT_LENGTH_29 = 0x29;    // 2 + 8 + 1f
-    private static final int RUN_00_SIZE_LIMIT_140 = TAG_SIZE_LIMIT_100 + RUN_00_THRESHOLD_UPDATED_40;
 
     private static ArrayList<HighBitTag> examineHighBits() {
         // unlike the other compression formats, the high bits don't have a case
@@ -863,10 +562,8 @@ public class KamaitachiTilemapRecompressionImproveRanges {
 
             // if at a 00, see how many there are in a row
             if (value == 0) {
-                // length = getRunLengthAtPosition(tilemapIdHighBits, currPos, TAG_SIZE_LIMIT_100);
-                length = getRunLengthAtPosition(tilemapIdHighBits, currPos, RUN_00_SIZE_LIMIT_140);
-                if (length >= getRun00MinSize(USE_RUN_00_RANGE_ORIGINAL))
-                    type = HighBitType.RunOfZeroes;
+                length = getRunLengthAtPosition(tilemapIdHighBits, currPos, TAG_SIZE_LIMIT_100);
+                if (length > 1) type = HighBitType.RunOfZeroes;
             }
             // if not at a 00, check the next value, *if available*; otherwise,
             // fall back on the default values above
@@ -891,27 +588,26 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     // length = getRunLengthAtPosition(tilemapIdHighBits, currPos + 1, HIGH_BITS_MAX_00_RUN_AFTER_VAL_28);
                     length = getRunLengthAtPosition(tilemapIdHighBits, currPos + 1, NUM_TILEMAP_ENTRIES);
 
-                    // if 0x29 <= length <= 0x48, two options for encoding:
-                    // 0x8 + (0x21 <= N <= 0x40), or 0x28 + (0x1 <= N <= 0x20)
+                    // if 0x29 <= length <= 0x47, two options for encoding:
+                    // 0x8 + (0x21 <= N <= 0x3F), or 0x28 + (0x1 <= N <= 0x1F)
                     // both cases need to encode a one byte run, but 0x8 doesn't
                     // need to write a high bits value to the buffer
                     boolean needOneByte2ndRunAnyway =
                         length > HIGH_BITS_MAX_00_RUN_AFTER_VAL_28 &&
-                        length <= RUN_00_THRESHOLD_UPDATED_40 + HIGH_BITS_00_RUN_THRESHOLD_08;
+                        length <= RUN_00_THRESHOLD_ORIGINAL_3F + HIGH_BITS_00_RUN_THRESHOLD_08;
 
-                    // if 0x68 <= length <= 0x148, two options for encoding:
-                    // 0x8 + (0x60 <= N <= 0x140), or 0x28 + (0x40 <= N <= 0x120)
+                    // if 0x68 <= length <= 0x108, two options for encoding:
+                    // 0x8 + (0x60 <= N <= 0x100), or 0x28 + (0x40 <= N <= 0xE0)
                     // both cases need to encode a two byte run, but 0x8 doesn't
                     // need to write a high bits value to the buffer
                     boolean needTwoByte2ndRunAnyway =
-                        length > RUN_00_THRESHOLD_UPDATED_40 + HIGH_BITS_MAX_00_RUN_AFTER_VAL_28 &&
-                        // length <= TAG_SIZE_LIMIT_100 + HIGH_BITS_00_RUN_THRESHOLD_08;
-                        length <= RUN_00_SIZE_LIMIT_140 + HIGH_BITS_00_RUN_THRESHOLD_08;
+                        length > RUN_00_THRESHOLD_ORIGINAL_3F + HIGH_BITS_MAX_00_RUN_AFTER_VAL_28 &&
+                        length <= TAG_SIZE_LIMIT_100 + HIGH_BITS_00_RUN_THRESHOLD_08;
 
-                    // if length >= 0x169, you need 3 runs anyway, so limit 1st run
-                    // 0x28 + 0x140 + (0x1-0x20), or 0x8 + 0x140 + (0x21-0x40)
-                    // boolean needAtLeastThreeRunsAnyway = length > TAG_SIZE_LIMIT_100 + HIGH_BITS_MAX_00_RUN_AFTER_VAL_28;
-                    boolean needAtLeastThreeRunsAnyway = length > RUN_00_SIZE_LIMIT_140 + HIGH_BITS_MAX_00_RUN_AFTER_VAL_28;
+                    // if length >= 0x129, you need 3 runs anyway, so limit 1st run
+                    // 0x28 + 0x100 + (0x1-0x17), or 0x8 + 0x100 + (0x21-0x3F)
+                    boolean needAtLeastThreeRunsAnyway =
+                        length > TAG_SIZE_LIMIT_100 + HIGH_BITS_MAX_00_RUN_AFTER_VAL_28;
 
                     // if either case is true, limit the length to 8, and get
                     // the rest on the next iteration
@@ -930,20 +626,20 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             }
 
             // optimizations for combining into last iteration if possible
-            int numTags = compressionSequence.size();
-            if (numTags > 0) {
-                HighBitTag lastTag = compressionSequence.get(numTags - 1);
-                int lastSize = lastTag.getSize();
+            int compSeqLength = compressionSequence.size();
+            if (compSeqLength > 0) {
+                HighBitTag lastInfo = compressionSequence.get(compSeqLength - 1);
+                int lastSize = lastInfo.getSize();
 
-                if (lastTag.getType() == HighBitType.LiteralSequence) {
+                if (lastInfo.getType() == HighBitType.LiteralSequence) {
                     // combine consecutive literal sequences if they fit
                     if (type == HighBitType.LiteralSequence) {
                         int combinedSize = length + lastSize;
                         if (combinedSize <= MAX_LITERALS) {
-                            lastTag = new HighBitTag(HighBitType.LiteralSequence,
-                                combinedSize, lastTag.getPosition(),
-                                TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                            compressionSequence.set(numTags - 1, lastTag);
+                            lastInfo = new HighBitTag(HighBitType.LiteralSequence,
+                                combinedSize, lastInfo.getPosition(),
+                                TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                            compressionSequence.set(compSeqLength - 1, lastInfo);
 
                             currPos += length;
                             continue;
@@ -955,16 +651,15 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     // having to use that case
                     else if (type == HighBitType.NonZeroThenZeroes) {
                         int numZeroes = length - 1;
-                        // int trueLengthOfZeroRun = getRunLengthAtPosition(tilemapIdHighBits, currPos + 1, TAG_SIZE_LIMIT_100);
-                        int trueLengthOfZeroRun = getRunLengthAtPosition(tilemapIdHighBits, currPos + 1, RUN_00_SIZE_LIMIT_140);
+                        int trueLengthOfZeroRun = getRunLengthAtPosition(tilemapIdHighBits, currPos + 1, TAG_SIZE_LIMIT_100);
                         int combinedSize = lastSize + 1;
 
                         // if yes, combine the non-zero value into the literals
                         if ((numZeroes == 1 || trueLengthOfZeroRun > numZeroes) && combinedSize <= MAX_LITERALS) {
-                            lastTag = new HighBitTag(HighBitType.LiteralSequence,
-                                combinedSize, lastTag.getPosition(),
-                                TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                            compressionSequence.set(numTags - 1, lastTag);
+                            lastInfo = new HighBitTag(HighBitType.LiteralSequence,
+                                combinedSize, lastInfo.getPosition(),
+                                TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                            compressionSequence.set(compSeqLength - 1, lastInfo);
 
                             currPos++;
                             continue;
@@ -976,10 +671,10 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     else {
                         int combinedSize = lastSize + length;
                         if (length <= 0x2 && combinedSize <= MAX_LITERALS) {
-                            lastTag = new HighBitTag(HighBitType.LiteralSequence,
-                                combinedSize, lastTag.getPosition(),
-                                TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                            compressionSequence.set(numTags - 1, lastTag);
+                            lastInfo = new HighBitTag(HighBitType.LiteralSequence,
+                                combinedSize, lastInfo.getPosition(),
+                                TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                            compressionSequence.set(compSeqLength - 1, lastInfo);
 
                             currPos += length;
                             continue;
@@ -987,13 +682,13 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     }
                 }
 
-                else if (lastTag.getSize() <= 2 && length <= 2) {
-                    int combinedSize = lastTag.getSize() + length;
+                else if (lastInfo.getSize() <= 2 && length <= 2) {
+                    int combinedSize = lastInfo.getSize() + length;
                     if (combinedSize < MAX_LITERALS) {
-                        lastTag = new HighBitTag(HighBitType.LiteralSequence,
-                            combinedSize, lastTag.getPosition(),
-                            TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                        compressionSequence.set(numTags - 1, lastTag);
+                        lastInfo = new HighBitTag(HighBitType.LiteralSequence,
+                            combinedSize, lastInfo.getPosition(),
+                            TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                        compressionSequence.set(compSeqLength - 1, lastInfo);
 
                         currPos += length;
                         continue;
@@ -1002,7 +697,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             }
 
             HighBitTag lastValue = new HighBitTag(type, length, currPos,
-                TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
             compressionSequence.add(lastValue);
             currPos += length;
         }
@@ -1075,10 +770,6 @@ public class KamaitachiTilemapRecompressionImproveRanges {
 
         // String line = "Pos %3X: %s (case %s)\n";
 
-        // keep copy of the starting value for totalCompSize to know whether
-        // it's better to store all the values uncompressed
-        int inputTotalCompSize = totalCompSize;
-
         int totalValsReadFromBuffer = 0;
         int numValsPerBuffer = NUM_TWO_BIT_VALS_IN_BUFFER;
         for (HighBitTag block : compressionSequence) {
@@ -1135,27 +826,8 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         String bufferValsPrintout = "\nTotal high bit buff vals: 0x%2X (0x%2X buffers)\n";
         outputLog.write(String.format(bufferValsPrintout, totalValsReadFromBuffer, numBuffers));
 
-        // none of the game's tilemaps should trigger this, but it's possible to
-        // feed a data block that when "compressed" takes more space than if you
-        // just wrote the 0x380 values as-is (e.g. 0x38 blocks of 0x10 literals)
-        if (totalCompSize - inputTotalCompSize > NUM_BYTES_FOR_ALL_BITPACKED_TWO_BIT_VALS) {
-            String info = "NOTE: 0x%3X > 0x%3X, so better stored uncompressed";
-            outputLog.write(String.format(info, totalCompSize - 1, NUM_BYTES_FOR_ALL_BITPACKED_TWO_BIT_VALS));
-        }
-
         outputLog.flush();
         // outputLog.close();
-    }
-
-    // to be used if "compressing" a data block results in a larger block than
-    // if you just bitpacked all the raw values together
-    private static ArrayList<Integer> generateUncompressedHighBitsBlock() {
-        return generateUncompressedBlockOfTwoBitValues(tilemapIdHighBits);
-    }
-    private static ArrayList<Integer> generateUncompressedBlockOfTwoBitValues(int data[]) {
-        ArrayList<Integer> rawDataList = convertIntArrayToArrayList(data);
-        int bitpackedDataArray[] = getRawTwoBitBufferBytesToWrite(rawDataList);
-        return convertIntArrayToArrayList(bitpackedDataArray);
     }
 
     private static ArrayList<Integer> generateCompressedHighBitsBlock(ArrayList<HighBitTag> compressionSequence) {
@@ -1164,7 +836,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         int numHighBitBufferValuesWritten = 0;
 
         int highBitBufferBytes[] = getRawTwoBitBufferBytesToWrite(getHighBitValuesToWriteToBuffer(compressionSequence));
-        int bufferByteListPos = 0;
+        int bytePosition = 0;
 
         for (HighBitTag currentBlock : compressionSequence) {
             HighBitType type = currentBlock.getType();
@@ -1176,16 +848,11 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             switch (type) {
                 case RunOfZeroes: {
                     // 00nn nnnn (00-3F, with 3F as special case)
-                    final int SPECIAL_CASE_BYTE = 0x3F;
-                    if (size <= RUN_00_THRESHOLD_UPDATED_40) {
-                        int encodedSize = size - getRun00MinSize(USE_RUN_00_RANGE_ORIGINAL);
-                        compressedData.add(encodedSize);
+                    int encodedSize = size - 1;
+                    if (size > RUN_00_THRESHOLD_ORIGINAL_3F) {
+                        compressedData.add(RUN_00_THRESHOLD_ORIGINAL_3F);
                     }
-                    else {
-                        compressedData.add(SPECIAL_CASE_BYTE);
-                        int encodedSize = size - (RUN_00_THRESHOLD_UPDATED_40 + 1);
-                        compressedData.add(encodedSize);
-                    }
+                    compressedData.add(encodedSize);
                     break;
                 }
                 case NonZeroThenZeroes: {
@@ -1220,7 +887,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
 
                     if (size <= HIGH_BITS_REPEAT_VAL_THRESHOLD_09) {
                         int nonZeroVal = tilemapIdHighBits[position];
-                        int encodedSize = size - REPEAT_CASE_MIN_SIZE;
+                        int encodedSize = size - 2;
 
                         int infoByte = BITMASK_FIT | encodedSize | (nonZeroVal << 3);
                         compressedData.add(infoByte);
@@ -1253,8 +920,8 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                 int numBytesToWrite = 1 + difference / NUM_TWO_BIT_VALS_IN_BUFFER;
 
                 for (int i = 0; i < numBytesToWrite; i++) {
-                    compressedData.add(highBitBufferBytes[bufferByteListPos]);
-                    bufferByteListPos++;
+                    compressedData.add(highBitBufferBytes[bytePosition]);
+                    bytePosition++;
                 }
             }
         }
@@ -1268,8 +935,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         if (data[currPos] != 0) {
             return CASE_NOT_VALID;
         }
-        // return getRunLengthAtPosition(data, currPos, TAG_SIZE_LIMIT_100);
-        return getRunLengthAtPosition(data, currPos, RUN_00_SIZE_LIMIT_140);
+        return getRunLengthAtPosition(data, currPos, TAG_SIZE_LIMIT_100);
     }
 
     private static int checkForReuseFromOneRowUpThenZeroes(int data[], int currPos) {
@@ -1303,15 +969,15 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             return CASE_NOT_VALID;
         }
 
-        final int MIN_SIZE = 2;
-        int maxSize = getSizeLimitForRepeatNewPaletteXyValue(checkingPalettes);
+        // final int MIN_SIZE = 2;
+        int maxSize = checkingPalettes ? 0x15 : 0x19;
 
         // get the actual run length and limit it later
         // int size = getRunLengthAtPosition(data, currPos, maxSize);
         int fullLength = getRunLengthAtPosition(data, currPos, NUM_TILEMAP_ENTRIES);
         int size = Integer.min(fullLength, maxSize);
-        if (size < MIN_SIZE) {
-            size = CASE_NOT_VALID;
+        if (size < REPEAT_CASE_MIN_SIZE) {
+            return CASE_NOT_VALID;
         }
 
         // check for special cases where "reuse data" case should get priority
@@ -1321,7 +987,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             // limit for case), and a run of 0s is after the last value, the
             // "row up" case should take priority, so decrement size for now
             if (size == SIZE_LIMIT_REUSE_PALETTE_XY_CASES + 1 &&
-                currPos + size < data.length && data[currPos + size] == 0x00) {
+                currPos + size < data.length && data[currPos + size] == 0) {
                 size--;
             }
             // case driven by palettes @ 1C4-1DD $46C1B8: if run length forces
@@ -1353,7 +1019,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         //   0x8 + (0x11 <= N <= 0x3F), or 0x18 + (0x1 <= N <= 0x2F)
         boolean needOneByte2ndRunAnyway =
             length > maxSize &&
-            length <= RUN_00_THRESHOLD_UPDATED_40 + sizeThreshold;
+            length <= RUN_00_THRESHOLD_ORIGINAL_3F + sizeThreshold;
 
         // see if length requires 2nd run of 00 bytes anyway, encoded in 2 bytes
         // for palettes,  if 0x54 <= length <= 0x104, two options for encoding:
@@ -1361,14 +1027,12 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         // for X/Y flips, if 0x58 <= length <= 0x108, symmetric options:
         // 0x8 + (0x50 <= N <= 0x100), or 0x18 + (0x40 <= N <= 0xF0)
         boolean needTwoByte2ndRunAnyway =
-            length > RUN_00_THRESHOLD_UPDATED_40 + maxSize &&
-            // length <= TAG_SIZE_LIMIT_100 + sizeThreshold;
-            length <= RUN_00_SIZE_LIMIT_140 + sizeThreshold;
+            length > RUN_00_THRESHOLD_ORIGINAL_3F + maxSize &&
+            length <= TAG_SIZE_LIMIT_100 + sizeThreshold;
 
         // if palette run >= 0x115 or X/Y flip run >= 0x119, you need three runs
         // anyway, so limit the first run
-        // boolean needAtLeastThreeRunsAnyway = length > TAG_SIZE_LIMIT_100 + maxSize;
-        boolean needAtLeastThreeRunsAnyway = length > RUN_00_SIZE_LIMIT_140 + maxSize;
+        boolean needAtLeastThreeRunsAnyway = length > TAG_SIZE_LIMIT_100 + maxSize;
 
         // if any case is true, you can avoid writing a palette or X/Y flip
         // value to the buffer, without negatively affecting the compression
@@ -1434,9 +1098,9 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     }
                 }
             }
-            // simply encode a single literal value either if:
+            // simply encode a single literal byte either if:
             // - none of the compression methods work here
-            // - the best compression method only covers 1 value (adding this
+            // - the best compression method only covers 1 byte (adding this
             //   was a big improvement, over 200 bytes!)
             if (maxSize <= 1) {
                 maxSize = 1;
@@ -1444,12 +1108,12 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             }
 
             // special cases for optimizing (part of) a block into previous literal sequence
-            int numTags = compressionSequence.size();
-            if (numTags > 0) {
-                PaletteXYTag lastTag = compressionSequence.get(numTags - 1);
-                PaletteXYType lastType = lastTag.getType();
-                int lastSize = lastTag.getSize();
-                int lastPos = lastTag.getPosition();
+            int compSeqLength = compressionSequence.size();
+            if (compSeqLength > 0) {
+                PaletteXYTag lastInfo = compressionSequence.get(compSeqLength - 1);
+                PaletteXYType lastType = lastInfo.getType();
+                int lastSize = lastInfo.getSize();
+                int lastPos = lastInfo.getPosition();
 
                 // if last iteration was for a literal sequence, and we have a
                 // literal now, you can combine the lit into the sequence
@@ -1458,9 +1122,9 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     int combinedSize = lastSize + 1;
 
                     if (combinedSize <= MAX_LITERALS) {
-                        lastTag = new PaletteXYTag(lastType, combinedSize, lastPos,
-                            TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                        compressionSequence.set(numTags - 1, lastTag);
+                        lastInfo = new PaletteXYTag(lastType, combinedSize, lastPos,
+                            TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                        compressionSequence.set(compSeqLength - 1, lastInfo);
                         currPos += 1;
                         continue;
                     }
@@ -1482,14 +1146,13 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                         getSizeLimitFor00sAfterNewPaletteXyValue(checkingPalettes) :
                         SIZE_LIMIT_REUSE_PALETTE_XY_CASES;
 
-                    // int trueLength = getRunLengthAtPosition(data, currPos + 1, TAG_SIZE_LIMIT_100);
-                    int trueLength = getRunLengthAtPosition(data, currPos + 1, RUN_00_SIZE_LIMIT_140);
+                    int trueLength = getRunLengthAtPosition(data, currPos + 1, TAG_SIZE_LIMIT_100);
                     if (trueLength > sizeLimit || maxSize <= 2) {
                         int combinedSize = lastSize + 1;
                         if (combinedSize <= MAX_LITERALS) {
-                            lastTag = new PaletteXYTag(lastType, combinedSize, lastPos,
-                                TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                            compressionSequence.set(numTags - 1, lastTag);
+                            lastInfo = new PaletteXYTag(lastType, combinedSize, lastPos,
+                                TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                            compressionSequence.set(compSeqLength - 1, lastInfo);
                             currPos += 1;
                             continue;
                         }
@@ -1512,9 +1175,9 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     int combinedSize = lastSize + maxSize;
 
                     if (combinedSize <= MAX_LITERALS) {
-                        lastTag = new PaletteXYTag(lastType, combinedSize, lastPos,
-                            TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                        compressionSequence.set(numTags - 1, lastTag);
+                        lastInfo = new PaletteXYTag(lastType, combinedSize, lastPos,
+                            TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                        compressionSequence.set(compSeqLength - 1, lastInfo);
                         currPos += maxSize;
                         continue;
                     }
@@ -1531,9 +1194,10 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     int combinedSize = lastSize + maxSize;
 
                     if (combinedSize <= MAX_LITERALS) {
-                        lastTag = new PaletteXYTag(PaletteXYType.LiteralSequence, combinedSize, lastPos,
-                            TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                        compressionSequence.set(numTags - 1, lastTag);
+                        lastInfo = new PaletteXYTag(PaletteXYType.LiteralSequence,
+                            combinedSize, lastPos,
+                            TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                        compressionSequence.set(compSeqLength - 1, lastInfo);
                         currPos += maxSize;
                         continue;
                     }
@@ -1541,7 +1205,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             }
 
             PaletteXYTag compressionInfo = new PaletteXYTag(bestType, maxSize, currPos,
-                TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
             compressionSequence.add(compressionInfo);
             currPos += maxSize;
         }
@@ -1577,10 +1241,6 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         outputLog.write(" Pos | Size | CompSize | Description\n");
         outputLog.write("-----+------+----------+-------------\n");
         String line =   " %3X |  %3X |  %X (%3X) | %s\n";
-
-        // keep copy of the starting value for totalCompSize to know whether
-        // it's better to store all the values uncompressed
-        int inputTotalCompSize = totalCompSize;
 
         int totalValsReadFromBuffer = 0;
         int numValsPerBuffer = loggingPalettes ? NUM_THREE_BIT_VALS_IN_BUFFER : NUM_TWO_BIT_VALS_IN_BUFFER;
@@ -1652,17 +1312,6 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         String bufferValsPrintout = "\nTotal %s buff vals: 0x%2X (0x%2X buffers)\n";
         outputLog.write(String.format(bufferValsPrintout, type, totalValsReadFromBuffer, numBuffers));
 
-        // none of the game's tilemaps should trigger this, but it's possible to
-        // feed a data block that when "compressed" takes more space than if you
-        // just wrote the 0x380 values as-is (e.g. 0x38 blocks of 0x10 literals)
-        int uncompSize = loggingPalettes ?
-            NUM_BYTES_FOR_ALL_BITPACKED_THREE_BIT_VALS :
-            NUM_BYTES_FOR_ALL_BITPACKED_TWO_BIT_VALS;
-        if (totalCompSize - inputTotalCompSize > uncompSize) {
-            String info = "NOTE: 0x%3X > 0x%3X, so better stored uncompressed";
-            outputLog.write(String.format(info, totalCompSize - 1, uncompSize));
-        }
-
         outputLog.flush();
         // outputLog.close();
     }
@@ -1724,11 +1373,9 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         int numValuesPerBuffer = checkingPalettes ? NUM_THREE_BIT_VALS_IN_BUFFER : NUM_TWO_BIT_VALS_IN_BUFFER;
         int numValuesInLastBuffer = totalBufferVals % numValuesPerBuffer;
 
-        ArrayList<PaletteXYTag> newSequence = null;
         if (checkingPalettes && numValuesInLastBuffer >= 1 && numValuesInLastBuffer <= 4) {
             // System.out.printf("%s: 0x%2X palette buffer vals (%d in last)\n", inputFilename, totalBufferVals, numValuesInLastBuffer);
-            newSequence = reducePaletteBufferValues(compressionSequence, numValuesInLastBuffer);
-            return newSequence;
+            return reducePaletteBufferValues(compressionSequence, numValuesInLastBuffer);
         }
         // TODO if doing all that didn't save a buffer for us, we can might as
         // well try to convert small tags to lit sequences to fill in the last
@@ -1777,10 +1424,9 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     PaletteXYType.RunOfZeroes :
                     PaletteXYType.RepeatNewPaletteXY;
                 PaletteXYTag run = new PaletteXYTag(type, 2, pos,
-                    TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                PaletteXYTag lits = new PaletteXYTag(PaletteXYType.LiteralSequence,
-                    size - 2, pos + 2,
-                    TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                    TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                PaletteXYTag lits = new PaletteXYTag(PaletteXYType.LiteralSequence, size - 2, pos + 2,
+                    TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
 
                 newCompression.add(run);
                 numExtraValues -= 2;
@@ -1789,13 +1435,13 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                 // a group of literals can possibly have runs of 2 on both ends
                 if (runOfTwoAtEnd && numExtraValues > 0) {
                     lits = new PaletteXYTag(PaletteXYType.LiteralSequence, size - 4, pos + 2,
-                        TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                        TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
 
                     PaletteXYType type2 = tilemapPalettes[pos + size - 2] == 0 ?
                         PaletteXYType.RunOfZeroes :
                         PaletteXYType.RepeatNewPaletteXY;
                     PaletteXYTag run2 = new PaletteXYTag(type2, 2, pos + size - 2,
-                        TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                        TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
 
                     newCompression.add(lits);
                     newCompression.add(run2);
@@ -1812,9 +1458,9 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     PaletteXYType.RunOfZeroes :
                     PaletteXYType.RepeatNewPaletteXY;
                 PaletteXYTag lits = new PaletteXYTag(PaletteXYType.LiteralSequence, size - 2, pos,
-                    TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                    TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
                 PaletteXYTag run = new PaletteXYTag(type, 2, pos + size - 2,
-                    TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                    TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
 
                 newCompression.add(lits);
                 newCompression.add(run);
@@ -1832,9 +1478,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         }
         if (numExtraValues <= 0 && numExtraTypeBytesUsed < NUM_BYTES_IN_PALETTE_BUFFER) {
             String format = "%s: Saved %d bytes from using %d fewer palette buffer vals (2 run(s) at start/end of lits)\n";
-            System.out.printf(format, inputFilename,
-                NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed,
-                totalExtraValues - numExtraValues);
+            System.out.printf(format, inputFilename, NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed, totalExtraValues - numExtraValues);
             return newCompression;
         }
 
@@ -1869,15 +1513,15 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             // replace full-length tag with a new tag restricted to length 5
             int pos = block.getPosition();
             PaletteXYType runType = PaletteXYType.RepeatNewPaletteXY;
-            PaletteXYTag run1 = new PaletteXYTag(PaletteXYType.RepeatNewPaletteXY,
-                REPEAT_THRESHOLD_5, pos, TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+            PaletteXYTag run1 = new PaletteXYTag(PaletteXYType.RepeatNewPaletteXY, REPEAT_THRESHOLD_5, pos,
+                    TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
             newCompression.set(i, run1);
 
             // if # extra tags is 2, add another tag of length 5
             for (int tagNum = 1; tagNum < extraTags; tagNum++) {
                 int runPos = pos + REPEAT_THRESHOLD_5 * tagNum;
-                PaletteXYTag run = new PaletteXYTag(runType, REPEAT_THRESHOLD_5,
-                    runPos, TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                PaletteXYTag run = new PaletteXYTag(runType, REPEAT_THRESHOLD_5, runPos,
+                    TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
                 newCompression.add(i + tagNum, run);
             }
 
@@ -1886,12 +1530,9 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             // which must be its own tag if followed by a lit sequence
             int lastRunSize = size % REPEAT_THRESHOLD_5;
             int lastRunPos = pos + REPEAT_THRESHOLD_5 * extraTags;
-
-            PaletteXYType lastRunType = lastRunSize >= 2 ?
-                PaletteXYType.RepeatNewPaletteXY : PaletteXYType.LiteralSequence;
-
+            PaletteXYType lastRunType = lastRunSize >= 2 ? PaletteXYType.RepeatNewPaletteXY : PaletteXYType.LiteralSequence;
             PaletteXYTag lastRun = new PaletteXYTag(lastRunType, lastRunSize, lastRunPos,
-                TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                    TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
             newCompression.add(i + extraTags, lastRun);
 
             numExtraValues--;
@@ -1899,9 +1540,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         }
         if (numExtraValues <= 0 && numExtraTypeBytesUsed < NUM_BYTES_IN_PALETTE_BUFFER) {
             String format = "%s: Saved %d bytes from using %d fewer palette buffer vals (split up \"repeat value\" tag)\n";
-            System.out.printf(format, inputFilename,
-                NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed,
-                totalExtraValues - numExtraValues);
+            System.out.printf(format, inputFilename, NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed, totalExtraValues - numExtraValues);
             return newCompression;
         }
 
@@ -1933,13 +1572,12 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             for (int offset = 1; offset < size - 1; offset++) {
                 if (tilemapPalettes[pos + offset] == tilemapPalettes[pos + offset + 1]) {
                     PaletteXYType type = tilemapPalettes[pos + offset] == 0 ? PaletteXYType.RunOfZeroes : PaletteXYType.RepeatNewPaletteXY;
-                    PaletteXYTag lits1 = new PaletteXYTag(PaletteXYType.LiteralSequence,
-                        offset, pos, TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                    PaletteXYTag lits1 = new PaletteXYTag(PaletteXYType.LiteralSequence, offset, pos,
+                        TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
                     PaletteXYTag run = new PaletteXYTag(type, 2, pos + offset,
-                        TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
-                    PaletteXYTag lits2 = new PaletteXYTag(PaletteXYType.LiteralSequence,
-                        size - offset - 2, pos + offset + 2,
-                        TilemapCompConstants.USE_RUN_00_RANGE_UPDATED);
+                        TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+                    PaletteXYTag lits2 = new PaletteXYTag(PaletteXYType.LiteralSequence, size - offset - 2, pos + offset + 2,
+                        TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
 
                     newCompression.set(i, lits1);
                     newCompression.add(i + 1, run);
@@ -1997,12 +1635,14 @@ public class KamaitachiTilemapRecompressionImproveRanges {
 
     // note: reuse "get raw high bits buffer bytes" for the X/Y flip bits
     private static int[] getRawPaletteBufferBytesToWrite(ArrayList<Integer> bufferValues) {
+        final int NUM_BYTES_PER_BUFFER = 3;
+
         // first, calculate the size of the list:
         // # buffers to write = # palette values / 8
         int numBuffersToWrite = bufferValues.size() / NUM_THREE_BIT_VALS_IN_BUFFER;
 
         // total # bytes = # buffers * 3, because each byte holds either low/mid/hi bits
-        int rawBytes[] = new int[numBuffersToWrite * NUM_BYTES_IN_PALETTE_BUFFER];
+        int rawBytes[] = new int[numBuffersToWrite * NUM_BYTES_PER_BUFFER];
         for (int bufferNum = 0; bufferNum < numBuffersToWrite; bufferNum++) {
             // get 8 palette values and combine them into three bytes
             int lowBits = 0x00;
@@ -2025,26 +1665,15 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                 // debugLine += String.format("%d ", paletteValue);
             }
 
-            rawBytes[bufferNum*NUM_BYTES_IN_PALETTE_BUFFER + 0] = lowBits;
-            rawBytes[bufferNum*NUM_BYTES_IN_PALETTE_BUFFER + 1] = midBits;
-            rawBytes[bufferNum*NUM_BYTES_IN_PALETTE_BUFFER + 2] = hiBits;
+            rawBytes[bufferNum*NUM_BYTES_PER_BUFFER + 0] = lowBits;
+            rawBytes[bufferNum*NUM_BYTES_PER_BUFFER + 1] = midBits;
+            rawBytes[bufferNum*NUM_BYTES_PER_BUFFER + 2] = hiBits;
 
             // debugLine += String.format("-> [%02X %02X %02X]\n", lowBits, midBits, hiBits);
             // System.out.println(debugLine);
         }
 
         return rawBytes;
-    }
-
-    // to be used if "compressing" a data block results in a larger block than
-    // if you just bitpacked all the raw values together
-    private static ArrayList<Integer> generateUncompressedPaletteBlock() {
-        ArrayList<Integer> rawDataList = convertIntArrayToArrayList(tilemapPalettes);
-        int bitpackedDataArray[] = getRawPaletteBufferBytesToWrite(rawDataList);
-        return convertIntArrayToArrayList(bitpackedDataArray);
-    }
-    private static ArrayList<Integer> generateUncompressedXYBlock() {
-        return generateUncompressedBlockOfTwoBitValues(tilemapXYFlips);
     }
 
     private static ArrayList<Integer> generateCompressedPaletteXYBlock(ArrayList<PaletteXYTag> compressionSequence, boolean checkingPalettes) {
@@ -2058,7 +1687,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         // use the correct set of tilemap data
         int dataSet[] = checkingPalettes ? tilemapPalettes : tilemapXYFlips;
 
-        int bufferByteListPos = 0;
+        int bufferBytesListPos = 0;
         int numBufferValsWritten = 0;
 
         for (int blockNum = 0; blockNum < compressionSequence.size(); blockNum++) {
@@ -2075,15 +1704,11 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     // both: 00nn nnnn, where 3F is a special case
                     final int SPECIAL_CASE_BYTE = 0x3F;
 
-                    if (size <= RUN_00_THRESHOLD_UPDATED_40) {
-                        int encodedSize = size - getRun00MinSize(USE_RUN_00_RANGE_ORIGINAL);
-                        compressedData.add(encodedSize);
-                    }
-                    else {
-                        int encodedSize = size - (RUN_00_THRESHOLD_UPDATED_40 + 1);
+                    int encodedSize = size - 1;
+                    if (size > RUN_00_THRESHOLD_ORIGINAL_3F) {
                         compressedData.add(SPECIAL_CASE_BYTE);
-                        compressedData.add(encodedSize);
                     }
+                    compressedData.add(encodedSize);
 
                     break;
                 }
@@ -2115,11 +1740,11 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     int numZeroes = size - 1;
 
                     if (numZeroes <= threshold) {
-                        int shiftAmount = checkingPalettes ? 2 : 3;
+                        final int SHIFT_AMOUNT = checkingPalettes ? 2 : 3;
                         int value = dataSet[position];
                         int encodedSize = numZeroes - 1;
 
-                        int infoByte = BITMASK_FIT | (value << shiftAmount) | encodedSize;
+                        int infoByte = BITMASK_FIT | (value << SHIFT_AMOUNT) | encodedSize;
                         compressedData.add(infoByte);
                     }
                     else {
@@ -2138,21 +1763,20 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     // X/Y flip for 0xA <= size <= 0x19: 1011 nnnn
                     final int BITMASK_FIT = 0x80;
                     final int BITMASK_NOT_FIT = 0xB0;
-                    int threshold = getThresholdForRepeatNewPaletteXY(checkingPalettes);
-                    // final int SIZE_THRESHOLD = checkingPalettes ? 0x5 : 0x9;
+                    final int SIZE_THRESHOLD = checkingPalettes ? 0x5 : 0x9;
 
-                    if (size <= threshold) {
-                        int shiftAmount = checkingPalettes ? 2 : 3;
+                    if (size <= SIZE_THRESHOLD) {
+                        final int SHIFT_AMOUNT = checkingPalettes ? 2 : 3;
 
                         int value = dataSet[position];
-                        int encodedSize = size - REPEAT_CASE_MIN_SIZE;
+                        int encodedSize = size - 2;
 
-                        int infoByte = BITMASK_FIT | (value << shiftAmount) | encodedSize;
+                        int infoByte = BITMASK_FIT | (value << SHIFT_AMOUNT) | encodedSize;
                         compressedData.add(infoByte);
                     }
                     else {
                         // (size - 6) for palettes, (size - 0xA) for X/Y flip
-                        int encodedSize = size - (threshold + 1);
+                        int encodedSize = size - (SIZE_THRESHOLD + 1);
 
                         int infoByte = BITMASK_NOT_FIT | encodedSize;
                         compressedData.add(infoByte);
@@ -2163,12 +1787,12 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     // palettes for 0x1 <= size <= 0x 8: 11pp pnnn (3 n bits)
                     // X/Y flip for 0x1 <= size <= 0x10: 11yx nnnn (4 n bits)
                     final int BITMASK = 0xC0;
-                    int shiftAmount = checkingPalettes ? 3 : 4;
+                    final int SHIFT_AMOUNT = checkingPalettes ? 3 : 4;
 
                     int encodedSize = size - 1;
                     int firstValue = dataSet[position];
 
-                    int infoByte = BITMASK | (firstValue << shiftAmount) | encodedSize;
+                    int infoByte = BITMASK | (firstValue << SHIFT_AMOUNT) | encodedSize;
                     compressedData.add(infoByte);
                     break;
                 }
@@ -2183,8 +1807,8 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                 // System.out.printf(debugStr, position, numBufferValsWritten, nextExpectedDataWritePos, (checkingPalettes ? "palette" : "X/Y flip"));
 
                 if (checkingPalettes) {
-                    int bytePosition = bufferByteListPos * 3;
-                    bufferByteListPos++;
+                    int bytePosition = bufferBytesListPos * 3;
+                    bufferBytesListPos++;
 
                     compressedData.add(rawBufferBytes[bytePosition + 0]);
                     compressedData.add(rawBufferBytes[bytePosition + 1]);
@@ -2196,8 +1820,8 @@ public class KamaitachiTilemapRecompressionImproveRanges {
                     int numBytesToWrite = 1 + difference / NUM_TWO_BIT_VALS_IN_BUFFER;
 
                     for (int i = 0; i < numBytesToWrite; i++) {
-                        compressedData.add(rawBufferBytes[bufferByteListPos]);
-                        bufferByteListPos++;
+                        compressedData.add(rawBufferBytes[bufferBytesListPos]);
+                        bufferBytesListPos++;
                     }
                 }
             }
@@ -2239,9 +1863,9 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         separateOutTilemapEntryComponents(rawTilemapEntries);
 
         Files.createDirectories(Paths.get(OUTPUT_FOLDER));
-        // recommendation: run main() just once with below line not commented
+        // recommendation: run main() just once with this line not commented
         // out, then comment it out to save time on subsequent executions
-        // outputSeparatedEntryComponentsToFiles(rawTilemapEntries, inputFilename);
+        // outputSeparatedEntryComponentsToFiles(inputFilename);
 
         ArrayList<LowByteTag> lowByteCompression = examineLowBytes();
         ArrayList<HighBitTag> highBitCompression = examineHighBits();
@@ -2264,7 +1888,7 @@ public class KamaitachiTilemapRecompressionImproveRanges {
             printLogForLowByteCompression(lowByteCompression, outputLog);
             int lowBytesCompSize = lowBytesCompressedBlock.size();
             outputLog.write(String.format("Total low bytes size: 0x%X\n", lowBytesCompSize));
-            int totalCompSize = ONE_BYTE_FOR_COMP_BLOCK_FLAGS + lowBytesCompSize;
+            int totalCompSize = 1 + lowBytesCompSize;
 
             printLogForHighBitCompression(highBitCompression, outputLog, totalCompSize);
             int highBitsCompSize = highBitsCompressedBlock.size();
@@ -2309,19 +1933,10 @@ public class KamaitachiTilemapRecompressionImproveRanges {
         // outputFile.write(0x0F);
         outputFile.write(compressedFlagsByte);
 
-        ArrayList<Integer> dataBlock;
-        dataBlock = useCompressedLowBytes ? lowBytesCompressedBlock : generateUncompressedLowBytesBlock();
-        writeIntegerArrayListToFile(dataBlock, outputFile);
-
-        dataBlock = useCompressedHighBits ? highBitsCompressedBlock : generateUncompressedHighBitsBlock();
-        writeIntegerArrayListToFile(dataBlock, outputFile);
-
-        dataBlock = useCompressedPalettes ? paletteCompressedBlock : generateUncompressedPaletteBlock();
-        writeIntegerArrayListToFile(dataBlock, outputFile);
-
-        dataBlock = useCompressedXYFlips ? xyFlipCompressedBlock : generateUncompressedXYBlock();
-        writeIntegerArrayListToFile(dataBlock, outputFile);
-
+        writeIntegerArrayListToFile(lowBytesCompressedBlock, outputFile);
+        writeIntegerArrayListToFile(highBitsCompressedBlock, outputFile);
+        writeIntegerArrayListToFile(paletteCompressedBlock,  outputFile);
+        writeIntegerArrayListToFile(xyFlipCompressedBlock,   outputFile);
 
         outputFile.flush();
         outputFile.close();
