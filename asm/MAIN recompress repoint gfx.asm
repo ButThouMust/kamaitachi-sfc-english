@@ -30,9 +30,13 @@ incsrc "asm/gfx/insert new char grid, repoint sfx and bg gfx.asm"
 
 ; update the code for tileset/tilemap decompression, and reading the palettes
 incsrc "asm/gfx/update code for reading tileset tilemap ptrs.asm"
+
 ; incsrc "asm/gfx/tileset decompression REWORK.asm"
 incsrc "asm/gfx/tileset decompression ORIGINAL.asm"
+
 incsrc "asm/gfx/tilemap decompression REWORK.asm"
+; incsrc "asm/gfx/tilemap decompression ORIGINAL.asm"
+
 incsrc "asm/gfx/gfx id palette REWORK.asm"
 
 incsrc "asm/gfx/insert other graphics.asm"
