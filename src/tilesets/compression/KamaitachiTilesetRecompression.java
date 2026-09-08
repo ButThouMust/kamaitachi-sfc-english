@@ -68,7 +68,7 @@ public class KamaitachiTilesetRecompression {
         // row:   0  0  1  1  2  2  3  3    4  4  5  5  6  6  7  7
         // bp:    2  3  2  3  2  3  2  3 ;  2  3  2  3  2  3  2  3
 
-        for (int tile = 0; tile < arrayOfTiles.length; tile++) {
+        for (int tile = 0; tile < numTiles; tile++) {
             int tilePos = tile * TILE_SIZE;
             for (int b = 0; b < TILE_SIZE; b++) {
                 // bp = parity of position in tile, plus 2 if pos >= 0x10
@@ -114,14 +114,18 @@ public class KamaitachiTilesetRecompression {
     // - size of the HashMap's keyset = # unique bytes in bitplane
     // - check how many 00s or FFs are in the bitplane
     @SuppressWarnings("unused")
-    private static HashMap<Integer,Integer> getHistogramOfBytesInBitplane(int tileNum, int bp) {
+    private static HashMap<Integer,Integer> getHistogramOfBytesInBitplane(
+        int tileNum, int bp)
+    {
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             bp < 0 || bp >= BIT_DEPTH) return null;
 
         int bpData[] = arrayOfBitplanes[tileNum][bp];
         return getHistogramOfBytesInBitplane(bpData);
     }
-    private static HashMap<Integer,Integer> getHistogramOfBytesInBitplane(int bpData[]) {
+    private static HashMap<Integer,Integer> getHistogramOfBytesInBitplane(
+        int bpData[])
+    {
         // get list of counts of all the unique bytes in a bitplane, e.g. 5 of 00
         if (bpData.length != NUM_ROWS_PER_TILE) {
             System.out.println("WARNING: attempted to get histogram for bitplane that was not size 8");
@@ -137,7 +141,9 @@ public class KamaitachiTilesetRecompression {
         return histogram;
     }
 
-    private static ArrayList<Integer> getModesOfHistogram(HashMap<Integer,Integer> hist, boolean restrict00FF) {
+    private static ArrayList<Integer> getModesOfHistogram(
+        HashMap<Integer,Integer> hist, boolean restrict00FF)
+    {
         // first, find the largest count in the histogram
         // optionally choose to ignore the counts for 00 or FF
         int bestCount = 0;
@@ -164,8 +170,11 @@ public class KamaitachiTilesetRecompression {
 
     private static boolean USE_00 = true;
     private static boolean USE_FF = false;
+
     @SuppressWarnings("unused")
-    private static BitplaneCompressionTag checkForBitplaneFilledWith00orFF(int tileNum, int bp, boolean use00) {
+    private static BitplaneCompressionTag checkForBitplaneFilledWith00orFF(
+        int tileNum, int bp, boolean use00)
+    {
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             bp < 0 || bp >= BIT_DEPTH)
             return BitplaneCaseNotSupportedTag.getInstance();
@@ -173,11 +182,15 @@ public class KamaitachiTilesetRecompression {
         int bpData[] = arrayOfBitplanes[tileNum][bp];
         return checkForBitplaneFilledWith00orFF(bpData, use00);
     }
-    private static BitplaneCompressionTag checkForBitplaneFilledWith00orFF(int bpData[], boolean use00) {
+    private static BitplaneCompressionTag checkForBitplaneFilledWith00orFF(
+        int bpData[], boolean use00)
+    {
         HashMap<Integer,Integer> hist = getHistogramOfBytesInBitplane(bpData);
         return checkForBitplaneFilledWith00orFF(bpData, hist, use00);
     }
-    private static BitplaneCompressionTag checkForBitplaneFilledWith00orFF(int bpData[], HashMap<Integer,Integer> hist, boolean use00) {
+    private static BitplaneCompressionTag checkForBitplaneFilledWith00orFF(
+        int bpData[], HashMap<Integer,Integer> hist, boolean use00)
+    {
         int value = use00 ? 0x00 : 0xFF;
         int count = hist.getOrDefault(value, 0);
         BitplaneCompressionTag output = BitplaneCaseNotSupportedTag.getInstance();
@@ -189,7 +202,9 @@ public class KamaitachiTilesetRecompression {
 
     // note: this will return the bytes themselves as opposed to their frequencies like for 00/FF
     @SuppressWarnings("unused")
-    private static ArrayList<Integer> checkForBitplaneFilledWithArbitraryByte(int tileNum, int bp) {
+    private static ArrayList<Integer> checkForBitplaneFilledWithArbitraryByte(
+        int tileNum, int bp)
+    {
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             bp < 0 || bp >= BIT_DEPTH)
             return new ArrayList<>();
@@ -197,11 +212,15 @@ public class KamaitachiTilesetRecompression {
         int bpData[] = arrayOfBitplanes[tileNum][bp];
         return checkForBitplaneFilledWithArbitraryByte(bpData);
     }
-    private static ArrayList<Integer> checkForBitplaneFilledWithArbitraryByte(int bpData[]) {
+    private static ArrayList<Integer> checkForBitplaneFilledWithArbitraryByte(
+        int bpData[])
+    {
         HashMap<Integer,Integer> hist = getHistogramOfBytesInBitplane(bpData);
         return checkForBitplaneFilledWithArbitraryByte(hist);
     }
-    private static ArrayList<Integer> checkForBitplaneFilledWithArbitraryByte(HashMap<Integer,Integer> hist) {
+    private static ArrayList<Integer> checkForBitplaneFilledWithArbitraryByte(
+        HashMap<Integer,Integer> hist)
+    {
         ArrayList<Integer> modes = getModesOfHistogram(hist, RESTRICT_00_FF);
         if (modes.size() == 1) return modes;
 
@@ -217,7 +236,9 @@ public class KamaitachiTilesetRecompression {
     }
 
     @SuppressWarnings("unused")
-    private static BitplaneCompressionTag checkEncodingAsRleGroups(int tileNum, int bp) {
+    private static BitplaneCompressionTag checkEncodingAsRleGroups(
+        int tileNum, int bp)
+    {
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             bp < 0 || bp >= BIT_DEPTH)
             return BitplaneCaseNotSupportedTag.getInstance();
@@ -257,7 +278,9 @@ public class KamaitachiTilesetRecompression {
     }
 
     @SuppressWarnings("unused")
-    private static BitplaneCompressionTag checkWhatBytesToUseForAlternatingTwoBytes(int tileNum, int bp) {
+    private static BitplaneCompressionTag checkWhatBytesToUseForAlternatingTwoBytes(
+        int tileNum, int bp)
+    {
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             bp < 0 || bp >= BIT_DEPTH)
             return BitplaneCaseNotSupportedTag.getInstance();
@@ -300,7 +323,8 @@ public class KamaitachiTilesetRecompression {
         // if (modeForEvens == MODE_NOT_AVAILABLE || modeForOdds == MODE_NOT_AVAILABLE)
             // return BitplaneCaseNotSupportedTag.getInstance();
 
-        BitplaneCompressionTag bpTwoBytes = new BitplaneFillWithTwoByteSeq(bpData, modeForEvens, modeForOdds);
+        BitplaneCompressionTag bpTwoBytes = new BitplaneFillWithTwoByteSeq(
+            bpData, modeForEvens, modeForOdds);
         if (bpTwoBytes.getSizeWhenEncoded() >= NUM_ROWS_PER_TILE) {
             bpTwoBytes = BitplaneCaseNotSupportedTag.getInstance();
         }
@@ -309,7 +333,9 @@ public class KamaitachiTilesetRecompression {
 
     // this compression method requires an exact fit
     @SuppressWarnings("unused")
-    private static BitplaneCompressionTag checkForUsingFourByteSequenceTwice(int tileNum, int bp) {
+    private static BitplaneCompressionTag checkForUsingFourByteSequenceTwice(
+        int tileNum, int bp)
+    {
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             bp < 0 || bp >= BIT_DEPTH)
             return BitplaneCaseNotSupportedTag.getInstance();
@@ -317,7 +343,9 @@ public class KamaitachiTilesetRecompression {
         int bpData[] = arrayOfBitplanes[tileNum][bp];
         return checkForUsingFourByteSequenceTwice(bpData);
     }
-    private static BitplaneCompressionTag checkForUsingFourByteSequenceTwice(int bpData[]) {
+    private static BitplaneCompressionTag checkForUsingFourByteSequenceTwice(
+        int bpData[])
+    {
         if (bpData.length != NUM_ROWS_PER_TILE)
             return BitplaneCaseNotSupportedTag.getInstance();
 
@@ -330,7 +358,9 @@ public class KamaitachiTilesetRecompression {
 
     // this compression method requires an exact fit
     @SuppressWarnings("unused")
-    private static BitplaneCompressionTag checkForBitplaneThatUsesThreeOrFourUniqueBytes(int tileNum, int bp) {
+    private static BitplaneCompressionTag checkForBitplaneThatUsesThreeOrFourUniqueBytes(
+        int tileNum, int bp)
+    {
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             bp < 0 || bp >= BIT_DEPTH)
             return BitplaneCaseNotSupportedTag.getInstance();
@@ -340,10 +370,15 @@ public class KamaitachiTilesetRecompression {
     }
     // can reuse this for bitmask combination, but need this strange setup with
     // passing in both the bitplane data itself and the histogram to allow that
-    public static BitplaneCompressionTag checkForBitplaneThatUsesThreeOrFourUniqueBytes(int bpData[]) {
-        return checkForBitplaneThatUsesThreeOrFourUniqueBytes(bpData, getHistogramOfBytesInBitplane(bpData));
+    public static BitplaneCompressionTag checkForBitplaneThatUsesThreeOrFourUniqueBytes(
+        int bpData[])
+    {
+        return checkForBitplaneThatUsesThreeOrFourUniqueBytes(bpData,
+            getHistogramOfBytesInBitplane(bpData));
     }
-    private static BitplaneCompressionTag checkForBitplaneThatUsesThreeOrFourUniqueBytes(int bpData[], HashMap<Integer,Integer> histogram) {
+    private static BitplaneCompressionTag checkForBitplaneThatUsesThreeOrFourUniqueBytes(
+        int bpData[], HashMap<Integer,Integer> histogram)
+    {
         // TODO would 2 unique bytes be acceptable here?
         int numUniqueBytes = histogram.keySet().size();
         if (numUniqueBytes == 3 || numUniqueBytes == 4) {
@@ -353,14 +388,18 @@ public class KamaitachiTilesetRecompression {
     }
 
     @SuppressWarnings("unused")
-    private static HashMap<Integer,Integer> getHistogramOfNibblesInBitplane(int tileNum, int bp) {
+    private static HashMap<Integer,Integer> getHistogramOfNibblesInBitplane(
+        int tileNum, int bp)
+    {
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             bp < 0 || bp >= BIT_DEPTH) return null;
 
         int bpData[] = arrayOfBitplanes[tileNum][bp];
         return getHistogramOfNibblesInBitplane(bpData);
     }
-    private static HashMap<Integer,Integer> getHistogramOfNibblesInBitplane(int bpData[]) {
+    private static HashMap<Integer,Integer> getHistogramOfNibblesInBitplane(
+        int bpData[])
+    {
         // get list of counts of all the unique NIBBLES in a bitplane
         if (bpData.length != NUM_ROWS_PER_TILE) return null;
 
@@ -379,7 +418,9 @@ public class KamaitachiTilesetRecompression {
 
     // this compression method requires an exact fit
     @SuppressWarnings("unused")
-    private static BitplaneCompressionTag checkForBitplaneThatUsesFourUniqueNibbles(int tileNum, int bp) {
+    private static BitplaneCompressionTag checkForBitplaneThatUsesFourUniqueNibbles(
+        int tileNum, int bp)
+    {
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             bp < 0 || bp >= BIT_DEPTH)
             return BitplaneCaseNotSupportedTag.getInstance();
@@ -388,7 +429,9 @@ public class KamaitachiTilesetRecompression {
         return checkForBitplaneThatUsesFourUniqueNibbles(bpData);
     }
     // can reuse this for bitmask combination, similar to above
-    public static BitplaneCompressionTag checkForBitplaneThatUsesFourUniqueNibbles(int bpData[]) {
+    public static BitplaneCompressionTag checkForBitplaneThatUsesFourUniqueNibbles(
+        int bpData[])
+    {
         HashMap<Integer,Integer> histogram = getHistogramOfNibblesInBitplane(bpData);
         int numUniqueNibbles = histogram.keySet().size();
         if (numUniqueNibbles == 3 || numUniqueNibbles == 4) {
@@ -402,7 +445,9 @@ public class KamaitachiTilesetRecompression {
 
     // this may take a long time to get a result that is adequate at best,
     // so best to leave as a last resort
-    private static BitplaneCompressionTag checkForReusingBitplaneFromPrevTile(int currTileNum, int currBp) {
+    private static BitplaneCompressionTag checkForReusingBitplaneFromPrevTile(
+        int currTileNum, int currBp)
+    {
         if (currTileNum <= TILE_NUM_OF_EMPTY_TILE || currTileNum >= MAX_NUM_TILES ||
             currBp < 0 || currBp >= BIT_DEPTH) {
             return BitplaneCaseNotSupportedTag.getInstance();
@@ -448,9 +493,9 @@ public class KamaitachiTilesetRecompression {
             if (bestMatchSize == NUM_ROWS_PER_TILE) break;
         }
 
-        int srcBitplaneData[] = arrayOfBitplanes[tileNumOfBestMatch][bpOfBestMatch];
+        int srcBpData[] = arrayOfBitplanes[tileNumOfBestMatch][bpOfBestMatch];
         BitplaneCompressionTag output = new BitplaneReuseFromPrevTile(bpData,
-            tileNumOfBestMatch, bpOfBestMatch, srcBitplaneData, reverse);
+            tileNumOfBestMatch, bpOfBestMatch, srcBpData, reverse);
         if (output.getSizeWhenEncoded() >= NUM_ROWS_PER_TILE) {
             output = BitplaneCaseNotSupportedTag.getInstance();
         }
@@ -460,22 +505,25 @@ public class KamaitachiTilesetRecompression {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    private static int[] calculateDataByCombiningBitplanes(int tileNum, int subroutineIndex) {
+    private static int[] calculateDataByCombiningBitplanes(
+        int tileNum, int subroutineIndex)
+    {
         int result[] = calculateDataByCombiningBitplanes(tileNum,
             getBitplaneCombinationType(subroutineIndex),
             bitplaneCombinationTypeDoesBitwiseNOT(subroutineIndex));
         return result;
     }
     private static int[] calculateDataByCombiningBitplanes(int tileNum,
-        BitplaneCombiner combine, boolean invertResult
-    ) {
-        if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES) return new int[0];
+        BitplaneCombiner combineType, boolean invertResult)
+    {
+        if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES)
+            return new int[0];
 
         int bpData[][] = arrayOfBitplanes[tileNum];
         int output[] = new int[NUM_ROWS_PER_TILE];
         int value = 0;
         for (int i = 0; i < output.length; i++) {
-            switch (combine) {
+            switch (combineType) {
                 case COPY_0:  value = bpData[0][i]; break;
                 case COPY_1:  value = bpData[1][i]; break;
                 case COPY_2:  value = bpData[2][i]; break;
@@ -501,7 +549,9 @@ public class KamaitachiTilesetRecompression {
         return output;
     }
 
-    private static BitplaneCompressionTag getBestWayToCombineBitplanes(int tileNum, int currBp) {
+    private static BitplaneCompressionTag getBestWayToCombineBitplanes(
+        int tileNum, int currBp)
+    {
         // you cannot reuse bitplanes if you are getting data for bitplane 0
         if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES ||
             currBp <= 0 || currBp >= BIT_DEPTH)
@@ -526,8 +576,8 @@ public class KamaitachiTilesetRecompression {
             if (bestMatchSize == NUM_ROWS_PER_TILE) break;
         }
 
-        BitplaneCompressionTag output =
-            new BitplaneCombineOtherBitplanes(bestIndex, bpData, calculatedDataForBestMatch);
+        BitplaneCompressionTag output = new BitplaneCombineOtherBitplanes(
+            bestIndex, bpData, calculatedDataForBestMatch);
         if (output.getSizeWhenEncoded() >= NUM_ROWS_PER_TILE) {
             output = BitplaneCaseNotSupportedTag.getInstance();
         }
@@ -536,8 +586,8 @@ public class KamaitachiTilesetRecompression {
     }
 
     private static BitplaneCompressionTag getBestCompressionForBitplane(
-        int tileNum, int currBp, boolean canRestrictBP3
-    ) {
+        int tileNum, int currBp, boolean canRestrictBP3)
+    {
         boolean checkBp0 = canRestrictBP3 && (currBp == 0);
 
         int currBpData[] = arrayOfBitplanes[tileNum][currBp];
@@ -569,13 +619,15 @@ public class KamaitachiTilesetRecompression {
 
         // check for filling with 00 or FF; if either is a perfect match,
         // no need to check the other cases
-        BitplaneCompressionTag bpFill00 = checkForBitplaneFilledWith00orFF(currBpData, hist, USE_00);
+        BitplaneCompressionTag bpFill00 =
+            checkForBitplaneFilledWith00orFF(currBpData, hist, USE_00);
         int bpFill00Size = bpFill00.getSizeWhenEncoded();
         if (bpFill00Size == 0) {
             // logBestBitplaneOption(bp, bpFill00);
             return bpFill00;
         }
-        BitplaneCompressionTag bpFillFF = checkForBitplaneFilledWith00orFF(currBpData, hist, USE_FF);
+        BitplaneCompressionTag bpFillFF =
+            checkForBitplaneFilledWith00orFF(currBpData, hist, USE_FF);
         int bpFillFFSize = bpFillFF.getSizeWhenEncoded();
         if (bpFillFFSize == 0) {
             // logBestBitplaneOption(bp, bpFillFF);
@@ -653,6 +705,7 @@ public class KamaitachiTilesetRecompression {
         bpOptionsQueue.add(bpTwoBytes);
 
         // -----------------------------------------------------------------
+
         bestOptionSoFar = bpOptionsQueue.peek();
         if (bestOptionSoFar.getSizeWhenEncoded() > 4) {
             BitplaneCompressionTag bpFourBytesTwice = checkForUsingFourByteSequenceTwice(currBpData);
@@ -674,7 +727,8 @@ public class KamaitachiTilesetRecompression {
         // this can burn a lot of CPU time for only an adequate result, but
         // also can potentially require only 2 bytes to encode if there is a
         // perfect match; in my opinion, this is the big limiting factor
-        BitplaneCompressionTag bpReuseFromPrevTile = checkForReusingBitplaneFromPrevTile(tileNum, currBp);
+        BitplaneCompressionTag bpReuseFromPrevTile =
+            checkForReusingBitplaneFromPrevTile(tileNum, currBp);
         bpOptionsQueue.add(bpReuseFromPrevTile);
 
         // -----------------------------------------------------------------
@@ -723,15 +777,19 @@ public class KamaitachiTilesetRecompression {
     // application: try applying the four indices of a so-far common bitplane case
     // to the current tile's bitplanes, and see if it EQUALS the best option
     // determined above; if yes, you can save another byte or two with metadata
-    private static BitplaneCompressionTag testBitplaneSubIndex(int tileNum, int currBp, int index) {
+    private static BitplaneCompressionTag testBitplaneSubIndex(
+        int tileNum, int currBp, int index)
+    {
         index = getWhichSubIdToDoBeforeSpotChanges(index);
         int currBpData[] = arrayOfBitplanes[tileNum][currBp];
         HashMap<Integer,Integer> hist = getHistogramOfBytesInBitplane(currBpData);
 
         BitplaneCompressionTag result = BitplaneCaseNotSupportedTag.getInstance();
         if (index >= USE_BP0 && index <= USE_NOT_AND_012 + 1) {
-            int calculatedBpData[] = calculateDataByCombiningBitplanes(tileNum, index);
-            result = new BitplaneCombineOtherBitplanes(index, currBpData, calculatedBpData);
+            int calculatedBpData[] =
+                calculateDataByCombiningBitplanes(tileNum, index);
+            result = new BitplaneCombineOtherBitplanes(
+                index, currBpData, calculatedBpData);
         }
         else switch (index) {
             case READ_8_RAW_BYTES:
@@ -749,7 +807,8 @@ public class KamaitachiTilesetRecompression {
             case FILL_BP_WITH_BYTE:
                 // check for filling with some other byte; if distribution has
                 // multiple modes, we only need one of them here
-                ArrayList<Integer> modes = checkForBitplaneFilledWithArbitraryByte(hist);
+                ArrayList<Integer> modes =
+                    checkForBitplaneFilledWithArbitraryByte(hist);
                 if (modes.size() > 0) { // make sure that BP doesn't only use 00 or FF
                     int mode = modes.get(0);
                     // if any byte in the bitplane appears at most once, it means all 8
@@ -768,7 +827,8 @@ public class KamaitachiTilesetRecompression {
                 break;
 
             case CREATE_BP_FROM_TWO_BIT_INDICES_AND_BYTES:
-                result = checkForBitplaneThatUsesThreeOrFourUniqueBytes(currBpData, hist);
+                result = checkForBitplaneThatUsesThreeOrFourUniqueBytes(
+                    currBpData, hist);
                 break;
             case CREATE_BP_FROM_TWO_BIT_INDICES_AND_NIBBLES:
                 result = checkForBitplaneThatUsesFourUniqueNibbles(currBpData);
@@ -851,8 +911,9 @@ public class KamaitachiTilesetRecompression {
             if (smallestEncodedSize == TileReuseWithNewBitplanesTag.BEST_SIZE) break;
         }
 
-        TileReuseWithNewBitplanesTag output = new TileReuseWithNewBitplanesTag(currTileNum,
-            tileBpData, tileNumOfBestMatch, differentByteFlagsList, differentBitplanes);
+        TileReuseWithNewBitplanesTag output = new TileReuseWithNewBitplanesTag(
+            currTileNum, tileBpData, tileNumOfBestMatch, differentByteFlagsList,
+            differentBitplanes);
         return output;
     }
 
@@ -900,7 +961,8 @@ public class KamaitachiTilesetRecompression {
             if (fewestDifferentRows == 0x1) break;
         }
 
-        TileReuseWithNewRowsTag output = new TileReuseWithNewRowsTag(currTileNum, tileBpData, tileNumOfBestMatch, differentRowsFlagByte);
+        TileReuseWithNewRowsTag output = new TileReuseWithNewRowsTag(
+            currTileNum, tileBpData, tileNumOfBestMatch, differentRowsFlagByte);
         return output;
     }
 
@@ -1120,15 +1182,18 @@ public class KamaitachiTilesetRecompression {
     // -------------------------------------------------------------------------
 
     private static int[][] checkGetBitplanesFromBitmaskDataGroups(int tileNum) {
-        if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES) return new int[0][0];
+        if (tileNum <= TILE_NUM_OF_EMPTY_TILE || tileNum >= MAX_NUM_TILES)
+            return new int[0][0];
 
         int bpData[][] = arrayOfBitplanes[tileNum];
 
         // 8 rows for the bitmask data itself, and one row for the list of bit positions
-        int bitmaskDataForBitPositions[][] = new int[SIZE_OF_TERMINATED_BIT_POS_LIST][BITMASK_LIST_SIZE];
+        int bitmaskDataForBitPositions[][] =
+            new int[SIZE_OF_TERMINATED_BIT_POS_LIST][BITMASK_LIST_SIZE];
         int numBitPositions = 0;
         for (int i = 0; i < BITMASK_LIST_SIZE; i++) {
-            bitmaskDataForBitPositions[bitmaskDataForBitPositions.length - 1][i] = BIT_POSITION_LIST_TERMINATOR;
+            bitmaskDataForBitPositions[bitmaskDataForBitPositions.length - 1][i] =
+                BIT_POSITION_LIST_TERMINATOR;
         }
 
         // generate all 16 different sets of bits that are unique to a particular
@@ -1160,7 +1225,6 @@ public class KamaitachiTilesetRecompression {
             if (bitPositionHasActualData) {
                 // check if limit exceeded or not; must exit if yes
                 if (numBitPositions >= MAX_NUM_BIT_POSITIONS) {
-                    // System.out.printf("\nToo many bit positions for bitmask groups case (reached 9 with bit pos %X)\n", bitPos);
                     return new int[0][0];
                 }
 
@@ -1176,13 +1240,14 @@ public class KamaitachiTilesetRecompression {
         // to be able to recover group 0 of the data to encode for this case,
         // there must be at least 3 sets of bitmask data
         if (numBitPositions < MIN_NUM_BIT_POSITIONS) {
-            // System.out.printf("Too few bit positions (%d) to encode tile with bitmask groups case\n", numBitPositions);
             return new int[0][0];
         }
         return bitmaskDataForBitPositions;
     }
 
-    private static int[][] calculateBitmaskGroupsToBeEncoded(int bitmaskDataForBitPositions[][]) {
+    private static int[][] calculateBitmaskGroupsToBeEncoded(
+        int bitmaskDataForBitPositions[][])
+    {
         if (bitmaskDataForBitPositions.length != SIZE_OF_TERMINATED_BIT_POS_LIST) {
             return new int[0][0];
         }
@@ -1197,7 +1262,8 @@ public class KamaitachiTilesetRecompression {
 
         // if under 5 bit positions, use 2 groups
         if (numBitPositions < THRESHOLD_FOR_NUM_BIT_POSITIONS) {
-            int bitmaskGroups[][] = new int[NUM_GROUPS_OF_8_BITMASKS - 1][BITMASK_LIST_SIZE];
+            int bitmaskGroups[][] =
+                new int[NUM_GROUPS_OF_8_BITMASKS - 1][BITMASK_LIST_SIZE];
             for (int i = 0; i < BITMASK_LIST_SIZE; i++) {
                 bitmaskGroups[BITMASK_GROUP_0][i] = // bit pos 1 | bit pos 3
                     bitmaskDataForBitPositions[1][i] | bitmaskDataForBitPositions[3][i];
@@ -1206,9 +1272,11 @@ public class KamaitachiTilesetRecompression {
             }
             return bitmaskGroups;
         }
+
         // if 5 or more bit positions, use 3 groups
         else {
-            int bitmaskGroups[][] = new int[NUM_GROUPS_OF_8_BITMASKS][BITMASK_LIST_SIZE];
+            int bitmaskGroups[][] =
+                new int[NUM_GROUPS_OF_8_BITMASKS][BITMASK_LIST_SIZE];
             for (int i = 0; i < BITMASK_LIST_SIZE; i++) {
                 bitmaskGroups[BITMASK_GROUP_0][i] = // bit pos 1 | bit pos 3 | bit pos 5 | bit pos 7
                     bitmaskDataForBitPositions[1][i] | bitmaskDataForBitPositions[3][i] |
@@ -1224,9 +1292,13 @@ public class KamaitachiTilesetRecompression {
         }
     }
 
-    private static TileCompressionTag testGeneratingBitmaskGroupsFromBitplanes(int tileNum) {
-        int bitmaskDataForBitPositions[][] = checkGetBitplanesFromBitmaskDataGroups(tileNum);
-        int bitmaskDataToBeEncoded[][] = calculateBitmaskGroupsToBeEncoded(bitmaskDataForBitPositions);
+    private static TileCompressionTag testGeneratingBitmaskGroupsFromBitplanes(
+        int tileNum)
+    {
+        int bitmaskDataForBitPositions[][] =
+            checkGetBitplanesFromBitmaskDataGroups(tileNum);
+        int bitmaskDataToBeEncoded[][] =
+            calculateBitmaskGroupsToBeEncoded(bitmaskDataForBitPositions);
 
         if (bitmaskDataToBeEncoded.length == 0) return TileCaseNotSupportedTag.getInstance();
 
@@ -1242,7 +1314,8 @@ public class KamaitachiTilesetRecompression {
     private static TileCompressionTag testBitplaneSubroutineCase(int tileNum) {
         BitplaneCompressionTag bpTagList[] = new BitplaneCompressionTag[BIT_DEPTH];
 
-        BitplaneCompressionTag bpTag3 = getBestCompressionForBitplane(tileNum, BIT_DEPTH - 1, false);
+        BitplaneCompressionTag bpTag3 =
+            getBestCompressionForBitplane(tileNum, BIT_DEPTH - 1, false);
         boolean canRestrictBP3 = (bpTag3 instanceof BitplaneFillWithByte) &&
             bpTag3.getSizeWhenEncoded() == 0;
         bpTagList[BIT_DEPTH - 1] = bpTag3;
@@ -1283,8 +1356,8 @@ public class KamaitachiTilesetRecompression {
 
     @SuppressWarnings("unused")
     private static TileCompressionTag testBitplaneSubsOfOtherTileForTile(
-        int tileNum, TileBitplaneSubroutinesTag otherTag
-    ) {
+        int tileNum, TileBitplaneSubroutinesTag otherTag)
+    {
         if (tileNum <= 0 || tileNum > MAX_NUM_TILES || tileNum == otherTag.getTileNum())
             return TileCaseNotSupportedTag.getInstance();
 
@@ -1293,8 +1366,8 @@ public class KamaitachiTilesetRecompression {
     }
 
     private static TileCompressionTag testBitplaneSubsForTile(
-        int tileNum, int encodedIndices
-    ) {
+        int tileNum, int encodedIndices)
+    {
         int indices[] = decodeBitplaneIndices(encodedIndices);
 
         BitplaneCompressionTag bpTagList[] = new BitplaneCompressionTag[BIT_DEPTH];
@@ -1372,8 +1445,10 @@ public class KamaitachiTilesetRecompression {
         ArrayList<TileCompressionTag> bestOptionForEachTile = new ArrayList<>();
         bestOptionForEachTile.add(null);
 
-        HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal = new HashMap<>();
-        HashMap<Integer,TileCombineBitmaskData> bitmaskGroupTagsThatCanBeOptimal = new HashMap<>();
+        HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal =
+            new HashMap<>();
+        HashMap<Integer,TileCombineBitmaskData> bitmaskGroupTagsThatCanBeOptimal =
+            new HashMap<>();
 
         for (int tile = TILE_NUM_OF_DATA_START; tile < arrayOfTiles.length; tile++) {
             // System.out.printf("%03X ", tile);
@@ -1381,11 +1456,14 @@ public class KamaitachiTilesetRecompression {
             // intensive checks later
 
             // TileCompressionTag eightBytes = testConstructFromEightBytes(tile);
-            TileCompressionTag eightBytes = checkIfBitplanesCanBeRepresentedBy00NNFF_OrNotNN(tile);
-            TileCompressionTag bitmaskGroups = testGeneratingBitmaskGroupsFromBitplanes(tile);
+            TileCompressionTag eightBytes =
+                checkIfBitplanesCanBeRepresentedBy00NNFF_OrNotNN(tile);
+            TileCompressionTag bitmaskGroups =
+                testGeneratingBitmaskGroupsFromBitplanes(tile);
             TileCompressionTag bitplaneSubs = testBitplaneSubroutineCase(tile);
             // TileCompressionTag reuseTile = testCheckUseNewRowsOrBitplanes(tile);
-            TileCompressionTag reuseTile = checkForReusingPrevTileWithEitherNewBitplanesOrRows(tile);
+            TileCompressionTag reuseTile =
+                checkForReusingPrevTileWithEitherNewBitplanesOrRows(tile);
 
             PriorityQueue<TileCompressionTag> queue = new PriorityQueue<>();
             queue.add(eightBytes);
@@ -1416,21 +1494,27 @@ public class KamaitachiTilesetRecompression {
             }
             bestOptionForEachTile.add(bestOption);
 
-            int possibleBitplaneSubsMetadataSavings = bitplaneSubs.getNumBytesSavedFromUsingMetadata();
-            int possibleBitmaskGroupsMetadataSavings = bitmaskGroups.getNumBytesSavedFromUsingMetadata();
+            int possibleBitplaneSubsMetadataSavings =
+                bitplaneSubs.getNumBytesSavedFromUsingMetadata();
+            int possibleBitmaskGroupsMetadataSavings =
+                bitmaskGroups.getNumBytesSavedFromUsingMetadata();
 
             // TODO using > here usually is better versus >=, with exceptions
             // most tilemaps compress better with >, others better with >=
             // note: this double counts, but tiles will only use one or the other
             if (bitplaneSubs instanceof TileBitplaneSubroutinesTag &&
-                // bestOptionTagSize >= bitplaneSubsTagSize - possibleBitplaneSubsMetadataSavings ) {
-                bestOptionTagSize > bitplaneSubsTagSize - possibleBitplaneSubsMetadataSavings ) {
-                bitplaneSubTagsThatCanBeOptimal.put(tile, (TileBitplaneSubroutinesTag) bitplaneSubs);
+                // bestOptionTagSize >= bitplaneSubsTagSize - possibleBitplaneSubsMetadataSavings) {
+                bestOptionTagSize > bitplaneSubsTagSize - possibleBitplaneSubsMetadataSavings)
+            {
+                bitplaneSubTagsThatCanBeOptimal.put(tile,
+                    (TileBitplaneSubroutinesTag) bitplaneSubs);
             }
             if (bitmaskGroups instanceof TileCombineBitmaskData &&
                 // bestOptionTagSize >= bitmaskGroupsTagSize - possibleBitmaskGroupsMetadataSavings) {
-                bestOptionTagSize > bitmaskGroupsTagSize - possibleBitmaskGroupsMetadataSavings) {
-                bitmaskGroupTagsThatCanBeOptimal.put(tile, (TileCombineBitmaskData) bitmaskGroups);
+                bestOptionTagSize > bitmaskGroupsTagSize - possibleBitmaskGroupsMetadataSavings)
+            {
+                bitmaskGroupTagsThatCanBeOptimal.put(tile,
+                    (TileCombineBitmaskData) bitmaskGroups);
             }
         }
 
@@ -1447,7 +1531,8 @@ public class KamaitachiTilesetRecompression {
         }
     }
 
-    private static void outputCompressedDataToFile(ArrayList<TileCompressionTag> bestOptionForEachTile,
+    private static void outputCompressedDataToFile(
+        ArrayList<TileCompressionTag> bestOptionForEachTile,
         HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal,
         HashMap<Integer,TileCombineBitmaskData> bitmaskGroupTagsThatCanBeOptimal
     ) throws IOException {
@@ -1492,7 +1577,8 @@ public class KamaitachiTilesetRecompression {
             TileCompressionTag bestOption = bestOptionForEachTile.get(tile);
 
             // check if possible for the bitplane case to outperform the best option
-            TileBitplaneSubroutinesTag bpSubTag = bitplaneSubTagsThatCanBeOptimal.get(tile);
+            TileBitplaneSubroutinesTag bpSubTag =
+                bitplaneSubTagsThatCanBeOptimal.get(tile);
             if (bpSubTag != null && tile == bpSubTag.getTileNum()) {
                 int encodedIndices = bpSubTag.getEncodedSubroutineIndices(FORCE_THREE_BYTES);
                 if (bestBitplaneMetadataValues.contains(encodedIndices)) {
@@ -1515,7 +1601,8 @@ public class KamaitachiTilesetRecompression {
                     // log.write(bestOption.toString() + "\n\n");
                     log.write(bpSubTag.toString() + "\n");
 
-                    int tagSize = bpSubTag.getSizeOfEncodedData() - bpSubTag.getNumBytesSavedFromUsingMetadata();
+                    int tagSize = bpSubTag.getSizeOfEncodedData() -
+                        bpSubTag.getNumBytesSavedFromUsingMetadata();
                     totalCompressedSize += tagSize;
                     log.write(String.format("Size for tag: 0x%2X (0x%4X)\n\n", tagSize, totalCompressedSize));
                     continue;
@@ -1523,7 +1610,8 @@ public class KamaitachiTilesetRecompression {
             }
 
             // check if possible for the bitmask case to outperform the best option
-            TileCombineBitmaskData bitmaskTag = bitmaskGroupTagsThatCanBeOptimal.get(tile);
+            TileCombineBitmaskData bitmaskTag =
+                bitmaskGroupTagsThatCanBeOptimal.get(tile);
             if (bitmaskTag != null && tile == bitmaskTag.getTileNum()) {
                 int encodedIndices = bitmaskTag.getBitpackedBitPosList();
                 int byte0 = encodedIndices & 0xFF;
@@ -1533,11 +1621,12 @@ public class KamaitachiTilesetRecompression {
                 int indexOfByte1 = bestBitmaskMetadataValues.indexOf(byte1);
                 boolean byte0IsZero = byte0 == 0x00;
                 boolean byte1IsZero = byte1 == 0x00;
-                boolean byte0InList = indexOfByte0 != -1 && indexOfByte0 < COMMON_BITMASK_BIT_POSITIONS_DATA_SIZE;
-                boolean byte1InList = indexOfByte1 != -1 && indexOfByte1 < COMMON_BITMASK_BIT_POSITIONS_DATA_SIZE;
+                boolean byte0InList = indexOfByte0 != -1 &&
+                    indexOfByte0 < COMMON_BITMASK_BIT_POSITIONS_DATA_SIZE;
+                boolean byte1InList = indexOfByte1 != -1 &&
+                    indexOfByte1 < COMMON_BITMASK_BIT_POSITIONS_DATA_SIZE;
 
                 if ((byte0IsZero || byte0InList) && (byte1IsZero || byte1InList)) {
-                // if ((byte0IsZero ^ byte0InList) && (byte1IsZero ^ byte1InList)) {
                     numBitmaskMetadataMatches++;
                     // System.out.printf("Tile %03X: Got bitmask metadata value match(es)\n", tile);
                     // the encoded indices are (index + 1) because an index of 0
@@ -1622,9 +1711,12 @@ public class KamaitachiTilesetRecompression {
         // write the "end of data" terminator byte
         outputFile.write(END_OF_TILE_DATA);
 
-        String finalSize = String.format("\nTotal compressed size: 0x%X\n", totalCompressedSize + 1);
-        String bpMatchesPrintout = String.format("BP subroutine metadata value matches: %d\n", numBpMetadataMatches);
-        String bitmaskMatchesPrintout = String.format("Bitmask index metadata value matches: %d\n", numBitmaskMetadataMatches);
+        String finalSize = String.format("\nTotal compressed size: 0x%X\n",
+            totalCompressedSize + 1);
+        String bpMatchesPrintout = String.format(
+            "BP subroutine metadata value matches: %d\n", numBpMetadataMatches);
+        String bitmaskMatchesPrintout = String.format(
+            "Bitmask index metadata value matches: %d\n", numBitmaskMetadataMatches);
         log.write(finalSize);
         log.write(bpMatchesPrintout);
         log.write(bitmaskMatchesPrintout);
@@ -1637,8 +1729,8 @@ public class KamaitachiTilesetRecompression {
     // -------------
 
     private static HashMap<Integer,Integer> countOptionsForBitplaneSubMetadata(
-        HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal
-    ) {
+        HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal)
+    {
         // because it's possible for this case to save TWO bytes instead of just
         // one, you should count how many bytes a certain option would save if
         // you could encode it into the metadata, instead of just how many times
@@ -1651,8 +1743,8 @@ public class KamaitachiTilesetRecompression {
 
             int encodedIndices = tag.getEncodedSubroutineIndices(FORCE_THREE_BYTES);
             int increment = tag.getNumBytesSavedFromUsingMetadata();
-            int count = countsForEncodedIndices.getOrDefault(encodedIndices, 0);
-            countsForEncodedIndices.put(encodedIndices, count + increment);
+            int oldCount = countsForEncodedIndices.getOrDefault(encodedIndices, 0);
+            countsForEncodedIndices.put(encodedIndices, oldCount + increment);
         }
 
         /*
@@ -1667,15 +1759,17 @@ public class KamaitachiTilesetRecompression {
     }
 
     private static ArrayList<Integer> getBitplaneMetadataValuesToLookFor(
-        HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal
-    ) {
+        HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal)
+    {
         HashMap<Integer,Integer> countsForMetadataOptions =
             countOptionsForBitplaneSubMetadata(bitplaneSubTagsThatCanBeOptimal);
-        ArrayList<Integer> bitplaneOptions = new ArrayList<>(countsForMetadataOptions.keySet());
+        ArrayList<Integer> bitplaneOptions =
+            new ArrayList<>(countsForMetadataOptions.keySet());
 
         // create a priority queue to implement a MAX heap instead of a min heap,
         // because we want fast access to the largest counts
-        PriorityQueue<Integer> bitplaneCounts = new PriorityQueue<>(Collections.reverseOrder());
+        PriorityQueue<Integer> bitplaneCounts =
+            new PriorityQueue<>(Collections.reverseOrder());
         for (int option : bitplaneOptions) {
             bitplaneCounts.add(countsForMetadataOptions.get(option));
         }
@@ -1704,9 +1798,6 @@ public class KamaitachiTilesetRecompression {
             // you get 4 encoded values total
             for (int bitplaneOption : bitplaneOptions) {
                 int countForOption = countsForMetadataOptions.get(bitplaneOption);
-                // if (!TileBitplaneSubroutinesTag.bitplanes03AreRestricted(bitplaneOption)) {
-                    // countForOption *= 2;
-                // }
                 if (countForOption == count && !bestBitplaneMetadataValues.contains(bitplaneOption)) {
                     bestBitplaneMetadataValues.add(bitplaneOption);
                     numMetadataValuesWithCount--;
@@ -1726,13 +1817,16 @@ public class KamaitachiTilesetRecompression {
     }
 
     private static HashMap<Integer,TileBitplaneSubroutinesTag> attemptToConvertTagsToUseCommonSubroutines(
-        HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal
-    ) {
+        HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal)
+    {
         HashMap<Integer,Integer> countsForMetadataOptions = countOptionsForBitplaneSubMetadata(bitplaneSubTagsThatCanBeOptimal);
 
-        ArrayList<Integer> bitplaneOptions = new ArrayList<>(countsForMetadataOptions.keySet());
-        ArrayList<EncodedBitplaneIndicesWithCount> bitplaneCountObjs = new ArrayList<>();
-        // PriorityQueue<Integer> bitplaneCounts = new PriorityQueue<>(Collections.reverseOrder());
+        ArrayList<Integer> bitplaneOptions =
+            new ArrayList<>(countsForMetadataOptions.keySet());
+        ArrayList<EncodedBitplaneIndicesWithCount> bitplaneCountObjs =
+            new ArrayList<>();
+        // PriorityQueue<Integer> bitplaneCounts =
+            // new PriorityQueue<>(Collections.reverseOrder());
         for (int option : bitplaneOptions) {
             int count = countsForMetadataOptions.get(option);
             EncodedBitplaneIndicesWithCount bitplaneCountObj = new EncodedBitplaneIndicesWithCount(option, count);
@@ -1741,9 +1835,11 @@ public class KamaitachiTilesetRecompression {
         Collections.sort(bitplaneCountObjs, Collections.reverseOrder());
 
         HashMap<Integer,TileBitplaneSubroutinesTag> output = new HashMap<>();
-        ArrayList<Integer> tileNumsToCheck = new ArrayList<>(bitplaneSubTagsThatCanBeOptimal.keySet());
+        ArrayList<Integer> tileNumsToCheck =
+            new ArrayList<>(bitplaneSubTagsThatCanBeOptimal.keySet());
         for (int tileID : tileNumsToCheck) {
-            TileBitplaneSubroutinesTag tag = bitplaneSubTagsThatCanBeOptimal.get(tileID);
+            TileBitplaneSubroutinesTag tag =
+                bitplaneSubTagsThatCanBeOptimal.get(tileID);
             // if the tag does not already use one of the four most common
             // subroutine index sets for the tileset, check if applying any set
             // to it will encode to the SAME size as the best option
@@ -1751,19 +1847,23 @@ public class KamaitachiTilesetRecompression {
             // alternate heuristic: if not for one of the four most common, see
             // if you can convert the current indices to *A* more common set of
             // indices period; you can probably re-iterate this process
-            int originalEncodedIndices = tag.getEncodedSubroutineIndices(FORCE_THREE_BYTES);
+            int originalEncodedIndices =
+                tag.getEncodedSubroutineIndices(FORCE_THREE_BYTES);
             int bestSize = tag.getSizeOfEncodedData();
 
             boolean updated = false;
             for (int i = 0; i < MAX_BP_METADATA_ENTRIES && i < bitplaneCountObjs.size(); i++) {
             // for (int i = 0; i < bitplaneCountObjs.size(); i++) {
-                EncodedBitplaneIndicesWithCount bitplaneCountObj = bitplaneCountObjs.get(i);
-                int commonEncodedIndicesToCheck = bitplaneCountObj.getEncodedIndices();
+                EncodedBitplaneIndicesWithCount bitplaneCountObj =
+                    bitplaneCountObjs.get(i);
+                int commonEncodedIndicesToCheck =
+                    bitplaneCountObj.getEncodedIndices();
                 if (commonEncodedIndicesToCheck == tag.getEncodedSubroutineIndices(FORCE_THREE_BYTES)) {
                     continue;
                 }
 
-                TileCompressionTag testResult = testBitplaneSubsForTile(tileID, commonEncodedIndicesToCheck);
+                TileCompressionTag testResult =
+                    testBitplaneSubsForTile(tileID, commonEncodedIndicesToCheck);
                 if (testResult == TileCaseNotSupportedTag.getInstance()) {
                     continue;
                 }
@@ -1773,8 +1873,11 @@ public class KamaitachiTilesetRecompression {
                     // if sizes match, update counts for both the set that you're
                     // converting TO and the set that you're switching FROM
                     for (int j = bitplaneCountObjs.size() - 1; j >= 0; j--) {
-                        EncodedBitplaneIndicesWithCount originalBitplaneCountObj = bitplaneCountObjs.get(j);
-                        if (originalBitplaneCountObj.getEncodedIndices() == originalEncodedIndices) {
+                        EncodedBitplaneIndicesWithCount originalBitplaneCountObj =
+                            bitplaneCountObjs.get(j);
+                        if (originalBitplaneCountObj.getEncodedIndices() ==
+                            originalEncodedIndices)
+                        {
                             originalBitplaneCountObj.decrementCount();
                             bitplaneCountObjs.set(j, originalBitplaneCountObj);
                             break;
@@ -1798,8 +1901,9 @@ public class KamaitachiTilesetRecompression {
         return output;
     }
 
-    private static void doBitplaneMetadataPrintout(ArrayList<Integer> bestBitplaneMetadataValues
-    ) throws IOException {
+    private static void doBitplaneMetadataPrintout(
+        ArrayList<Integer> bestBitplaneMetadataValues) throws IOException
+    {
         for (int i = 0; i < bestBitplaneMetadataValues.size(); i++) {
             log.write("Bitplane metadata index " + i + ":\n");
             int bpMetadataValue = bestBitplaneMetadataValues.get(i);
@@ -1813,8 +1917,8 @@ public class KamaitachiTilesetRecompression {
     private static HashMap<Integer,Integer> countOptionsForBitmaskCombinationMetadata(
         HashMap<Integer,TileCombineBitmaskData> bitmaskGroupTagsThatCanBeOptimal,
         HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal,
-        ArrayList<Integer> bestBitplaneMetadataValues
-    ) {
+        ArrayList<Integer> bestBitplaneMetadataValues)
+    {
         HashMap<Integer,Integer> countsForBitPosListBytes = new HashMap<>();
         for (int tile = TILE_NUM_OF_DATA_START; tile < arrayOfTiles.length; tile++) {
             TileCombineBitmaskData tag = bitmaskGroupTagsThatCanBeOptimal.get(tile);
@@ -1857,17 +1961,17 @@ public class KamaitachiTilesetRecompression {
     private static ArrayList<Integer> getBitmaskMetadataValuesToLookFor(
         HashMap<Integer,TileCombineBitmaskData> bitmaskGroupTagsThatCanBeOptimal,
         HashMap<Integer,TileBitplaneSubroutinesTag> bitplaneSubTagsThatCanBeOptimal,
-        ArrayList<Integer> bestBitplaneMetadataValues
-    ) {
-
+        ArrayList<Integer> bestBitplaneMetadataValues)
+    {
         HashMap<Integer,Integer> bitmaskGroupMetadataOptions =
             countOptionsForBitmaskCombinationMetadata(bitmaskGroupTagsThatCanBeOptimal,
-                bitplaneSubTagsThatCanBeOptimal, bestBitplaneMetadataValues
-            );
-        ArrayList<Integer> bitmaskOptions = new ArrayList<>(bitmaskGroupMetadataOptions.keySet());
+                bitplaneSubTagsThatCanBeOptimal, bestBitplaneMetadataValues);
+        ArrayList<Integer> bitmaskOptions =
+            new ArrayList<>(bitmaskGroupMetadataOptions.keySet());
         // System.out.printf("# bitmask byte options: %d\n", bitmaskOptions.size());
 
-        PriorityQueue<Integer> bitmaskCounts = new PriorityQueue<>(Collections.reverseOrder());
+        PriorityQueue<Integer> bitmaskCounts =
+            new PriorityQueue<>(Collections.reverseOrder());
         for (int option : bitmaskOptions) {
             bitmaskCounts.add(bitmaskGroupMetadataOptions.get(option));
         }
