@@ -22302,7 +22302,7 @@ Standing still in my confusion,
 Then, he came running at me.
 <SFX 41><$00><$69>
 //ぼくは仕方なく<、5B>ようやくドアが開いた<、5B>というふりで中へ滑り込んだ<。58>
-All I could do was pretend I finally opened my door, and then slipped inside.
+All I could do was pretend I finally opened my door, and then slip inside.
 <CLEAR 25>
 
 //[$0AFFBF-4] -> 0x57FDFC -> [11 BD 05 05]
@@ -22426,11 +22426,11 @@ Plus, I've never been trained for this.
 
 //[$0B82A6-1] -> 0x5C1531 -> [51 8A 0B 05]
 //<「60>何か言いたそうね<？5D>　何<？5D><」59>
-“Do you have anything to say for yourself? Anything at all?”
+“You want to say something? Well, what is it?”
 //<「60>……別に何も<」59>
-“...No, nothing.”
+“...No, it's nothing.”
 //<「60>あ<、5B>そう<AUTO ADV 02><。58><DELAY 00><$00><$03>じゃ<、5B>服を調べるから手伝って<」59>
-“Alright then.<DELAY 00><$00><$03> Well, help me check his clothes.”
+“Alright then.<DELAY 00><$00><$03> Come on, help me check his clothes.”
 //<『61>お皿洗うの手伝って<AUTO ADV 02><』5A>とでもいうような調子で<MARI 1C>は言う<。58>
 <MARI 1C> said that casually, as if she asked, “Help me wash the dishes.”
 //二人で気を失っている美樹本の体をひっくり返すと服のポケットを探る<。58>
@@ -22998,7 +22998,7 @@ Looks like she finally found the bloodstains still on the floor.
 
 //[$0B9398-3] -> 0x5C9CC3 -> [D1 6E 2D 05]
 //<「60>ここで誰か<、5B>殺したのね<？5D>　<WAIT 0D>虫も殺さないような顔して……<DELAY 00><$00><$03>あたしも危うくだまされるとこだったわ<」59>
-“Did you kill someone here?<WAIT 0D> You look like wouldn't even harm a fly...<DELAY 00><$00><$03> You almost tricked me.”
+“Did you kill someone here?<WAIT 0D> You look like you wouldn't even harm a fly...<DELAY 00><$00><$03> You almost tricked me.”
 <SFX 41><$00><$CC><IMG FADE OUT 0xx 28><$00><$7A><SILH 1xx ON NEW SCREEN 32><$00><$B6><IMG FADE IN 27><$00><$7A><$00><$28>
 //拳銃に押されるようにして<、5B>ぼくは後ろ向きにベッドに倒れこんだ<。58>
 When she tried to push me with the gun, I fell back onto the bed.
@@ -23105,6 +23105,9 @@ She couldn't afford to cause a scene here.
 //<MARI 1C>は鼻で笑いながら奥さんに近づく<。58>
 <MARI 1C> laughed through her nose and approached her.
 //<「60>火遊びもいいけど<、5B>年相応の相手を選んでよね<AUTO ADV 02><。58><DELAY 00><$00><$03>だいたい……<AUTO ADV 02><」59>
+// 火遊び does mean "playing with fire" at face value but can refer to having
+// an affair, flirting with someone, or (like how you can use it in English)
+// doing something dangerous; I suppose it works fine here as-is
 “You can play with fire,<DELAY 00><$00><$03> but choose a more age-appropriate partner\.<AUTO ADV 02>”
 <SILH 1xx FADE OUT 2E><$00><$50><$00><$B8><SFX 41><$00><$B8>
 <SILH 1xx FADE IN 2D><$00><$7F><$00><$B9><SFX STOP SCRIPT 46><$00><$B8>
