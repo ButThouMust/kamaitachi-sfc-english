@@ -4334,7 +4334,6 @@ Looking at Mr. Kobayashi's cloudy facial expression, I asked, “The room with t
 
 //[$06F311-0] -> 0x379888 -> [11 60 EC 00]
 //<「60>何か気になることがあると言ってたんだ<。58>見るようなもんじゃないからやめとけって止めたんだが……<」59>
-// rewrite second sentence
 “She said there was something bothering her. I'd kept her from going in since I didn't want her to see the body.”
 <SILH 1xx FADE OUT 2E><$00><$50><$00><$F4><SILH 1xx FADE IN 2D><$00><$50><$00><$F5>
 //<「60>呼んで来ますよ<」59>
@@ -21635,7 +21634,7 @@ I still didn't fully understand.
 //[$0AE870-0] -> 0x574380 -> [11 1E D7 04]
 <SILH 2xx FADE OUT 30><$00><$50><$00><$4C><SILH 2xx FADE IN 2F><$00><$50><$00><$4B>
 //<「60>いい<？5D>　長い間東側のために働いて来た<『61>かまいたち<』5A>は<、5B>米ソの緊張が緩んだ今でさえ重要な情報を数多く持っているはずなの<。58>中には自衛隊や在日米軍に関する重要機密も含まれているでしょう<。58>そういった情報を手に入れるためならどんな大金でも積む<、5B>という国はたくさんあるわ<」59>
-“You see? Kamaitachi had worked for the East so long, that even now with eased tensions between the US and the Soviets, they should have lots of important information. For example, classified information about the Japan Self-Defense Forces or the United States Forces Japan. Many countries would pay handsomely to get their hands on that information.”
+“You see? Kamaitachi had worked for the Eastern Bloc so long, that even now with eased tensions between the US and the Soviets, they should have lots of important information. For example, classified information about the Japan Self-Defense Forces or the United States Forces Japan. Many countries would pay handsomely to get their hands on that information.”
 <CLEAR 25>
 
 //[$0AE8FE-3] -> 0x5747F3 -> [D1 3A D8 04]
@@ -23001,7 +23000,7 @@ Looks like she finally found the bloodstains still on the floor.
 “Did you kill someone here?<WAIT 0D> You look like you wouldn't even harm a fly...<DELAY 00><$00><$03> You almost tricked me.”
 <SFX 41><$00><$CC><IMG FADE OUT 0xx 28><$00><$7A><SILH 1xx ON NEW SCREEN 32><$00><$B6><IMG FADE IN 27><$00><$7A><$00><$28>
 //拳銃に押されるようにして<、5B>ぼくは後ろ向きにベッドに倒れこんだ<。58>
-When she tried to push me with the gun, I fell back onto the bed.
+I fell back onto the bed when she pushed me with her gun.
 //<「60>違う<！5C>　<DELAY 00><$00><$03>それは違うんだ<！5C><」59>
 “No!<DELAY 00><$00><$03> I didn't do it!”
 //人殺しだなどと思われるのが耐えがたくて<、5B>ぼくはつい抗弁していた<。58>
@@ -23025,7 +23024,7 @@ She looked around the room and stopped on the closet.
 Breaking into a cold sweat, I was starting to think it was hopeless.
 <IMG FADE OUT 0xx 28><$00><$7A><IMG FADE IN 27><$00><$7A><$00><$30>
 //彼女はぼくに注意を向けたままクロゼットに歩み寄ると<、5B>カーテンに手をかけた<。58>
-Still cautious of me, she walked to the closet and grabbed the curtains.
+Still keeping an eye on me, she walked to the closet and grabbed the curtains.
 //次の瞬間<、5B>入り口のドアが開いて<、5B><MARI 1C>が飛び込んで来た<。58>
 The next moment, the door opened, and <MARI 1C> came rushing in.
 <CLEAR 25>
@@ -25652,7 +25651,7 @@ An intense drowsiness came over me.
 //<「60>……<TOORU 1B><！5C><」59>
 “...<TOORU 1B>!”
 //<MARI 1C>が呼びかける声が聞こえる<。58>
-I heard <MARI 1C> shouting.
+I heard <MARI 1C> calling to me.
 //<「60>なんで……<DELAY 00><$00><$03>なんであんな無茶なことしたのよ……<」59>
 “Why...<DELAY 00><$00><$03> Why would you do something so reckless...?”
 <CLEAR 25>
@@ -25663,7 +25662,8 @@ Was <MARI 1C>...<DELAY 00><$00><$03> crying?
 //彼女は単にぼくをカモフラージュのために連れて来たはずだ<。58>
 She should have only brought me along as camouflage.
 //誰が死のうが<、5B>任務さえ果たせばそれでいいと思っているのではなかったのか<？5D>
-Didn't she think that just carrying out her duties was enough, no matter if anyone died?
+// OLD: Didn't she think that just carrying out her duties was enough, no matter if anyone died?
+Did she not believe it was fine to let people die, as long as she carried out her duties?
 <CLEAR 25>
 
 //[$0BE2A5-2] -> 0x5F152A -> [91 88 CB 05]
@@ -25887,7 +25887,7 @@ She finally smiled, and stood up.
 “<MARI 1C>!”
 <SILH 2xx FADE OUT 30><$00><$50><$00><$59>
 //ぼくの呼びかけに<、5B>彼女は振り向きもせず<、5B>裏口を飛び出し<、5B>吹雪の中へ消えて行った<。58>
-Without even turning around at my shouts, she rushed out the back entrance and disappeared into the blizzard.
+Without even turning around as I called to her, she rushed out the back entrance and disappeared into the blizzard.
 //取り返しのつかないことをしてしまったような気がした<。58>
 I felt like I'd done something I couldn't take back.
 //しかし<、5B>何の訓練も受けていないただののんきな学生のぼくに<、5B>一体何ができただろう<？5D>
@@ -26070,7 +26070,7 @@ I tried asking Aki.
 //<MARI 1C>は声を上げて笑った<。58>
 <MARI 1C> laughed loudly.
 //<「60>なかなか面白いものができるかもしれないわね<。58>でもそんなことよりもっといい方法があるわ<。58>その告白手記を<、5B>出版社じゃなく<、5B>どこかの国に売るのよ<。58><『61>かまいたち<』5A>がこれまで手に入れた在日米軍や自衛隊に関する情報を喉から手が出るほど欲しがってる国は<、5B>たくさんあるわ<」59>
-“That might be pretty interesting. But there's a better option than that. Sell the confession memoir not to a publisher, but to another country somewhere. Many countries would like to hear the information that Kamaitachi knows about the United States Forces Japan or the Japan Self-Defense Forces.”
+“That might be pretty interesting. But there's a better option than that. Sell the confession memoir not to a publisher, but to another country. Many countries would love to learn what Kamaitachi knows about the United States Forces Japan or the Japan Self-Defense Forces.”
 <CLEAR 25>
 
 //[$0BEC03-4] -> 0x5F601C -> [11 45 DE 05]
