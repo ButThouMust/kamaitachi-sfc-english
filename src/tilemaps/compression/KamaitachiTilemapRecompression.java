@@ -534,7 +534,9 @@ public class KamaitachiTilemapRecompression {
 
             int compSize = block.getNumBytesWhenCompressed();
             String info = " %3X |  %3X | %2X (%3X) | %s  | %s\n";
-            outputLog.write(String.format(info, block.getPosition(), block.getSize(), compSize, totalCompSize, tileIdChange, block.getType().toString()));
+            info = String.format(info, block.getPosition(), block.getSize(),
+                compSize, totalCompSize, tileIdChange, block.getType().toString());
+            outputLog.write(info);
             totalCompSize += compSize;
         }
 
@@ -758,7 +760,10 @@ public class KamaitachiTilemapRecompression {
         return rawBytes;
     }
 
-    private static void printLogForHighBitCompression(ArrayList<HighBitTag> compressionSequence, BufferedWriter outputLog, int totalCompSize) throws IOException {
+    private static void printLogForHighBitCompression(
+        ArrayList<HighBitTag> compressionSequence, BufferedWriter outputLog,
+        int totalCompSize) throws IOException
+    {
         // BufferedWriter outputLog = new BufferedWriter(new FileWriter(logFilename));
 
         outputLog.write("\n--------------------------------------------------------------------------------\n\n");
@@ -809,13 +814,16 @@ public class KamaitachiTilemapRecompression {
             if (totalValsReadFromBuffer >= posToExpectToWriteBufferContents) {
                 int difference = totalValsReadFromBuffer - posToExpectToWriteBufferContents;
                 int numBytesToWrite = 1 + difference / NUM_TWO_BIT_VALS_IN_BUFFER;
-                outputLog.write(String.format("^ Write %d buffer (%3X)\n", numBytesToWrite, totalCompSize));
+                String notice = "^ Write %d buffer (%3X)\n";
+                outputLog.write(String.format(notice, numBytesToWrite, totalCompSize));
                 totalCompSize += numBytesToWrite;
             }
             if (numValsToRead != 0) {
                 int numBuffers = totalValsReadFromBuffer / numValsPerBuffer;
                 int numValsInCurrBuffer = totalValsReadFromBuffer % numValsPerBuffer;
-                outputLog.write(String.format("-- Read %d buffer values (0x%X*%d+%d)\n", numValsToRead, numBuffers, numValsPerBuffer, numValsInCurrBuffer));
+                String notice = "-- Read %d buffer values (0x%X*%d+%d)\n";
+                outputLog.write(String.format(notice, numValsToRead, numBuffers,
+                    numValsPerBuffer, numValsInCurrBuffer));
             }
         }
 
@@ -1216,15 +1224,26 @@ public class KamaitachiTilemapRecompression {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    private static void printLogForPaletteCompression(ArrayList<PaletteXYTag> compressionSequence, BufferedWriter outputLog, int totalCompSize) throws IOException {
-        printLogForPaletteXYCompression(compressionSequence, outputLog, USING_PALETTES, totalCompSize);
+    private static void printLogForPaletteCompression(
+        ArrayList<PaletteXYTag> compressionSequence, BufferedWriter outputLog,
+        int totalCompSize) throws IOException
+    {
+        printLogForPaletteXYCompression(compressionSequence, outputLog,
+            USING_PALETTES, totalCompSize);
     }
 
-    private static void printLogForXYFlipCompression(ArrayList<PaletteXYTag> compressionSequence, BufferedWriter outputLog, int totalCompSize) throws IOException {
-        printLogForPaletteXYCompression(compressionSequence, outputLog, USING_X_Y_FLIP, totalCompSize);
+    private static void printLogForXYFlipCompression(
+        ArrayList<PaletteXYTag> compressionSequence, BufferedWriter outputLog,
+        int totalCompSize) throws IOException
+    {
+        printLogForPaletteXYCompression(compressionSequence, outputLog,
+            USING_X_Y_FLIP, totalCompSize);
     }
 
-    private static void printLogForPaletteXYCompression(ArrayList<PaletteXYTag> compressionSequence, BufferedWriter outputLog, boolean loggingPalettes, int totalCompSize) throws IOException {
+    private static void printLogForPaletteXYCompression(
+        ArrayList<PaletteXYTag> compressionSequence, BufferedWriter outputLog,
+        boolean loggingPalettes, int totalCompSize) throws IOException
+    {
         // BufferedWriter outputLog = new BufferedWriter(new FileWriter(logFilename));
         outputLog.write("\n--------------------------------------------------------------------------------\n\n");
 
@@ -1293,14 +1312,17 @@ public class KamaitachiTilemapRecompression {
                 else {
                     int difference = totalValsReadFromBuffer - posToExpectToWriteBufferContents;
                     int numBytesToWrite = 1 + difference / NUM_TWO_BIT_VALS_IN_BUFFER;
-                    outputLog.write(String.format("^ Write %d buffer (%3X)\n", numBytesToWrite, totalCompSize));
+                    String notice = "^ Write %d buffer (%3X)\n";
+                    outputLog.write(String.format(notice, numBytesToWrite, totalCompSize));
                     totalCompSize += numBytesToWrite;
                 }
             }
             if (numValsToRead != 0) {
                 int numBuffers = totalValsReadFromBuffer / numValsPerBuffer;
                 int numValsLeftInBuffer = totalValsReadFromBuffer % numValsPerBuffer;
-                outputLog.write(String.format("-- Read %d buffer values (0x%X*%d+%d)\n", numValsToRead, numBuffers, numValsPerBuffer, numValsLeftInBuffer));
+                String notice = "-- Read %d buffer values (0x%X*%d+%d)\n";
+                outputLog.write(String.format(notice, numValsToRead, numBuffers,
+                    numValsPerBuffer, numValsLeftInBuffer));
             }
         }
 
@@ -1319,7 +1341,9 @@ public class KamaitachiTilemapRecompression {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    private static int getNumPaletteXYBufferValues(ArrayList<PaletteXYTag> compressionSequence, boolean checkingPalettes) {
+    private static int getNumPaletteXYBufferValues(
+        ArrayList<PaletteXYTag> compressionSequence, boolean checkingPalettes)
+    {
         int total = 0;
         for (PaletteXYTag block : compressionSequence) {
             total += block.getNumValsToReadFromBuffer(checkingPalettes);
@@ -1327,7 +1351,9 @@ public class KamaitachiTilemapRecompression {
         return total;
     }
 
-    private static ArrayList<Integer> getPaletteXYValuesToWriteToBuffer(ArrayList<PaletteXYTag> compressionSequence, boolean checkingPalettes) {
+    private static ArrayList<Integer> getPaletteXYValuesToWriteToBuffer(
+        ArrayList<PaletteXYTag> compressionSequence, boolean checkingPalettes)
+    {
         ArrayList<Integer> bufferValues = new ArrayList<>();
         int dataSet[] = (checkingPalettes ? tilemapPalettes : tilemapXYFlips);
 
@@ -1364,17 +1390,21 @@ public class KamaitachiTilemapRecompression {
         return bufferValues;
     }
 
-    private static ArrayList<PaletteXYTag> optimizeNumBufferVals(ArrayList<PaletteXYTag> compressionSequence, boolean checkingPalettes) {
+    private static ArrayList<PaletteXYTag> optimizeNumBufferVals(
+        ArrayList<PaletteXYTag> compressionSequence, boolean checkingPalettes)
+    {
         // if got 8N+1 thru 8N+4 buffer values while doing palettes, the extra
         // values represent three bytes that are mostly wasted on lots of empty
         // space; print a notice if this occurs, and see if you can claw back
         // the values in the final buffer to save a byte or two
         int totalBufferVals = getNumPaletteXYBufferValues(compressionSequence, checkingPalettes);
-        int numValuesPerBuffer = checkingPalettes ? NUM_THREE_BIT_VALS_IN_BUFFER : NUM_TWO_BIT_VALS_IN_BUFFER;
+        int numValuesPerBuffer = checkingPalettes ?
+            NUM_THREE_BIT_VALS_IN_BUFFER : NUM_TWO_BIT_VALS_IN_BUFFER;
         int numValuesInLastBuffer = totalBufferVals % numValuesPerBuffer;
 
         if (checkingPalettes && numValuesInLastBuffer >= 1 && numValuesInLastBuffer <= 4) {
-            // System.out.printf("%s: 0x%2X palette buffer vals (%d in last)\n", inputFilename, totalBufferVals, numValuesInLastBuffer);
+            // System.out.printf("%s: 0x%2X palette buffer vals (%d in last)\n",
+            // inputFilename, totalBufferVals, numValuesInLastBuffer);
             return reducePaletteBufferValues(compressionSequence, numValuesInLastBuffer);
         }
         // TODO if doing all that didn't save a buffer for us, we can might as
@@ -1391,7 +1421,9 @@ public class KamaitachiTilemapRecompression {
         */
     }
 
-    private static ArrayList<PaletteXYTag> reducePaletteBufferValues(ArrayList<PaletteXYTag> paletteCompression, int numExtraValues) {
+    private static ArrayList<PaletteXYTag> reducePaletteBufferValues(
+        ArrayList<PaletteXYTag> paletteCompression, int numExtraValues)
+    {
         int totalExtraValues = numExtraValues;
         int numExtraTypeBytesUsed = 0;
         ArrayList<PaletteXYTag> newCompression = new ArrayList<>();
@@ -1477,8 +1509,11 @@ public class KamaitachiTilemapRecompression {
             }
         }
         if (numExtraValues <= 0 && numExtraTypeBytesUsed < NUM_BYTES_IN_PALETTE_BUFFER) {
-            String format = "%s: Saved %d bytes from using %d fewer palette buffer vals (2 run(s) at start/end of lits)\n";
-            System.out.printf(format, inputFilename, NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed, totalExtraValues - numExtraValues);
+            String format = "%s: Saved %d bytes from using %d fewer palette" +
+                " buffer vals (2 run(s) at start/end of lits)\n";
+            System.out.printf(format, inputFilename,
+                NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed,
+                totalExtraValues - numExtraValues);
             return newCompression;
         }
 
@@ -1513,8 +1548,9 @@ public class KamaitachiTilemapRecompression {
             // replace full-length tag with a new tag restricted to length 5
             int pos = block.getPosition();
             PaletteXYType runType = PaletteXYType.RepeatNewPaletteXY;
-            PaletteXYTag run1 = new PaletteXYTag(PaletteXYType.RepeatNewPaletteXY, REPEAT_THRESHOLD_5, pos,
-                    TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+            PaletteXYTag run1 = new PaletteXYTag(PaletteXYType.RepeatNewPaletteXY,
+                REPEAT_THRESHOLD_5, pos,
+                TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
             newCompression.set(i, run1);
 
             // if # extra tags is 2, add another tag of length 5
@@ -1530,17 +1566,21 @@ public class KamaitachiTilemapRecompression {
             // which must be its own tag if followed by a lit sequence
             int lastRunSize = size % REPEAT_THRESHOLD_5;
             int lastRunPos = pos + REPEAT_THRESHOLD_5 * extraTags;
-            PaletteXYType lastRunType = lastRunSize >= 2 ? PaletteXYType.RepeatNewPaletteXY : PaletteXYType.LiteralSequence;
-            PaletteXYTag lastRun = new PaletteXYTag(lastRunType, lastRunSize, lastRunPos,
-                    TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
+            PaletteXYType lastRunType = lastRunSize >= 2 ?
+                PaletteXYType.RepeatNewPaletteXY : PaletteXYType.LiteralSequence;
+            PaletteXYTag lastRun = new PaletteXYTag(lastRunType, lastRunSize,
+                lastRunPos, TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
             newCompression.add(i + extraTags, lastRun);
 
             numExtraValues--;
             numExtraTypeBytesUsed += extraTags;
         }
         if (numExtraValues <= 0 && numExtraTypeBytesUsed < NUM_BYTES_IN_PALETTE_BUFFER) {
-            String format = "%s: Saved %d bytes from using %d fewer palette buffer vals (split up \"repeat value\" tag)\n";
-            System.out.printf(format, inputFilename, NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed, totalExtraValues - numExtraValues);
+            String format = "%s: Saved %d bytes from using %d fewer palette" + 
+                "buffer vals (split up \"repeat value\" tag)\n";
+            System.out.printf(format, inputFilename,
+                NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed,
+                totalExtraValues - numExtraValues);
             return newCompression;
         }
 
@@ -1571,12 +1611,15 @@ public class KamaitachiTilemapRecompression {
             boolean usedCase = false;
             for (int offset = 1; offset < size - 1; offset++) {
                 if (tilemapPalettes[pos + offset] == tilemapPalettes[pos + offset + 1]) {
-                    PaletteXYType type = tilemapPalettes[pos + offset] == 0 ? PaletteXYType.RunOfZeroes : PaletteXYType.RepeatNewPaletteXY;
-                    PaletteXYTag lits1 = new PaletteXYTag(PaletteXYType.LiteralSequence, offset, pos,
+                    PaletteXYType type = tilemapPalettes[pos + offset] == 0 ?
+                        PaletteXYType.RunOfZeroes : PaletteXYType.RepeatNewPaletteXY;
+                    PaletteXYTag lits1 = new PaletteXYTag(
+                        PaletteXYType.LiteralSequence, offset, pos,
                         TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
                     PaletteXYTag run = new PaletteXYTag(type, 2, pos + offset,
                         TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
-                    PaletteXYTag lits2 = new PaletteXYTag(PaletteXYType.LiteralSequence, size - offset - 2, pos + offset + 2,
+                    PaletteXYTag lits2 = new PaletteXYTag(PaletteXYType.LiteralSequence,
+                        size - offset - 2, pos + offset + 2,
                         TilemapCompConstants.USE_RUN_00_RANGE_ORIGINAL);
 
                     newCompression.set(i, lits1);
@@ -1593,8 +1636,11 @@ public class KamaitachiTilemapRecompression {
             if (usedCase) break;
         }
         if (numExtraValues <= 0 && numExtraTypeBytesUsed < NUM_BYTES_IN_PALETTE_BUFFER) {
-            String format = "%s: Saved %d bytes from using %d fewer palette buffer vals (2 run in middle of lits)\n";
-            System.out.printf(format, inputFilename, NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed, totalExtraValues - numExtraValues);
+            String format = "%s: Saved %d bytes from using %d fewer palette" +
+                "buffer vals (2 run in middle of lits)\n";
+            System.out.printf(format, inputFilename,
+                NUM_BYTES_IN_PALETTE_BUFFER - numExtraTypeBytesUsed,
+                totalExtraValues - numExtraValues);
             return newCompression;
         }
         return paletteCompression;
@@ -1676,10 +1722,13 @@ public class KamaitachiTilemapRecompression {
         return rawBytes;
     }
 
-    private static ArrayList<Integer> generateCompressedPaletteXYBlock(ArrayList<PaletteXYTag> compressionSequence, boolean checkingPalettes) {
+    private static ArrayList<Integer> generateCompressedPaletteXYBlock(
+        ArrayList<PaletteXYTag> compressionSequence, boolean checkingPalettes)
+    {
         ArrayList<Integer> compressedData = new ArrayList<>();
 
-        ArrayList<Integer> paletteXYBufferValues = getPaletteXYValuesToWriteToBuffer(compressionSequence, checkingPalettes);
+        ArrayList<Integer> paletteXYBufferValues =
+            getPaletteXYValuesToWriteToBuffer(compressionSequence, checkingPalettes);
         int rawBufferBytes[] = checkingPalettes ?
             getRawPaletteBufferBytesToWrite(paletteXYBufferValues) :
             getRawTwoBitBufferBytesToWrite(paletteXYBufferValues);
@@ -1804,7 +1853,8 @@ public class KamaitachiTilemapRecompression {
 
             if (numBufferValsWritten >= nextExpectedDataWritePos) {
                 // String debugStr = "Pos 0x%3X: 0x%2X >= 0x%2X, write %s buffer bytes\n";
-                // System.out.printf(debugStr, position, numBufferValsWritten, nextExpectedDataWritePos, (checkingPalettes ? "palette" : "X/Y flip"));
+                // System.out.printf(debugStr, position, numBufferValsWritten,
+                // nextExpectedDataWritePos, (checkingPalettes ? "palette" : "X/Y flip"));
 
                 if (checkingPalettes) {
                     int bytePosition = bufferBytesListPos * 3;
@@ -1833,7 +1883,9 @@ public class KamaitachiTilemapRecompression {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    private static void writeIntegerArrayListToFile(ArrayList<Integer> dataBlock, FileOutputStream stream) throws IOException {
+    private static void writeIntegerArrayListToFile(ArrayList<Integer> dataBlock,
+        FileOutputStream stream) throws IOException
+    {
         for (int value : dataBlock) {
             stream.write(value);
         }
