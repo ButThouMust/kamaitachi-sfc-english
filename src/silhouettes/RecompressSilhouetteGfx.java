@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import static silhouettes.SilhouetteConstants.*;
+
 public class RecompressSilhouetteGfx {
 
     private static class DataGroup {
@@ -64,6 +66,32 @@ public class RecompressSilhouetteGfx {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
+    // experiment with each category's max lengths to see what minimizes sizes
+    private static final int
+        MAX_RUN_NN_LENGTH = 0xa, MAX_CONSEC_LITS = 0xe, MAX_RUN_FF_LENGTH = 0x38,
+    MAX_RUN_00_LENGTH = 0x100 - MAX_RUN_NN_LENGTH - MAX_CONSEC_LITS - MAX_RUN_FF_LENGTH;
+
+    private static final int BITMASK_LITERALS = 0x00;
+    private static final int BITMASK_RUN_OTHER = 1 + MAX_CONSEC_LITS;
+    private static final int BITMASK_RUN_FF = MAX_CONSEC_LITS + MAX_RUN_NN_LENGTH;
+    private static final int BITMASK_RUN_00 = 0x100 - MAX_RUN_00_LENGTH;
+
+    private static final int CHUNSOFT_BANK_ADV = 0x40;
+    private static final int BANK_SIZE = 0x8000;
+
+    private static final int NEW_BANK_ADV = 0x10;
+    private static final int FILLER_FF = 0xFF;
+    private static final int LAST_OFFSET_IN_BANK = BANK_SIZE - 1;
+
+    // mnemonic for spot-fixing certain tilesets; think like "go to tile N"
+    // instead of going to a seemingly random byte offset
+    private static final int BYTES_PER_TILE = 0x10;
+
+    private static final String OUTPUT_FOLDER = "recompressed silh gfx/";
+
+    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+
     private static FileInputStream graphics;
     private static FileOutputStream outputFile;
     private static BufferedWriter logFile;
@@ -71,33 +99,6 @@ public class RecompressSilhouetteGfx {
     private static ArrayList<DataGroup> dataGroups;
     private static int totalSizeOfRecompressedSilhs;
     private static RandomAccessFile romFile;
-
-    // experiment with each category's max lengths to see what minimizes sizes
-    private static final int MAX_RUN_NN_LENGTH = 0xa;
-    private static final int MAX_CONSEC_LITERALS = 0xe;
-    private static final int MAX_RUN_FF_LENGTH = 0x38;
-    private static final int MAX_RUN_00_LENGTH = 0x100 - MAX_RUN_NN_LENGTH - MAX_CONSEC_LITERALS - MAX_RUN_FF_LENGTH;
-
-    private static final int END_OF_DATA = 0x00;
-    private static final int BITMASK_LITERALS = 0x00;
-    private static final int BITMASK_RUN_OTHER = 1 + MAX_CONSEC_LITERALS;
-    private static final int BITMASK_RUN_FF = MAX_CONSEC_LITERALS + MAX_RUN_NN_LENGTH;
-    private static final int BITMASK_RUN_00 = 0x100 - MAX_RUN_00_LENGTH;
-
-    private static final int CHUNSOFT_BANK_ADV = 0x40;
-    private static final int BANK_SIZE = 0x8000;
-
-    private static final int SPRITE_BUFFER_SIZE = 0x2000;
-    private static final int BYTES_PER_TILE = 0x10;
-
-    private static final int BANK_ADV = 0x10;
-    private static final int FILLER_FF = 0xFF;
-    private static final int LAST_OFFSET_IN_BANK = BANK_SIZE - 1;
-
-    private static final int SILH_GFX_PTR_TABLE = 0x25BA5E; // $4BBA5E
-    private static final int SILH_GFX_TABLE_SIZE = 0x2F6;
-
-    private static final String OUTPUT_FOLDER = "recompressed silh gfx/";
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
@@ -116,7 +117,7 @@ public class RecompressSilhouetteGfx {
     private static void decompressSilhGfxBlockAtRomPosition(int filePos) throws IOException {
         romFile.seek(filePos);
 
-        int spriteData[] = new int[SPRITE_BUFFER_SIZE];
+        int spriteData[] = new int[SILH_BUFFER_SIZE];
 
         int gfxSize = 0;
         int typeByte = romFile.readUnsignedByte();
@@ -260,7 +261,7 @@ public class RecompressSilhouetteGfx {
             int runLength = getRunLengthAtPosition(pos);
             if (runLength == 1) {
                 numLits++;
-                if (numLits == MAX_CONSEC_LITERALS) {
+                if (numLits == MAX_CONSEC_LITS) {
                     DataGroup lits = new DataGroup(false, numLits, pos - numLits + 1);
                     dataGroups.add(lits);
                     numLits = 0;
@@ -291,6 +292,7 @@ public class RecompressSilhouetteGfx {
     // -------------------------------------------------------------------------
 
     // used this when analyzing the data to check absolute sizes of lits/runs
+    // to get ideas for how to optimize the max sizes for cases
     /*
     private static int getAbsoluteRunLengthAtPosition(int startPos) {
         if (startPos < 0 || startPos >= gfxData.length) return 0;
@@ -374,16 +376,21 @@ public class RecompressSilhouetteGfx {
 
         // write the format's end of data marker; it is perfectly acceptable to
         // have it at the end of the bank
-        logFile.write(String.format("(0x%5X, 0x%4X) 00 terminator\n", totalSizeOfRecompressedSilhs, totalSizeOfRecompressedSilhs - startTotalSize));
+        logFile.write(String.format("(0x%5X, 0x%4X) 00 terminator\n",
+            totalSizeOfRecompressedSilhs, totalSizeOfRecompressedSilhs - startTotalSize));
         writeByteToCompressedFile(END_OF_DATA);
 
-        logFile.write(String.format("(0x%5X, 0x%4X) End of data\n", totalSizeOfRecompressedSilhs, totalSizeOfRecompressedSilhs - startTotalSize));
+        logFile.write(String.format("(0x%5X, 0x%4X) End of data\n",
+            totalSizeOfRecompressedSilhs, totalSizeOfRecompressedSilhs - startTotalSize));
     }
 
-    private static void writeCompressedDataForGroupNoBankChecking(DataGroup dg, int startTotalSize) throws IOException {
+    private static void writeCompressedDataForGroupNoBankChecking(
+        DataGroup dg, int startTotalSize) throws IOException
+    {
         int sizeOfFileSoFar = totalSizeOfRecompressedSilhs - startTotalSize;
         if (!dg.isRun) {
-            logFile.write(String.format("(0x%5X, 0x%4X) %s\n", totalSizeOfRecompressedSilhs, sizeOfFileSoFar, dg.toString()));
+            logFile.write(String.format("(0x%5X, 0x%4X) %s\n",
+                totalSizeOfRecompressedSilhs, sizeOfFileSoFar, dg.toString()));
 
             // encode literal case and size of the group
             int ctrlByte = BITMASK_LITERALS + dg.length;
@@ -412,7 +419,8 @@ public class RecompressSilhouetteGfx {
                 // a run of any byte except 00 or FF is assumed to be length 2+
             }
 
-            logFile.write(String.format("(0x%5X, 0x%4X) %s\n", totalSizeOfRecompressedSilhs, sizeOfFileSoFar, dg.toString()));
+            logFile.write(String.format("(0x%5X, 0x%4X) %s\n",
+                totalSizeOfRecompressedSilhs, sizeOfFileSoFar, dg.toString()));
             writeByteToCompressedFile(bitmask + encodedSize);
             // write the data byte for the run if not 0x00 or 0xFF
             if (runValue != 0x00 && runValue != 0xFF) {
@@ -424,7 +432,9 @@ public class RecompressSilhouetteGfx {
     // keeping this here to give you an idea of how much more work it takes to
     // compress if you don't have an ASM hack for automatic bank wrapping :P
     @SuppressWarnings("unused")
-    private static void writeCompressedDataForGroup(DataGroup dg, int startTotalSize) throws IOException {
+    private static void writeCompressedDataForGroup(
+        DataGroup dg, int startTotalSize) throws IOException
+    {
         // if you want ideas for how to implement, see logs for ctrl code IDs:
         // 02B 04B 073 0A8 0CF 100 125 156 17E 1AB 1D3 206 233 258 283 2AD 2D9
         int compressedSize = dg.getNumBytesWhenCompressed();
@@ -436,7 +446,8 @@ public class RecompressSilhouetteGfx {
 
         if (!dg.isRun) {
             if (groupFitsInCurrentBank && enoughSpaceForBankAdv) {
-                logFile.write(String.format("(0x%5X, 0x%4X) %s\n", totalSizeOfRecompressedSilhs, sizeOfFileSoFar, dg.toString()));
+                logFile.write(String.format("(0x%5X, 0x%4X) %s\n",
+                    totalSizeOfRecompressedSilhs, sizeOfFileSoFar, dg.toString()));
 
                 // encode literal case and size of the group
                 int ctrlByte = BITMASK_LITERALS | dg.length;
@@ -455,26 +466,34 @@ public class RecompressSilhouetteGfx {
                 // but if N=1, writing a 0 lit group doesn't make sense, so must
                 // write bank advance and fill last byte with something
                 if (dg.length == 1) {
-                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv + FF\n", totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
-                    writeByteToCompressedFile(BANK_ADV);
+                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv + FF\n",
+                        totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
+                    writeByteToCompressedFile(NEW_BANK_ADV);
                     writeByteToCompressedFile(FILLER_FF);
                 }
                 else {
-                    DataGroup allButLastByte = new DataGroup(false, dg.length - 1, dg.position);
+                    DataGroup allButLastByte = new DataGroup(false,
+                        dg.length - 1, dg.position);
                     writeCompressedDataForGroup(allButLastByte, startTotalSize);
-                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv\n", totalSizeOfRecompressedSilhs, sizeOfFileSoFar + dg.getNumBytesWhenCompressed()));
-                    writeByteToCompressedFile(BANK_ADV);
+                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv\n",
+                        totalSizeOfRecompressedSilhs,
+                        sizeOfFileSoFar + dg.getNumBytesWhenCompressed()));
+                    writeByteToCompressedFile(NEW_BANK_ADV);
                 }
-                writeCompressedDataForGroup(new DataGroup(false, 1, dg.position + dg.length - 1), startTotalSize);
+
+                DataGroup lastByte = new DataGroup(false, 1, dg.position + dg.length - 1);
+                writeCompressedDataForGroup(lastByte, startTotalSize);
             }
             else {
                 // if group doesn't fit into bank, get # bytes left in the bank
-                int numBytesLeftInBank = BANK_SIZE - (LAST_OFFSET_IN_BANK & totalSizeOfRecompressedSilhs);
+                int numBytesLeftInBank =
+                    BANK_SIZE - (LAST_OFFSET_IN_BANK & totalSizeOfRecompressedSilhs);
                 if (numBytesLeftInBank == 1) {
                     // if only one byte left, just write bank advance, then the
                     // group in the next bank
-                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv\n", totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
-                    writeByteToCompressedFile(BANK_ADV);
+                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv\n",
+                        totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
+                    writeByteToCompressedFile(NEW_BANK_ADV);
                     writeCompressedDataForGroup(dg, startTotalSize);
                 }
                 else if (numBytesLeftInBank == 2) {
@@ -482,18 +501,21 @@ public class RecompressSilhouetteGfx {
                     // for only a "0 lits" type byte with no data, so must write
                     // bank advance, fill offset $xxFFFF with something, and
                     // write the group in the next bank
-                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv + FF\n", totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
-                    writeByteToCompressedFile(BANK_ADV);
+                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv + FF\n",
+                        totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
+                    writeByteToCompressedFile(NEW_BANK_ADV);
                     writeByteToCompressedFile(FILLER_FF);
                     writeCompressedDataForGroup(dg, startTotalSize);
                 }
                 else {
                     // if 3+ bytes left, we can fit in a lits tag with as many
                     // bytes as we can before the bank advance byte
-                    DataGroup group1 = new DataGroup(false, numBytesLeftInBank - 2, dg.position);
+                    DataGroup group1 = new DataGroup(false,
+                        numBytesLeftInBank - 2, dg.position);
                     writeCompressedDataForGroup(group1, startTotalSize);
-                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv", totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
-                    writeByteToCompressedFile(BANK_ADV);
+                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv",
+                        totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
+                    writeByteToCompressedFile(NEW_BANK_ADV);
 
                     // group 1 possibly could have been a single 00 or FF, which
                     // gets encoded as 1 byte instead of the typical 2 for a lit
@@ -505,7 +527,8 @@ public class RecompressSilhouetteGfx {
                     logFile.write("\n");
 
                     // write the group's remaining bytes in the next bank
-                    DataGroup group2 = new DataGroup(false, dg.length - group1.length, dg.position + group1.length);
+                    DataGroup group2 = new DataGroup(false, dg.length - group1.length,
+                        dg.position + group1.length);
                     writeCompressedDataForGroup(group2, startTotalSize);
                 }
             }
@@ -528,7 +551,8 @@ public class RecompressSilhouetteGfx {
 
             if (groupFitsInCurrentBank) {
                 if (enoughSpaceForBankAdv) {
-                    logFile.write(String.format("(0x%5X, 0x%4X) %s\n", totalSizeOfRecompressedSilhs, sizeOfFileSoFar, dg.toString()));
+                    logFile.write(String.format("(0x%5X, 0x%4X) %s\n",
+                        totalSizeOfRecompressedSilhs, sizeOfFileSoFar, dg.toString()));
                     writeByteToCompressedFile(bitmask + encodedSize);
                     // write the data byte for the run if not 0x00 or 0xFF
                     if (runValue != 0x00 && runValue != 0xFF) {
@@ -538,8 +562,9 @@ public class RecompressSilhouetteGfx {
                 else {
                     // if encoded run would end on LoROM bank offset $nnFFFF,
                     // write bank advance here
-                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv", totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
-                    writeByteToCompressedFile(BANK_ADV);
+                    logFile.write(String.format("(0x%5X, 0x%4X) Bank adv",
+                        totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
+                    writeByteToCompressedFile(NEW_BANK_ADV);
 
                     // if compressed size is 2, the bank advance was written at
                     // $nnFFFE, so must fill in $nnFFFF with something
@@ -555,8 +580,9 @@ public class RecompressSilhouetteGfx {
             else {
                 // if run is encoded in 2 bytes and would start on LoROM bank
                 // offset $nnFFFF, just write bank advance, and then the run
-                logFile.write(String.format("(0x%5X, 0x%4X) Bank adv\n", totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
-                writeByteToCompressedFile(BANK_ADV);
+                logFile.write(String.format("(0x%5X, 0x%4X) Bank adv\n",
+                    totalSizeOfRecompressedSilhs, sizeOfFileSoFar));
+                writeByteToCompressedFile(NEW_BANK_ADV);
                 writeCompressedDataForGroup(dg, startTotalSize);
             }
         }
@@ -570,7 +596,8 @@ public class RecompressSilhouetteGfx {
         String logFilename = OUTPUT_FOLDER + "LOG gold bookmark sprites $01F0C0.txt";
 
         totalSizeOfRecompressedSilhs = 0;
-        decompressSilhGfxBlockAtRomPosition(0xf0c0);
+        int bookmarkShineGfxFilePos = getRomPtr(GOLD_BOOKMARK_SHINE_GFX_PTR);
+        decompressSilhGfxBlockAtRomPosition(bookmarkShineGfxFilePos);
         getDataGroups();
 
         outputFile = new FileOutputStream(outputFilename);
@@ -580,34 +607,31 @@ public class RecompressSilhouetteGfx {
         outputFile.close();
         logFile.flush();
         logFile.close();
-        System.out.printf("Recompressed size of gold bookmark sprites: %d = 0x%X\n\n", totalSizeOfRecompressedSilhs, totalSizeOfRecompressedSilhs);
+        String sizeNotice = "Recompressed size of gold bookmark sprites: %d = 0x%X\n\n";
+        System.out.printf(sizeNotice, totalSizeOfRecompressedSilhs, totalSizeOfRecompressedSilhs);
     }
 
     public static void main(String args[]) throws IOException {
-        /*
-        if (args.length == 0) {
-            System.out.println("Sample usage: java RecompressSilhouetteGfx data1.bin [data2.bin data3.bin ...]");
-            return;
-        }
-        */
-		
         System.out.printf("Size limits:  00,FF,LL,NN -> %02X,%02X,%02X,%02X\n",
-               MAX_RUN_00_LENGTH, MAX_RUN_FF_LENGTH, MAX_CONSEC_LITERALS, MAX_RUN_NN_LENGTH);
+               MAX_RUN_00_LENGTH, MAX_RUN_FF_LENGTH, MAX_CONSEC_LITS, MAX_RUN_NN_LENGTH);
         System.out.printf("Range starts: LL,NN,FF,00 -> %02X,%02X,%02X,%02X\n",
                BITMASK_LITERALS + 1, BITMASK_RUN_OTHER, BITMASK_RUN_FF, BITMASK_RUN_00);
 
-
-        String romFilename = "rom/Kamaitachi no Yoru (Japan).sfc";
-        romFile = new RandomAccessFile(romFilename, "r");
+        romFile = new RandomAccessFile(JP_ROM_FILEPATH, "r");
 
         Files.createDirectories(Paths.get(OUTPUT_FOLDER));
 
         recompressGoldBookmarkSprites();
 
+        final String outputFilenameFormat =
+            OUTPUT_FOLDER + "recompressed silh sprites block 0x%03X.bin";
+        final String logFilenameFormat =
+            OUTPUT_FOLDER + "LOG silh sprites block 0x%03X.txt";
+
         totalSizeOfRecompressedSilhs = 0;
-        for (int idNum = 0; idNum < SILH_GFX_TABLE_SIZE; idNum++) {
-            String outputFilename = String.format(OUTPUT_FOLDER + "recompressed silh sprites block 0x%03X.bin", idNum);
-            String logFilename = String.format(OUTPUT_FOLDER + "LOG silh sprites block 0x%03X.txt", idNum);
+        for (int idNum = 0; idNum < NUM_SILH_CTRL_CODE_IDS; idNum++) {
+            String outputFilename = String.format(outputFilenameFormat, idNum);
+            String logFilename = String.format(logFilenameFormat, idNum);
 
             decompressSilhGfxBlockNum(idNum);
             spotChangeCertainTilesets(idNum);
@@ -621,42 +645,14 @@ public class RecompressSilhouetteGfx {
             logFile.flush();
             logFile.close();
 
+            // pseudo progress bar
             if (getNumBanks(totalSizeOfRecompressedSilhs) > getNumBanks(prevSize)) {
                 System.out.printf("Bank crossed with silh gfx block 0x%3X\n",idNum);
             }
         }
         romFile.close();
 
-        /*
-        final String FILE_PREFIX = "recompressed ";
-        for (String inputFile : args) {
-            // allow using a wildcard like: java RecompressGraphics *.bin
-            // however, do not compress any binary files that themselves are
-            // the result of compressing a binary file with this program
-            if (inputFile.startsWith(FILE_PREFIX)) {
-                continue;
-            }
-
-            String outputFilename = FILE_PREFIX + inputFile;
-            String logFilename = "LOG " + removeFileExtension(inputFile) + ".txt";
-
-            getGfxDataAsArray(inputFile);
-            getDataGroups();
-
-            int prevSize = totalSizeOfRecompressedSilhs;
-            outputFile = new FileOutputStream(outputFilename);
-            logFile = new BufferedWriter(new FileWriter(logFilename));
-            // interpretGroups(getGroupsWithoutSizeLimits());
-            generateCompressedFile();
-            outputFile.close();
-            logFile.flush();
-            logFile.close();
-
-            if (getNumBanks(totalSizeOfRecompressedSilhs) > getNumBanks(prevSize)) {
-                System.out.println("Bank crossed with " + inputFile);
-            }
-        }
-        */
-        System.out.printf("Total space: %d = 0x%X\n", totalSizeOfRecompressedSilhs, totalSizeOfRecompressedSilhs);
+        System.out.printf("Total space: %d = 0x%X\n", totalSizeOfRecompressedSilhs,
+            totalSizeOfRecompressedSilhs);
     }
 }

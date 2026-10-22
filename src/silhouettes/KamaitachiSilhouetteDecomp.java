@@ -12,22 +12,34 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static silhouettes.SilhouetteConstants.*;
+
+// This takes all the data related to silhouettes and dumps them into a format
+// where you can drag-and-drop data into Tilemap Studio to view them. At least,
+// as long as the graphics don't use palette trickery to display on screen.
+
 public class KamaitachiSilhouetteDecomp {
-    private static final int SILH_BUFFER_SIZE = 0x2000;
     private static final int NUM_FRAME_IDS = 0x3AC;
-    private static final int NUM_SILH_CTRL_CODE_IDS = 0x2F6;
 
     private static final int NUM_BITS_IN_WORD = 0x10;
-    private static final int END_DATA = 0x00;
-    private static final int ADV_BANK = 0x40;
-    private static final int BANK_SIZE = 0x8000;
+
+    private static final int DEFAULT_COLOR_VAL = 0x04E7;
 
     private static final int SILH_CONSTR_DATA_PTR_LIST_LOCATION = 0x258000; // $4B8000
     private static final int SILH_OAM_PTR_LIST_LOCATION = 0x25A802; // $4BA802
     private static final int FRAME_ID_MAPPING_LOCATION   = 0x25B306; // $4BB306
     private static final int SILH_OAM_GRID_PTR_LIST_LOCATION = 0x259CFE; // $4B9CFE
-    private static final int SILH_PTR_LIST_LOCATION     = 0x25BA5E; // $4BBA5E
     private static final int SILH_DATA_SIZES_LOCATION   = 0x25C340; // $4BC340
+
+    private static final int GOLD_BOOKMARK_OAM_TABLE_PTR = 0xEABA; // $01EABA
+    private static final int GOLD_BOOKMARK_OAM_TABLE_SIZE = 0xA;
+
+    private static final String
+        MAIN_OUTPUT_FOLDER = "decompressed silhouettes",
+        GOLD_BOOKMARK_FOLDER = MAIN_OUTPUT_FOLDER + "/gold bookmark data";
+
+    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     private static HashMap<Integer,Integer> silhCtrlCodeInputFromFrameId;
     private static int[] silhGFXPtrs = new int[NUM_SILH_CTRL_CODE_IDS];
@@ -40,9 +52,6 @@ public class KamaitachiSilhouetteDecomp {
     private static int silhBufferOffset;
 
     private static RandomAccessFile romFile;
-
-    private static final String MAIN_OUTPUT_FOLDER = "decompressed silhouettes";
-    private static final String GOLD_BOOKMARK_FOLDER = MAIN_OUTPUT_FOLDER + "/gold bookmark data";
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
@@ -85,7 +94,7 @@ public class KamaitachiSilhouetteDecomp {
     }
 
     private static void getSilhGFXPtrs() throws IOException {
-        romFile.seek(SILH_PTR_LIST_LOCATION);
+        romFile.seek(SILH_GFX_PTR_TABLE);
         for (int i = 0; i < NUM_SILH_CTRL_CODE_IDS; i++) {
             silhGFXPtrs[i] = readPtr();
         }
@@ -209,7 +218,8 @@ public class KamaitachiSilhouetteDecomp {
 
             int oamPtr = silhOAMPtrs[frameId];
             int gridPtr = silhOAMGridPtrs[frameId];
-            table.write(String.format(format, frameId, ctrlCodeInputHexString, constrPtrString, oamPtr, gfxPtrString, gridPtr, sizeString, largeSprites));
+            table.write(String.format(format, frameId, ctrlCodeInputHexString,
+                constrPtrString, oamPtr, gfxPtrString, gridPtr, sizeString, largeSprites));
         }
 
         table.flush();
@@ -285,7 +295,6 @@ public class KamaitachiSilhouetteDecomp {
         romFile.seek(constrPtr);
 
         // keep track of color value for the sprites
-        final int DEFAULT_COLOR_VAL = 0x04E7;
         int colorValue = DEFAULT_COLOR_VAL;
 
         // keep track of what silhouette graphics need to be loaded
@@ -454,7 +463,9 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
     // Converting OAM data to tilemap data - see code at $03AB0D for Chunsoft's example
 
-    private static void convertOneSmallSpriteToTilemap(int oamEntry, int tileRow, int tileCol, int tilemap[][]) {
+    private static void convertOneSmallSpriteToTilemap(int oamEntry, int tileRow,
+        int tileCol, int tilemap[][])
+    {
         // convert 16x16 sprite to four 8x8 tile entries; see ASM at $03AB69
         int oamFlipBits = oamEntry & 0xC000;
         int left = tileCol;
@@ -465,38 +476,40 @@ public class KamaitachiSilhouetteDecomp {
         switch (oamFlipBits) {
             // no flip
             case 0x0000:
-                tilemap[top][left] = oamEntry;
-                tilemap[top][right] = oamEntry + 0x1;
-                tilemap[bottom][left] = oamEntry + 0x10;
+                tilemap[top][left]     = oamEntry;
+                tilemap[top][right]    = oamEntry + 0x1;
+                tilemap[bottom][left]  = oamEntry + 0x10;
                 tilemap[bottom][right] = oamEntry + 0x11;
                 break;
             // X flip only
             case 0x4000:
-                tilemap[top][right] = oamEntry;
-                tilemap[top][left] = oamEntry + 0x1;
+                tilemap[top][right]    = oamEntry;
+                tilemap[top][left]     = oamEntry + 0x1;
                 tilemap[bottom][right] = oamEntry + 0x10;
-                tilemap[bottom][left] = oamEntry + 0x11;
+                tilemap[bottom][left]  = oamEntry + 0x11;
                 break;
             // Y flip only
             case 0x8000:
-                tilemap[bottom][left] = oamEntry;
+                tilemap[bottom][left]  = oamEntry;
                 tilemap[bottom][right] = oamEntry + 0x1;
-                tilemap[top][left] = oamEntry + 0x10;
-                tilemap[top][right] = oamEntry + 0x11;
+                tilemap[top][left]     = oamEntry + 0x10;
+                tilemap[top][right]    = oamEntry + 0x11;
                 break;
             // both X and Y flip
             case 0xC000:
                 tilemap[bottom][right] = oamEntry;
-                tilemap[bottom][left] = oamEntry + 0x1;
-                tilemap[top][right] = oamEntry + 0x10;
-                tilemap[top][left] = oamEntry + 0x11;
+                tilemap[bottom][left]  = oamEntry + 0x1;
+                tilemap[top][right]    = oamEntry + 0x10;
+                tilemap[top][left]     = oamEntry + 0x11;
                 break;
         }
     }
 
-    private static void fillInOneRowOfLargeSprite(int oamEntry, int tileRow, int tileCol, int tilemap[][], boolean xFlip) {
+    private static void fillInOneRowOfLargeSprite(int oamEntry, int tileRow,
+        int tileCol, int tilemap[][], boolean xFlip)
+    {
         if (!xFlip) {
-            tilemap[tileRow][tileCol] = oamEntry;
+            tilemap[tileRow][tileCol]     = oamEntry;
             tilemap[tileRow][tileCol + 1] = oamEntry + 1;
             tilemap[tileRow][tileCol + 2] = oamEntry + 2;
             tilemap[tileRow][tileCol + 3] = oamEntry + 3;
@@ -505,7 +518,7 @@ public class KamaitachiSilhouetteDecomp {
             tilemap[tileRow][tileCol + 3] = oamEntry;
             tilemap[tileRow][tileCol + 2] = oamEntry + 1;
             tilemap[tileRow][tileCol + 1] = oamEntry + 2;
-            tilemap[tileRow][tileCol] = oamEntry + 3;
+            tilemap[tileRow][tileCol]     = oamEntry + 3;
         }
     }
 
@@ -519,13 +532,13 @@ public class KamaitachiSilhouetteDecomp {
         boolean yFlip = (oamEntry & 0x8000) != 0;
 
         if (!yFlip) {
-            fillInOneRowOfLargeSprite(oamEntry, row0, tileCol, tilemap, xFlip);
+            fillInOneRowOfLargeSprite(oamEntry,        row0, tileCol, tilemap, xFlip);
             fillInOneRowOfLargeSprite(oamEntry + 0x10, row1, tileCol, tilemap, xFlip);
             fillInOneRowOfLargeSprite(oamEntry + 0x20, row2, tileCol, tilemap, xFlip);
             fillInOneRowOfLargeSprite(oamEntry + 0x30, row3, tileCol, tilemap, xFlip);
         }
         else {
-            fillInOneRowOfLargeSprite(oamEntry, row3, tileCol, tilemap, xFlip);
+            fillInOneRowOfLargeSprite(oamEntry,        row3, tileCol, tilemap, xFlip);
             fillInOneRowOfLargeSprite(oamEntry + 0x10, row2, tileCol, tilemap, xFlip);
             fillInOneRowOfLargeSprite(oamEntry + 0x20, row1, tileCol, tilemap, xFlip);
             fillInOneRowOfLargeSprite(oamEntry + 0x30, row0, tileCol, tilemap, xFlip);
@@ -572,7 +585,8 @@ public class KamaitachiSilhouetteDecomp {
             }
         }
 
-        String outputName = String.format(outputFolder + "/silh frame 0x%03X converted tilemap.bin", frameId);
+        String outputNameFormat = outputFolder + "/silh frame 0x%03X converted tilemap.bin";
+        String outputName = String.format(outputNameFormat, frameId);
         writeConvertedTilemapToFile(outputName, tilemap);
     }
 
@@ -591,10 +605,6 @@ public class KamaitachiSilhouetteDecomp {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
     // Converting gold bookmark OAM data to tilemap data - see code at $01E66F
-
-    private static final int GOLD_BOOKMARK_SHINE_PTR = 0x1F0C0;
-    private static final int GOLD_BOOKMARK_OAM_TABLE_PTR = 0xEABA; // $01EABA
-    private static final int GOLD_BOOKMARK_OAM_TABLE_SIZE = 0xA;
 
     private static void convertGoldBookmarkOamToTilemap(int frameNum) throws IOException {
         // do nothing if frame number is not in correct range
@@ -635,7 +645,9 @@ public class KamaitachiSilhouetteDecomp {
             convertOneSmallSpriteToTilemap(oamEntry, tileRow, tileCol, tilemap);
         } while (true);
 
-        String outputName = String.format(GOLD_BOOKMARK_FOLDER + "/gold bookmark frame %d converted tilemap.bin", frameNum);
+        String outputNameFormat = GOLD_BOOKMARK_FOLDER +
+            "/gold bookmark frame %d converted tilemap.bin";
+        String outputName = String.format(outputNameFormat, frameNum);
         writeConvertedTilemapToFile(outputName, tilemap);
     }
 
@@ -665,7 +677,8 @@ public class KamaitachiSilhouetteDecomp {
         int startOffset = getRomPtr(gfxPtr);
         romFile.seek(startOffset);
 
-        String debugLogFilename = String.format("%s/$%06X sprite gfx log.txt", outputFolder, gfxPtr);
+        String debugLogFormat = "%s/$%06X sprite gfx log.txt";
+        String debugLogFilename = String.format(debugLogFormat, outputFolder, gfxPtr);
         BufferedWriter debugLog = new BufferedWriter(new FileWriter(debugLogFilename));
 
         debugLog.write("ROM pos (size) | Offset | Data  | Description\n");
@@ -674,7 +687,7 @@ public class KamaitachiSilhouetteDecomp {
 
         int typeByte = romFile.readUnsignedByte();
         silhBufferOffset = 0;
-        while (typeByte != END_DATA && silhBufferOffset < SILH_BUFFER_SIZE) {
+        while (typeByte != END_OF_DATA && silhBufferOffset < SILH_BUFFER_SIZE) {
             int size = typeByte & 0x3F;
             int romPos = (int) romFile.getFilePointer() - 1;
             int compSizeSoFar = romPos - startOffset;
@@ -682,7 +695,7 @@ public class KamaitachiSilhouetteDecomp {
             String dataPrintout = String.format("%02X", typeByte);
             String description = "";
 
-            if (typeByte == ADV_BANK) {
+            if (typeByte == CHUNSOFT_BANK_ADV) {
                 // the ASM sets bank offset to 0x8000, and increments bank num;
                 // when reading data from the contiguous file, this is automatic
 
@@ -726,11 +739,15 @@ public class KamaitachiSilhouetteDecomp {
                     break;
             }
             typeByte = romFile.readUnsignedByte();
-            debugLog.write(String.format(lineFormat, romPos, compSizeSoFar, uncompSizeSoFar, dataPrintout, description));
+            debugLog.write(String.format(lineFormat, romPos, compSizeSoFar,
+                uncompSizeSoFar, dataPrintout, description));
         }
 
         int endOfDataOffset = (int) romFile.getFilePointer() - 1;
-        debugLog.write(String.format("\nEnd of data @ %06X (%4X), decompressed size of %X", endOfDataOffset, endOfDataOffset - startOffset + 1, silhBufferOffset));
+
+        String notice = "\nEnd of data @ %06X (%4X), decompressed size of %X";
+        debugLog.write(String.format(notice, endOfDataOffset,
+            endOfDataOffset - startOffset + 1, silhBufferOffset));
 
         debugLog.flush();
         debugLog.close();
@@ -741,18 +758,21 @@ public class KamaitachiSilhouetteDecomp {
 
     // use for gold bookmark animation's tile data
     private static void writeSilhDataFromPtr(int gfxPtr) throws IOException {
-        String outputName = String.format(GOLD_BOOKMARK_FOLDER + "/gold bookmark $%06X gfx data.2bpp", gfxPtr);
+        String filepathNameBase = GOLD_BOOKMARK_FOLDER + String.format("/gold bookmark $%06X", gfxPtr);
+
+        String outputName = filepathNameBase + " gfx data.2bpp";
         writeSilhGfxDataToFile(INTERLEAVE, outputName);
 	
-		outputName = String.format(GOLD_BOOKMARK_FOLDER + "/gold bookmark $%06X raw decompressed gfx.bin", gfxPtr);
+		outputName = filepathNameBase + " raw decompressed gfx.bin";
 		writeSilhGfxDataToFile(!INTERLEAVE, outputName);
     }
 
     private static void writeSilhGfxDataForCodeInput(int silhID, String outputFolder) throws IOException {
-        String outputName = String.format(outputFolder + "/silh code input 0x%03X gfx data.2bpp", silhID);
+        String filepathNameBase = outputFolder + String.format("/silh code input 0x%03X", silhID);
+        String outputName = filepathNameBase + " gfx data.2bpp";
         writeSilhGfxDataToFile(INTERLEAVE, outputName);
 		
-		outputName = String.format(outputFolder + "/silh code input 0x%03X raw decompressed gfx.bin", silhID);
+		outputName = filepathNameBase + " raw decompressed gfx.bin";
 		writeSilhGfxDataToFile(!INTERLEAVE, outputName);
     }
 
@@ -787,7 +807,9 @@ public class KamaitachiSilhouetteDecomp {
         output.close();
     }
 
-    private static void decompressSilhouetteGfxForCodeInput(int ctrlCodeInput, String outputFolder) throws IOException {
+    private static void decompressSilhouetteGfxForCodeInput(
+        int ctrlCodeInput, String outputFolder) throws IOException
+    {
         int gfxPtr = silhGFXPtrs[ctrlCodeInput];
         // add ctrl code input number to the log file
         decompressSilhouetteGfxFromPtr(gfxPtr, outputFolder);
@@ -799,7 +821,8 @@ public class KamaitachiSilhouetteDecomp {
 
     private static void getAllDataForCtrlCodeInput(int ctrlCodeInput) throws IOException {
         // create a folder to write data files into
-        String outputFolder = String.format(MAIN_OUTPUT_FOLDER + "/0x%03X silh code input", ctrlCodeInput);
+        String outputFolder = MAIN_OUTPUT_FOLDER + "/0x%03X silh code input";
+        outputFolder = String.format(outputFolder, ctrlCodeInput);
         Files.createDirectories(Paths.get(outputFolder));
 
         decompressSilhouetteGfxForCodeInput(ctrlCodeInput, outputFolder);
@@ -836,15 +859,15 @@ public class KamaitachiSilhouetteDecomp {
 
     private static void outputDataForGoldBookmark() throws IOException {
         Files.createDirectories(Paths.get(GOLD_BOOKMARK_FOLDER));
-        decompressSilhouetteGfxFromPtr(GOLD_BOOKMARK_SHINE_PTR, GOLD_BOOKMARK_FOLDER);
-        writeSilhDataFromPtr(GOLD_BOOKMARK_SHINE_PTR);
+        decompressSilhouetteGfxFromPtr(GOLD_BOOKMARK_SHINE_GFX_PTR, GOLD_BOOKMARK_FOLDER);
+        writeSilhDataFromPtr(GOLD_BOOKMARK_SHINE_GFX_PTR);
         for (int frameNum = 0; frameNum < GOLD_BOOKMARK_OAM_TABLE_SIZE; frameNum++) {
             convertGoldBookmarkOamToTilemap(frameNum);
         }
     }
 
     public static void main(String args[]) throws IOException {
-        romFile = new RandomAccessFile("rom/Kamaitachi no Yoru (Japan).sfc", "r");
+        romFile = new RandomAccessFile(JP_ROM_FILEPATH, "r");
         readPointerTables();
         outputDataForSilhCtrlCodeIDs();
         outputDataForGoldBookmark();
