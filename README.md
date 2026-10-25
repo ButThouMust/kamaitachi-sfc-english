@@ -61,9 +61,14 @@ Some places in the script are/were difficult to translate. More details in the [
 If I could, I'd like to reach out to the Project Kamai team and ask for permission to use their translation choices for certain parts. I had attempted to contact them through the email address in the readme for their patch. Perhaps as expected, though, sending a message to it gave me an error that the address no longer exists.
 
 ### <ins>Known issue(s)</ins>
-[FIXED] When playtesting the patched game on both the Mesen emulator and a real SFC, I found one silhouette that used to *sometimes* make the game hang on a black screen. I think I've fixed it for good (short version: use different graphics control codes in the script), but here are notes on where it had happened.
-- It popped up after a choice, over whether to reply to the question "Nothing strange has happened, has there?" with "Huh, how'd you know?" or "Not really, no."
-- In the script translation, search for the text `BFB41`.
+- [FIXED] When playtesting the patched game on both the Mesen emulator and a real SFC, I found one silhouette that used to *sometimes* make the game hang on a black screen. I think I've fixed it for good (short version: use different graphics control codes in the script), but here are notes on where it had happened.
+  - It popped up after a choice, over whether to reply to the question "Nothing strange has happened, has there?" with "Huh, how'd you know?" or "Not really, no."
+  - In the script translation, search for the text `BFB41`.
+- When playing Kamaitachi no Yoru on a real console through an FXPAK Pro, graphical glitches may appear if using [sd2snes+](https://github.com/ludufre/sd2snes). *This also happens to the original japanese game and is not caused by this translation patch.*
+  - Workaround: disabling in-game hooks. Go to sd2snes+ Main Menu: **Configuration/In-game settings/In-game hook** set to "Off". 
+    - Since sd2snes+ 2.18, this setting can be game-specific, so in-game hooks stay activated in other games. [See here for details](https://sd2snes.ludufre.com/#recurso-gameopt).
+  - This issue is documented and may be fixed in future sd2snes+ releases - follow corresponding issue at ludufre/sd2snes#72.
+  - Another workaround: use [original sd2snes](https://github.com/mrehkopf/sd2snes). 
 
 ### <ins>ASM hacks</ins>
 I had incorporated [text kerning](https://en.wikipedia.org/wiki/Kerning) into Otogirisou, and having it in Kamaitachi would be nice, too. The lack of it is most noticeable with lowercase `j` in the middle of a word, as well as with the `ï` in `naïve`.
