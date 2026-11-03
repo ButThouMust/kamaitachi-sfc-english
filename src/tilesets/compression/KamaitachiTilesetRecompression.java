@@ -465,13 +465,26 @@ public class KamaitachiTilesetRecompression {
         }
 
         // TODO better performance than an exhaustive search of all bitplanes
-        for (int tile = 0; tile < currTileNum; tile++) {
-            for (int bp = 0; bp < BIT_DEPTH; bp++) {
+
+        // you can also check previous BPs in the current tile, provided current
+        // BP is not 0 (purpose: allow reusing a BP in reverse order)
+        // this happened for the following 3 tilesets when I added that case:
+        // - 22 (tile 078: bp2 <- bp0 rev)
+        // - 29 (tile 17F: bp2 <- bp1 rev)
+        // - 3B (tile 03A: bp3 <- bp0 rev)
+        for (int tile = 0; tile <= currTileNum; tile++) {
+            boolean inCurrentTile = tile == currTileNum;
+            if (inCurrentTile && currBp == 0) break;
+
+            // in previous tiles, check all BPs
+            // in current tile, check up to before the current BP
+            int bpLimit = inCurrentTile ? currBp : BIT_DEPTH;
+            for (int bp = 0; bp < bpLimit; bp++) {
                 int bpDataToCheck[] = arrayOfBitplanes[tile][bp];
                 int forwardMatchSize = 0;
                 int reverseMatchSize = 0;
                 for (int i = 0; i < bpData.length; i++) {
-                    if (bpData[i] == bpDataToCheck[i])    forwardMatchSize++;
+                    if (bpData[i]    == bpDataToCheck[i]) forwardMatchSize++;
                     if (revBpData[i] == bpDataToCheck[i]) reverseMatchSize++;
                 }
 
@@ -495,7 +508,7 @@ public class KamaitachiTilesetRecompression {
 
         int srcBpData[] = arrayOfBitplanes[tileNumOfBestMatch][bpOfBestMatch];
         BitplaneCompressionTag output = new BitplaneReuseFromPrevTile(bpData,
-            tileNumOfBestMatch, bpOfBestMatch, srcBpData, reverse);
+            tileNumOfBestMatch, bpOfBestMatch, srcBpData, reverse, currTileNum);
         if (output.getSizeWhenEncoded() >= NUM_ROWS_PER_TILE) {
             output = BitplaneCaseNotSupportedTag.getInstance();
         }
@@ -2045,22 +2058,6 @@ public class KamaitachiTilesetRecompression {
     // -------------------------------------------------------------------------
 
     public static void main(String args[]) throws IOException {
-        // String testFile = "test data from game/$2584B1 tile data.bin";
-        // String testFile = "test data from game/$46C500 tile data.bin";
-        // getInputDataAsRawArray(testFile);
-        // splitInputDataIntoTilesAndBitplanes();
-        // getOptimalCasesForEachTileAndOutputData(testFile);
-        // outputUncompressedFileWithBitplanesUninterleaved(testFile);
-
-        // testHashmapWithArraysAsKeys();
-
-        // testGeneratingBitmaskGroupsFromBitplanes(0x0cf);
-        // testBitplaneSubroutineCase(0x111);
-        // testConstructFromEightBytes(0x1f2);
-        // testReuseWithNewRows(0x112);
-        // testReuseWithNewBitplanes(0x066);
-        // testCheckUseNewRowsOrBitplanes(0x00d);
-
         for (String filepath : args) {
             int slashIndex = filepath.lastIndexOf('/');
             String inputFilename = filepath.substring(slashIndex + 1);

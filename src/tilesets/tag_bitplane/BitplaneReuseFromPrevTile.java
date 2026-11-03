@@ -12,12 +12,20 @@ public class BitplaneReuseFromPrevTile extends BitplaneCompressionTag {
     private int srcBitplane[];
     private boolean reverse;
 
-    public BitplaneReuseFromPrevTile(int bitplane[], int srcTileNum, int srcBitplaneNum, int srcBitplane[], boolean reverse) {
+    // this variable has no use except for checking the intra-tile reuse case,
+    // when the best option is to reverse a previous BP in the current tile
+    private int currTileNum;
+
+    public BitplaneReuseFromPrevTile(int bitplane[], int srcTileNum,
+        int srcBitplaneNum, int srcBitplane[], boolean reverse, int currTileNum)
+    {
         this.bitplane = bitplane;
         this.srcTileNum = srcTileNum;
         this.srcBitplane = srcBitplane;
         this.srcBitplaneNum = srcBitplaneNum;
         this.reverse = reverse;
+
+        this.currTileNum = currTileNum;
 
         spotChanges = new BitplaneSpotChanges(bitplane, getCanonicalSrcBitplane());
     }
@@ -62,8 +70,8 @@ public class BitplaneReuseFromPrevTile extends BitplaneCompressionTag {
     }
 
     public String toString() {
-        String output = String.format("Reuse tile %03X bp%d%s", srcTileNum, srcBitplaneNum,
-            (reverse ? " (reversed)" : ""));
+        String output = String.format("Reuse tile %03X bp%d%s%s", srcTileNum, srcBitplaneNum,
+            (reverse ? " (reversed)" : ""), (srcTileNum == currTileNum ? " (intra-tile)" : ""));
         return output + spotChanges.toString();
     }
 }
