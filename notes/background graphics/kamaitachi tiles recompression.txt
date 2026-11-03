@@ -14,7 +14,7 @@ compress data. Let's split up the compression process into two sections:
 High level list of compression methods:
 - Simply read 0x20 bytes for a tile from the ROM.
 - Use a list of subroutines for how to fill in the four bitplanes.
-- Take list of 8 bytes, fill bitplanes as all 00, 8 bytes, ~[8 bytes], all FF.
+- Get list of 8 bytes, NN. Fill BPs as either [all 00], [NN], ~[NN], [all FF].
 - Get either 2 or 3 lists of 8 bytes from which you can generate the tile data.
 - Reuse existing tile, and modify into new tile on BITPLANE basis.
 - Reuse existing tile, and modify into new tile on TILE ROW basis.
@@ -79,6 +79,15 @@ changes for the encoded data."
   Compare the possibly bitpacked and effective index ranges for each bitplane:
   BP0: 00-0F vs 00-0E ; BP1: 00-1F vs 00-12 ; BP2: 00-3F vs 00-22 ; BP3: 00-7F
 
+- The bitplane subroutines format has a case that allows you to save a byte with
+  the subroutine ID encoding. Specifically, BP3 must be either all 00 or all FF,
+  and the index for BP0 must be in the range 00-03 (8 bytes, all 00 with spot
+  changes, all FF with spot changes, or RLE). I refer to this as "restrictable."
+
+- Interesting thought that came to mind: you should be able to use the "copy BP
+  from a previous tile" subroutine to source a bitplane from the current tile,
+  in reverse order. No other subroutine index lets you do this.
+
 - Keep track of what subroutine ID groups pop up often, and encode them as the
   bytes in the first 0xC bytes of the 0x1B tile metadata block. For example, the
   decompression for gfx ID 00 has each of the four options appear several times:
@@ -119,11 +128,11 @@ Bit patt. | Value list  | Meaning
 ----------+-------------+-------------
 0010 0000 | 20          | Read 0x20 raw bytes from ROM (last resort)
 ----------+-------------+-------------
-00xx x000 | 08,10*,18*  | Read 8 raw bytes [x] -- fill BPs w/ [00],[x],[~x],[FF]
+00xx x000 | 08,10*,18*  | Read 8 raw bytes -- BPs <- any of [00],[NN],[~NN],[FF]
 not 00,20 | 28          | Construct BP from RLE format
           | 30          | Construct BP from 3 or 4 unique bytes
           | 38          | Construct BP from 4 unique nibbles
-          | *: Unused   | (Look for BPs like [00][x][~x][FF], encode later)
+          | *: Unused   | (Look for BPs like [00][NN][~NN][FF], encode later)
 ----------+-------------+-------------
 00xx 0001 | 01,11,21,31 | Get bp data subroutine index values from bytes 0-B of
           |             | tileset metadata "header"
@@ -252,7 +261,7 @@ Observation from comparing dump logs for Chunsoft's data with my calculations:
 
 --------------------
 
-As for how to extract out what groups should be encoded, you can bitwise OR
+As for how to extract out what groups should be encoded, you can bitwise-OR
 certain bitplanes to do so. For example, look at the formulas above for N <= 4.
 Given:              Use Boolean algebra to calculate and simplify:
 LP0 = ~G1 & ~G0     LP0 | LP1
@@ -307,7 +316,7 @@ for LP0, when the bit position itself is also 0. Although this combination is
 not ORed into any bitplane, it is necessary for aligning the bit position list
 correctly.
 
---------------------
+--------------------------------------------------------------------------------
 
 Perhaps note that type bytes 10 and 18 are both unused in the Japanese game's
 gfx data, and are identical to using a type byte of 08 in terms of control flow.
@@ -343,7 +352,7 @@ Design issue: both the bitplane subroutine case and the bitmask construction
 case can take fewer bytes by putting common compression values (encoded indices
 and bit positions, respectively) into the tileset's metadata.
 
-BP subroutine data requirements:
+Bitplane subroutine data requirements:
 - 3: Typical case
 - 2: BP0/BP3 are restrictable
 - 1: Indices from metadata
@@ -406,10 +415,10 @@ Chunsoft's did better for others.
 
 How to encode compressed graphics data
 
-If you want to do a quick and dirty tileset encoder with no compression at all,
-you could follow these steps:
-- Write a 0x1B byte header with any data you want. "uncompressed tileset header"
-  in ASCII is an exact fit if you want to use that!
+If you want to do a quick and dirty 4bpp tileset encoder with no compression at
+all, you could follow these steps:
+- Write a 0x1B byte header with any data you want.
+  ASCII "uncompressed tileset header" is an exact fit if you want to use that!
 - For each 4bpp tile in the tileset (minus the empty 000 tile):
   - Write the "uncompressed tile data" type byte of [20].
   - Write the 0x20 bytes of the 4bpp tile.
@@ -419,7 +428,7 @@ Otherwise, high-level encoding instructions for each case:
 
 ----------
 
-Common data for bitplane cases:
+Common data for bitplane subroutine cases:
 0xC bytes of data, consisting of 4 sets of bitplane indices, encoded in 3 bytes
 (Even if the indices can be encoded in 2 bytes, you must encode them in 3 bytes)
 
@@ -437,30 +446,39 @@ Just write the 0xF bytes
 ----------
 
 00 NN FF ~NN case:
+
 Determine how to encode the 8 bytes of NN data. The type byte to use will be:
-08 = 8 uncompressed bytes
-28 = RLE format
-30 = construct from 3 or 4 unique bytes
-38 = construct from 4 unique nibbles
-Then write the (un)compressed data for the group
+- 08 = 8 uncompressed bytes
+- 28 = RLE format
+- 30 = construct from 3 or 4 unique bytes
+- 38 = construct from 4 unique nibbles
+
+Write one byte (four 2-bit values) that encodes how to fill in the bitplanes.
+- Binary 00 = fill with 00      - Bits 7-6: Value for bitplane 3
+- Binary 01 = fill with [NN]    - Bits 5-4: Value for bitplane 2
+- Binary 10 = fill with ~[NN]   - Bits 3-2: Value for bitplane 1
+- Binary 11 = fill with FF      - Bits 1-0: Value for bitplane 0
+
+Then write the (un)compressed data bytes NN. Compression method is covered in
+the section on encoding data for bitplane subroutines.
 
 ----------
 
 Reusing tile on bitplane basis:
 
-Type byte = 0x40 | (bitplane flags 3-0 << 2) | (bits 9-8 of src tile num)
+Type byte = 0x40 | ((bitplane flags 3-0) << 2) | (bits 9-8 of src tile num)
 Bits 7-0 of src tile num
-For each bitplane that has to be changed (bp0 first, bp3 last):
-- Flags byte for which bytes have to be changed
+For each bitplane that has to be changed (bp0's data first, bp3's data last):
+- Flags byte for which bytes have to be changed (MSB = byte 0, LSB = byte 7)
 - New data bytes
 
 ----------
 
 Reusing tile on row basis:
 
-Type byte = 0x09 | (bits 9-8 of src tile num << 4)
+Type byte = 0x09 | ((bits 9-8 of src tile num) << 4)
 Bits 7-0 of src tile num
-Flags byte for which rows need to be changed
+Flags byte for which rows need to be changed (MSB = row 0, LSB = bit 7)
 Four bytes of data for each row to be changed (row 0 first, row 7 last)
 
 ----------
@@ -472,14 +490,14 @@ Determine which compression type to use. Start w/ the correct type byte bitmask.
 
 Bitpack the up to 8 list positions into a big endian 16-bit value.
 - If both bytes of the value are either 00 or in the list of 0xF common bytes,
-  you can encode the two indices in one byte. Bitwise OR 0x01 into type byte.
+  you can encode the two indices in one byte. Bitwise-OR 0x01 into type byte.
 - If either byte is not 00 and also not in the common list, you must encode the
   16-bit value directly.
 
 Then encode the possibly compressed data for the two or three bitmask groups.
-- If group 0 is compressed, bitwise OR 0x20 into type byte.
-- If group 1 is compressed, bitwise OR 0x10 into type byte.
-- If group 2 is compressed, bitwise OR 0x08 into type byte.
+- If group 0 is compressed, bitwise-OR 0x20 into type byte.
+- If group 1 is compressed, bitwise-OR 0x10 into type byte.
+- If group 2 is compressed, bitwise-OR 0x08 into type byte.
 
 ----------
 
@@ -491,12 +509,12 @@ Provided you know the four subroutine indices, there are three patterns.
 
 - Index 0 is from 00-03, and index 3 is either 04 (all 00) or 05 (all FF)
   Type byte = 0xC0 | index2
-  Data byte 1 = index0 | (index1 << 3) | (index3 & 1) << 2
+  Data byte 1 = index0 | (index1 << 3) | ((index3 & 1) << 2)
 
 - General case
   Type byte = 0x80 | index2
-  Data byte 1 = (index1 << 3) | (index0 & 0xE) >> 1
-  Data byte 2 = index3 | (index0 & 0x1) << 7
+  Data byte 1 = (index1 << 3) | ((index0 & 0xE) >> 1)
+  Data byte 2 = index3 | ((index0 & 0x1) << 7)
 
 And then you have to encode the data for each of the four subroutine indices.
 
@@ -507,42 +525,43 @@ Data for each bitplane subroutine
 8 uncompressed bytes are self-explanatory.
 
 Spot changes (placed AFTER the data for the "primary" subroutine index):
-One byte of flags for which bytes in the bitplane have to be changed
-The new data bytes to write
+- One byte of flags for which bytes in the bitplane have to be changed
+- The new data bytes to write
 
 RLE format (also used for 00/FF/NN and bitmask data tile cases):
-One byte of flags for the start positions of the runs of new values
-(if the 8 bytes start with at least one byte of 00, its value is implied)
-The bytes for the values of each run
+- One byte of flags for the start positions of the runs of new values
+  * MSB = byte 0, LSB = byte 7
+  * If the 8 bytes start with at least one byte of 00, that value is implied.
+- The bytes for the values of each run.
 
 Fill bitplane with a byte:
-If 00 or FF, the value is implied. Otherwise, just write the value as-is.
+- If 00 or FF, the subroutine index implies the value.
+- Otherwise, just write the value as-is.
 
 Read two  bytes X/Y and fill bitplane with [X Y X Y X Y X Y]:
 Read four bytes W-Z and fill bitplane with [W X Y Z W X Y Z]:
-Encode the data bytes, that's it.
+Encode the data bytes in the correct order, and that's it.
 
-Construct bitplane from 3 or 4 unique bytes (same deal as RLE, reused)
-One 16-bit big endian value consisting of eight 2-bit indices
-- If you assume that the 8 bytes are [0 1 2 3 4 5 6 7], fill the indices as:
-  bits F-E = BP byte 7, bits D-C = BP byte 6, ..., bits 1-0 = BP byte 0
-- If bitplane has 3 unique bytes, signify this by setting bits 0-1 to non-zero
-  (Reasoning: BP byte 0 is the first unique byte in the bitplane, and so we can
-  assume that the first index ought to be binary 00 regardless of the data)
-Then write the three or four data bytes in order of [0 1 2 (3)].
+Construct bitplane from 3 or 4 unique bytes (same deal as RLE, reused):
+- One 16-bit big endian value consisting of eight 2-bit indices (00/01/10/11)
+  * Bits F-E = BP byte 7, bits D-C = BP byte 6, ..., bits 1-0 = BP byte 0
+  * If bitplane has 3 unique bytes, signify this by setting bits 0-1 to non-zero
+    (Reasoning: BP byte 0 is the first unique byte in the bitplane, so we can
+    assume that the first index ought to be binary 00 regardless of the data)
+- Then write the three or four data bytes in the order [0 1 2 (3)].
 
-Construct bitplane from 4 unique nibbles (same deal as RLE, reused)
-One 32-bit big endian value consisting of sixteen 2-bit indices
-- If you assume that the 8 bytes' nibbles are [01 23 45 67 89 AB CD EF]:
-  bits 1F-1E = nibble F, bits 1D-1C = nibble E, ..., bits 1-0 = nibble 0
-Then two bytes containing the data nibbles in order of [01 23].
+Construct bitplane from 4 unique nibbles (same deal as RLE, reused):
+- One 32-bit big endian value consisting of sixteen 2-bit indices
+  * If you assume that the 8 bytes' nibbles are [01 23 45 67 89 AB CD EF]:
+    bits 1F-1E = nibble F, bits 1D-1C = nibble E, ..., bits 1-0 = nibble 0
+- Then two bytes containing the data nibbles in the order [01 23].
 
-Copy bitplane from previous tile
-A 16-bit big endian value that encodes the following data:
-- Bit F: Flag for if src bitplane is copied as-is (0) or in reverse order (1)
-- [Bits E-C: unused]
-- Bits B-A: Which bitplane (0-3) in the src tile to use as a base
-- Bits 9-0: Tile number (000-3FF) to get the bitplane from
+Copy bitplane from previous tile:
+- A 16-bit big endian value that encodes the following data:
+  * Bit F: Flag for if src bitplane is copied as-is (0) or in reverse order (1)
+  * [Bits E-C: unused]
+  * Bits B-A: Which bitplane (0-3) in the src tile to use as a base
+  * Bits 9-0: Tile number (000-3FF) to get the bitplane from
 
-No data is required for any of the bitplane subroutines that combine previous
-bitplanes in the tile together.
+No data is required for any of the bitplane subroutines that bitwise-combine
+previous bitplanes in the current tile (excluding spot changes).
